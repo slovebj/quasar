@@ -88,7 +88,7 @@ export default Vue.extend({
 
   methods: {
     focus () {
-      this.$refs.input !== void 0 && this.$refs.input.focus()
+      this.$refs.input !== void 0 && this.$refs.input !== document.activeElement && document.activeElement.id !== this.targetUid && this.$refs.input.focus()
     },
 
     select () {
@@ -191,7 +191,6 @@ export default Vue.extend({
         change: this.__onChange,
         compositionstart: this.__onCompositionStart,
         compositionend: this.__onCompositionEnd,
-        focus: stop,
         blur: stop
       }
 
@@ -203,15 +202,29 @@ export default Vue.extend({
         on.keydown = this.__onMaskedKeydown
       }
 
+      if (this.editable === true && this.$q.platform.is.mobile === true) {
+        on.focus = e => {
+          stop(e)
+          setTimeout(() => {
+            this.$el !== void 0 && this.$el.scrollIntoView(true)
+          }, 300)
+        }
+      }
+      else {
+        on.focus = stop
+      }
+
       const attrs = {
         tabindex: 0,
         autofocus: this.autofocus,
         rows: this.type === 'textarea' ? 6 : void 0,
         'aria-label': this.label,
         ...this.$attrs,
+        id: this.targetUid,
         type: this.type,
         maxlength: this.maxlength,
-        disabled: this.editable !== true
+        disabled: this.disable === true,
+        readonly: this.readonly === true
       }
 
       if (this.autogrow === true) {

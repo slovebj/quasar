@@ -33,7 +33,7 @@
 
     "mini-width": {
       "type": "Number",
-      "desc": "Width of drawer (in pixels) when in mini-mode",
+      "desc": "Width of drawer (in pixels) when in mini mode",
       "default": 60,
       "examples": [ ":width=\"100\"" ],
       "category": "style"
@@ -79,12 +79,6 @@
     "persistent": {
       "type": "Boolean",
       "desc": "Does not auto-closes when app's route changes",
-      "category": "behavior"
-    },
-
-    "show-if-above": {
-      "type": "Boolean",
-      "desc": "Force drawer to be shown on screen on initial render if the layout width is above breakpoint",
       "category": "behavior"
     },
 

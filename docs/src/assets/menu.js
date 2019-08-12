@@ -475,6 +475,11 @@ const layout = [
       {
         name: 'Grid Gutter',
         path: 'gutter'
+      },
+      {
+        name: 'Flex Playground',
+        badge: 'new',
+        path: 'flex-playground'
       }
     ]
   },
@@ -946,6 +951,11 @@ const appExtensions = [
       {
         name: 'Uninstall API',
         path: 'uninstall-api'
+      },
+      {
+        name: 'Tips and tricks',
+        badge: 'new',
+        path: 'tips-and-tricks'
       }
     ]
   }

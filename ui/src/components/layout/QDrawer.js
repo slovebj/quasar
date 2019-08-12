@@ -1,5 +1,6 @@
 import Vue from 'vue'
 
+import HistoryMixin from '../../mixins/history.js'
 import TouchPan from '../../directives/TouchPan.js'
 import { between } from '../../utils/format.js'
 import ModelToggleMixin from '../../mixins/model-toggle.js'
@@ -19,7 +20,7 @@ export default Vue.extend({
     }
   },
 
-  mixins: [ ModelToggleMixin, PreventScrollMixin ],
+  mixins: [ HistoryMixin, ModelToggleMixin, PreventScrollMixin ],
 
   directives: {
     TouchPan
@@ -54,7 +55,6 @@ export default Vue.extend({
     bordered: Boolean,
     elevated: Boolean,
     persistent: Boolean,
-    showIfAbove: Boolean,
     contentStyle: [String, Object, Array],
     contentClass: [String, Object, Array],
     noSwipeOpen: Boolean,
@@ -62,29 +62,12 @@ export default Vue.extend({
   },
 
   data () {
-    const
-      largeScreenState = this.showIfAbove === true || (
-        this.value !== void 0 ? this.value : true
-      ),
-      showing = this.behavior !== 'mobile' && this.breakpoint < this.layout.width && this.overlay === false
-        ? largeScreenState
-        : false
-
-    if (this.value !== void 0 && this.value !== showing) {
-      // setTimeout needed otherwise
-      // it breaks Vue state
-      setTimeout(() => {
-        this.$emit('input', showing)
-      })
-    }
-
     return {
-      showing,
+      showing: this.value,
       belowBreakpoint: (
         this.behavior === 'mobile' ||
-        (this.behavior !== 'desktop' && this.breakpoint >= this.layout.width)
+        (this.behavior !== 'desktop' && this.layout.width <= this.breakpoint)
       ),
-      largeScreenState,
       mobileOpened: false
     }
   },
@@ -96,14 +79,10 @@ export default Vue.extend({
       }
 
       if (val === true) { // from lg to xs
-        if (this.overlay === false) {
-          this.largeScreenState = this.showing
-        }
-        // ensure we close it for small screen
         this.hide(false)
       }
-      else if (this.overlay === false) { // from xs to lg
-        this[this.largeScreenState ? 'show' : 'hide'](false)
+      else if (this.overlay === false && this.behavior !== 'mobile') { // from xs to lg
+        this.show(false)
       }
     },
 
@@ -126,6 +105,10 @@ export default Vue.extend({
       ))
     },
 
+    'layout.container' (val) {
+      this.showing === true && this.__preventScroll(val !== true)
+    },
+
     'layout.width' (val) {
       this.__updateLocal('belowBreakpoint', (
         this.behavior === 'mobile' ||
@@ -144,15 +127,6 @@ export default Vue.extend({
     onLayout (val) {
       this.$listeners['on-layout'] !== void 0 && this.$emit('on-layout', val)
       this.__update('space', val)
-    },
-
-    $route () {
-      if (
-        this.persistent !== true &&
-        (this.mobileOpened === true || this.onScreenOverlay === true)
-      ) {
-        this.hide()
-      }
     },
 
     rightSide () {
@@ -293,6 +267,11 @@ export default Vue.extend({
           mouseleave: e => { this.$emit('mouseleave', e) }
         }
       }
+    },
+
+    navigationHideCondition () {
+      return this.persistent !== true &&
+        (this.mobileOpened === true || this.onScreenOverlay === true)
     }
   },
 
@@ -301,7 +280,6 @@ export default Vue.extend({
       if (position === void 0) {
         this.$nextTick(() => {
           position = this.showing === true ? 0 : this.size
-
           this.applyPosition(this.stateDirection * position)
         })
       }
@@ -325,9 +303,11 @@ export default Vue.extend({
     },
 
     __setScrollable (v) {
-      if (this.layout.container !== true) {
-        document.body.classList[v === true ? 'add' : 'remove']('q-body--drawer-toggle')
-      }
+      const action = v === true
+        ? 'remove'
+        : (this.layout.container !== true ? 'add' : '')
+
+      action !== '' && document.body.classList[action]('q-body--drawer-toggle')
     },
 
     __animateMini () {
@@ -429,6 +409,8 @@ export default Vue.extend({
     },
 
     __show (evt = true) {
+      this.__addHistory()
+
       evt !== false && this.layout.__animate()
       this.applyPosition(0)
 
@@ -440,22 +422,22 @@ export default Vue.extend({
       if (this.belowBreakpoint === true) {
         this.mobileOpened = true
         this.applyBackdrop(1)
-        if (this.layout.container !== true) {
-          this.__preventScroll(true)
-        }
+        this.layout.container !== true && this.__preventScroll(true)
       }
       else {
-        this.__setScrollable(true)
+        this.__setScrollable(false)
       }
 
       clearTimeout(this.timer)
       this.timer = setTimeout(() => {
-        this.__setScrollable(false)
+        this.__setScrollable(true)
         this.$emit('show', evt)
       }, duration)
     },
 
     __hide (evt = true) {
+      this.__removeHistory()
+
       evt !== false && this.layout.__animate()
 
       if (this.mobileOpened === true) {
@@ -467,15 +449,15 @@ export default Vue.extend({
 
       this.__cleanup()
 
-      clearTimeout(this.timer)
       this.timer = setTimeout(() => {
         this.$emit('hide', evt)
       }, duration)
     },
 
     __cleanup () {
+      clearTimeout(this.timer)
       this.__preventScroll(false)
-      this.__setScrollable(false)
+      this.__setScrollable(true)
     },
 
     __update (prop, val) {
@@ -505,12 +487,15 @@ export default Vue.extend({
   mounted () {
     this.$listeners['on-layout'] !== void 0 && this.$emit('on-layout', this.onLayout)
     this.applyPosition(this.showing === true ? 0 : void 0)
+    this.showing === true && this.mobileView === true && this.applyBackdrop(1)
   },
 
   beforeDestroy () {
     clearTimeout(this.timer)
     clearTimeout(this.timerMini)
+
     this.showing === true && this.__cleanup()
+
     if (this.layout.instances[this.side] === this) {
       this.layout.instances[this.side] = void 0
       this.__update('size', 0)
