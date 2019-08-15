@@ -56,6 +56,7 @@
 
       <q-drawer
         v-model="leftDrawerOpen"
+        show-if-above
         bordered
         :breakpoint="690"
       >
@@ -167,7 +168,7 @@ export default {
 
   data () {
     return {
-      leftDrawerOpen: this.$q.screen.width >= 690,
+      leftDrawerOpen: false,
       search: '',
       message: '',
       currentConversationIndex: 0,
@@ -216,19 +217,6 @@ export default {
     style () {
       return {
         height: this.$q.screen.height + 'px'
-      }
-    }
-  },
-
-  watch: {
-    leftDrawerOpen (val) {
-      // if user opens drawer in mobile mode
-      // then widens the window and closes drawer,
-      // we should still show drawer on page in standard mode
-      if (val === false && this.$q.screen.width >= 690) {
-        this.$nextTick(() => {
-          this.leftDrawerOpen = true
-        })
       }
     }
   }
