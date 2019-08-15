@@ -19,32 +19,9 @@ for $value,i in $h1-h6
   {'h'+(i + 1)},.{'h'+(i + 1)},.{'f'+(6 - i)}
     font-size: $value
 
-.f7
-  font-size: 3rem
-
-.f8
-  font-size: 3.5rem
-
-.f9
-  font-size: 4rem
-
-.f10
-  font-size: 5rem
-
-.f11
-  font-size: 6rem
-
-.f12
-  font-size: 7rem
-
-.f13
-  font-size: 8rem
-
-.f14
-  font-size: 9rem
-
-.f15
-  font-size: 10rem
+for $value,i in $f1-f15
+  .{'f'+(i + 7)}
+    font-size: $value
 
 h1 small, .h1 small, h2 small, .h2 small, h3 small, .h3 small, h4 small, .h4 small, h5 small, .h5 small, h6 small, .h6 small, .small
   font-size: 70%
@@ -111,7 +88,6 @@ mark,.mark
   &j
     text-align justify
     hyphens auto
-.font-
   &i
     font-style italic
   &b
