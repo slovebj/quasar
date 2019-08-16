@@ -23,17 +23,19 @@ for $value,i in $f1-f15
   .{'f'+(i + 7)}
     font-size: $value
 
-h1 small, .h1 small, h2 small, .h2 small, h3 small, .h3 small, h4 small, .h4 small, h5 small, .h5 small, h6 small, .h6 small, .small
-  font-size: 70%
-  opacity: 0.6
-  margin-left: 0.4rem
+.initialism
+  font-size: 90%
+  text-transform: uppercase
 
-p
-  margin: 0 0 $spaces.md.y
+.nowrap
+  white-space: nowrap !important
 
-mark,.mark
-  padding: 0.2em
-  background-color: #fcf8e3
+.break
+    word-wrap: break-word
+    word-break: normal
+
+.breakall
+  word-break: break-all
 
 .uppercase
     text-transform uppercase
@@ -43,12 +45,6 @@ mark,.mark
 
 .capitalize
     text-transform capitalize
-
-.nowrap
-  white-space: nowrap !important
-
-.breakall
-  word-break: break-all
 
 .ellipsis
   text-overflow ellipsis
@@ -73,12 +69,12 @@ mark,.mark
     text-shadow: none
     background-color: transparent
     border: 0
-  for $heading, $value in $headings
-    &{$heading}
-      font-size: $value.size
-      font-weight: $value.weight
-      line-height: $value.line-height
-      letter-spacing: $value.letter-spacing
+  //这几个类不太实用，暂时注释掉 for $heading, $value in $headings
+  //   &{$heading}
+  //     font-size: $value.size
+  //     font-weight: $value.weight
+  //     line-height: $value.line-height
+  //     letter-spacing: $value.letter-spacing
   &c
     text-align center
   &l
@@ -97,10 +93,19 @@ mark,.mark
     &w{$weight}
       font-weight $weight
 
-small
-  font-size 80%
-big
-  font-size 170%
+p
+  margin: 0 0 $spaces.md.y
+
+mark,.mark
+  padding: 0.2em
+  background-color: #fcf8e3
+
+small, .small
+  font-size: 80%
+  opacity: 0.7
+
+big,.big
+  font-size 120%
 sub
   bottom -.25em
 sup
@@ -137,10 +142,6 @@ hr
   margin-bottom: 1rem
   border: 0
   border-top: 1px solid rgba(0, 0, 0, 0.2)
-
-.initialism
-  font-size: 90%
-  text-transform: uppercase
 
 dl.row > dd + dt
   clear: left
