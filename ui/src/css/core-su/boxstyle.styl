@@ -10,7 +10,7 @@
 for $z in 1..24
   .sd{$z}
     box-shadow $shadow-+$z
-  .sd{$z}-up
+  .sd-{$z}
     box-shadow $shadow-up-+$z
 
 .no-sd, .sd0
@@ -85,7 +85,7 @@ for $z in 1..24
     border: solid
 $bd-width=1 2 3 5 10
 for $width,$key in $bd-width
-  .bw{$key}
+  .bw{$key +1}
     border-width: $width px
 
 .bs-dashed

@@ -1,5 +1,10 @@
-.non-selectable
-  user-select none !important
+.no-select, input[type=range],input[type=range] + .thumb
+  -webkit-touch-callout: none
+  -webkit-user-select: none
+  -khtml-user-select: none
+  -moz-user-select: none
+  -ms-user-select: none
+  user-select: none !important
 
 .scroll
   overflow auto
