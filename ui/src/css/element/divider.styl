@@ -22,3 +22,43 @@
   width: 50%
   border-bottom:1px solid currentColor
   transform: scaleX(0.9)
+
+// <div class="row">
+//   <div>
+//     <div class="column"><p></p></div>
+//     <div class="column"><p></p></div>
+//   </div>
+//   <div class="ui vertical divider">and</div>
+// </div>
+.divider-v {
+  position:absolute;
+  z-index:2;
+  top:50%;
+  left:50%;
+  margin:0;
+  padding:0;
+  width:auto;
+  height:50%;
+  line-height:0;
+  text-align:center;
+  -webkit-transform:translateX(-50%);
+  transform:translateX(-50%)
+}
+.divider-v:after,
+.divider-v:before {
+  position:absolute;
+  left:50%;
+  content:'';
+  z-index:3;
+  border-left:1px solid rgba(34,36,38,.15);
+  border-right:1px solid rgba(255,255,255,.1);
+  width:0%;
+  height:calc(100% - 1rem)
+}
+.divider-v:before {
+  top:-100%
+}
+.divider-v:after {
+  top:auto;
+  bottom:0
+}
