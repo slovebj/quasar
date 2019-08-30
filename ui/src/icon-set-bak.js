@@ -1,12 +1,12 @@
 import Vue from 'vue'
 
 import { isSSR } from './plugins/Platform.js'
-import iconfont from '../icon-set/iconfont.js'
+import materialIcons from '../icon-set/material-icons.js'
 
 export default {
   __installed: false,
   install ($q, iconSet) {
-    this.set = (iconDef = iconfont) => {
+    this.set = (iconDef = materialIcons) => {
       iconDef.set = this.set
 
       if (isSSR === true || $q.iconSet !== void 0) {

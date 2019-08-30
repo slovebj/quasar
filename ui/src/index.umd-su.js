@@ -8,7 +8,7 @@ import * as directives from './directives.js'
 import * as plugins from './plugins.js'
 import * as utils from './utils.js'
 import lang from './lang-su'
-// import iconSet from './icon-set.js'
+import iconSet from './icon-set.js'
 
 Vue.use({ install }, {
   components,
@@ -20,7 +20,7 @@ Vue.use({ install }, {
 export default {
   version,
   lang,
-  // iconSet,
+  iconSet,
   components,
   directives,
   plugins,
