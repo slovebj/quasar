@@ -24,7 +24,7 @@ function encode (obj) {
 
 function formatPublicPath (path) {
   if (!path) {
-    return path || ''
+    return ''
   }
 
   if (!path.endsWith('/')) {
@@ -550,6 +550,7 @@ class QuasarConfig {
         open: true
       }, cfg.devServer, {
         contentBase: false,
+        watchContentBase: false,
 
         before: app => {
           if (!this.ctx.mode.ssr) {
