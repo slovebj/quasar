@@ -32,8 +32,8 @@ if (!type || type === 'js') {
   createFolder('dist/lang')
   createFolder('dist/icon-set')
   createFolder('dist/types')
-  runJob(join(__dirname, './script.build.javascript-su'))
+  runJob(join(__dirname, './script.build.javascript'))
 }
 if (!type || type === 'css') {
-  runJob(join(__dirname, './script.build.stylus-su'))
+  runJob(join(__dirname, './script.build.css'))
 }
