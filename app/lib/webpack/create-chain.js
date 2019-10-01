@@ -75,6 +75,7 @@ module.exports = function (cfg, configName) {
   if (cfg.framework.all === 'auto') {
     vueRule.use('quasar-auto-import')
       .loader(path.join(__dirname, 'loader.auto-import.js'))
+      .options(cfg.framework.autoImportComponentCase)
   }
 
   vueRule.use('vue-loader')
@@ -169,6 +170,7 @@ module.exports = function (cfg, configName) {
     rtl: cfg.build.rtl,
     sourceMap: cfg.build.sourceMap,
     extract: cfg.build.extractCSS,
+    serverExtract: configName === 'Server' && cfg.build.extractCSS,
     minify: cfg.build.minify,
     stylusLoaderOptions: cfg.build.stylusLoaderOptions,
     sassLoaderOptions: cfg.build.sassLoaderOptions,
@@ -311,7 +313,7 @@ module.exports = function (cfg, configName) {
     }
 
     // configure CSS extraction & optimize
-    if (cfg.build.extractCSS) {
+    if (configName !== 'Server' && cfg.build.extractCSS) {
       const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
       // extract css into its own file

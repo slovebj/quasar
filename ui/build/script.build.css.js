@@ -1,7 +1,7 @@
 const
   path = require('path'),
   stylus = require('stylus'),
-  sass = require('sass-node'),
+  sass = require('node-sass'),
   rtl = require('postcss-rtl'),
   postcss = require('postcss'),
   cssnano = require('cssnano'),
@@ -50,6 +50,10 @@ function generateSassFile (source, destination) {
       file: src,
       importer: [
         (url, prev, done) => {
+          // needed for Windows as "prev"
+          // comes with backward slashes
+          prev = path.normalize(prev)
+
           const file = path.normalize(path.join(
             prev ? path.dirname(prev) : pathList[0],
             url
