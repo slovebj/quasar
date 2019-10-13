@@ -10,7 +10,7 @@ If your favorite deployment tool is missing feel free to create a pull request o
 
 ## General deployment
 
-The first step in deploying you Quasar SPA is always to build a production-ready bundle of your files, which gets rid of development statements and minifies your source.
+The first step in deploying your Quasar SPA is always to build a production-ready bundle of your files, which gets rid of development statements and minifies your source.
 
 To produce such a build use Quasar CLI with the following command
 ```bash
@@ -68,12 +68,9 @@ Then proceed to build your Quasar application using the steps described in "Gene
 
 After the build is finished, change directory into your deploy root (example: `/dist/spa`) and run:
 ```bash
+# from /dist/spa (or your distDir)
 $ now
 ```
-
-::: warning
-Make sure that you have set Now Platform Version to v1.
-:::
 
 The Now CLI should now display information regarding your deployment, like the URL. That's it. You're done.
 
