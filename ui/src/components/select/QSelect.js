@@ -333,6 +333,7 @@ export default Vue.extend({
           true
         )
 
+        this.$refs.target.focus()
         this.hidePopup()
 
         if (isDeepEqual(this.__getOptionValue(this.value), optValue) !== true) {
@@ -917,21 +918,23 @@ export default Vue.extend({
           focusout(e)
         },
         click: e => {
-          // label from QField will propagate click on the input (except IE)
-          if (
-            this.hasDialog !== true &&
-            this.useInput === true &&
-            e.target.classList.contains('q-select__input') !== true
-          ) {
-            return
+          if (this.hasDialog !== true) {
+            // label from QField will propagate click on the input (except IE)
+            if (
+              (this.useInput === true && e.target.classList.contains('q-select__input') !== true) ||
+              (this.useInput !== true && e.target.classList.contains('no-outline') === true)
+            ) {
+              return
+            }
+
+            if (this.menu === true) {
+              this.__closeMenu()
+              this.$refs.target !== void 0 && this.$refs.target.focus()
+              return
+            }
           }
-          if (this.hasDialog !== true && this.menu === true) {
-            this.__closeMenu()
-            this.$refs.target !== void 0 && this.$refs.target.focus()
-          }
-          else {
-            this.showPopup(e)
-          }
+
+          this.showPopup(e)
         }
       }
     },
@@ -1045,9 +1048,9 @@ export default Vue.extend({
       )
 
       return h(QDialog, {
+        ref: 'dialog',
         props: {
           value: this.dialog,
-          noRefocus: true,
           position: this.useInput === true ? 'top' : void 0,
           transitionShow: this.transitionShowComputed,
           transitionHide: this.transitionHide
@@ -1067,6 +1070,7 @@ export default Vue.extend({
     },
 
     __onDialogBeforeHide () {
+      this.$refs.dialog.__refocusTarget = this.$el.querySelector('.q-field__native > [tabindex]:last-child')
       this.focused = false
     },
 
@@ -1094,11 +1098,6 @@ export default Vue.extend({
 
       if (this.menu === true) {
         this.menu = false
-
-        // allow $refs.target to move to the field (when dialog)
-        this.$nextTick(() => {
-          this.$refs.target !== void 0 && this.$refs.target.focus()
-        })
       }
 
       if (this.focused === false) {
