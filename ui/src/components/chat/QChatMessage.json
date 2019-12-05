@@ -1,4 +1,8 @@
 {
+  "meta": {
+    "docsUrl": "https://v1.quasar.dev/vue-components/chat"
+  },
+
   "props": {
     "sent": {
       "type": "Boolean",
@@ -40,7 +44,7 @@
     },
 
     "text": {
-      "type": "String",
+      "type": "Array",
       "desc": "Array of strings that are the message body. Strings are not sanitized (see details in docs)",
       "examples": [ ":text=\"['How are you?']\"", ":text=\"['I\\'m good, thank you!', 'And you?']\"" ],
       "category": "content"

@@ -1,4 +1,8 @@
 {
+  "meta": {
+    "docsUrl": "https://v1.quasar.dev/vue-components/img"
+  },
+
   "behavior": {
     "$listeners": true
   },
@@ -82,6 +86,17 @@
     "transition": {
       "extends": "transition",
       "default": "fade"
+    },
+
+    "img-class": {
+      "type": [ "Array", "String", "Object" ],
+      "desc": "Class definitions to be attributed to the container of image; Does not apply to the caption",
+      "examples": [
+        "my-special-class",
+        ":img-class=\"{ 'my-special-class': <condition> }\""
+      ],
+      "category": "style",
+      "addedIn": "v1.4.0"
     },
 
     "spinner-color": {

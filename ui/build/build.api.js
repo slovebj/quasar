@@ -2,15 +2,15 @@ const
   glob = require('glob'),
   path = require('path'),
   merge = require('webpack-merge'),
-  fs = require('fs'),
-  { logError, writeFile } = require('./build.utils'),
-  ast = require('./ast')
+  fs = require('fs')
 
 const
   root = path.resolve(__dirname, '..'),
   resolvePath = file => path.resolve(root, file),
   dest = path.join(root, 'dist/api'),
-  extendApi = require(resolvePath('src/api.extends.json'))
+  extendApi = require(resolvePath('src/api.extends.json')),
+  { logError, writeFile } = require('./build.utils'),
+  ast = require('./ast')
 
 function getMixedInAPI (api, mainFile) {
   api.mixins.forEach(mixin => {
@@ -36,9 +36,9 @@ function getMixedInAPI (api, mainFile) {
 }
 
 const topSections = {
-  plugin: [ 'injection', 'quasarConfOptions', 'props', 'methods' ],
-  component: [ 'behavior', 'props', 'slots', 'scopedSlots', 'events', 'methods' ],
-  directive: [ 'value', 'arg', 'modifiers' ]
+  plugin: [ 'meta', 'injection', 'quasarConfOptions', 'props', 'methods' ],
+  component: [ 'meta', 'behavior', 'props', 'slots', 'scopedSlots', 'events', 'methods' ],
+  directive: [ 'meta', 'value', 'arg', 'modifiers' ]
 }
 
 const objectTypes = {
@@ -114,6 +114,17 @@ const objectTypes = {
   // special type, not common
   Component: {
     props: [ 'desc' ],
+    required: [ 'desc' ]
+  },
+
+  meta: {
+    props: [ 'docsUrl' ],
+    required: []
+  },
+
+  // special type, not common
+  Element: {
+    props: [ 'desc', 'examples' ],
     required: [ 'desc' ]
   },
 
@@ -208,7 +219,6 @@ function parseObject ({ banner, api, itemName, masterType, verifyCategory }) {
     }
 
     if (!def.props.includes(prop)) {
-      console.log(def)
       logError(`${banner} object has unrecognized API prop "${prop}" for its type (${type})`)
       console.error(obj)
       console.log()
@@ -318,6 +328,11 @@ function parseAPI (file, apiType) {
 
   const banner = `build.api.js: ${path.relative(root, file)} -> `
 
+  if (api.meta === void 0 || api.meta.docsUrl === void 0) {
+    logError(`${banner} API file does not contain meta > docsUrl`)
+    process.exit(1)
+  }
+
   // "props", "slots", ...
   for (let type in api) {
     if (!topSections[apiType].includes(type)) {
@@ -338,18 +353,18 @@ function parseAPI (file, apiType) {
       continue
     }
 
-    if (['value', 'arg', 'quasarConfOptions'].includes(type)) {
+    if (['value', 'arg', 'quasarConfOptions', 'meta'].includes(type)) {
       if (Object(api[type]) !== api[type]) {
         logError(`${banner} "${type}"/"${type}" is not an object`)
         process.exit(1)
       }
     }
 
-    if (type === 'quasarConfOptions') {
+    if (['meta', 'quasarConfOptions'].includes(type)) {
       parseObject({
         banner: `${banner} "${type}"`,
         api,
-        itemName: 'quasarConfOptions',
+        itemName: type,
         masterType: type
       })
       continue
@@ -414,6 +429,25 @@ const astExceptions = {
   }
 }
 
+function validateArray (name, key, property, expected, propApi) {
+  const apiVal = propApi[property]
+
+  if (expected.length === 1 && expected[0] === apiVal) {
+    return
+  }
+
+  const expectedVal = expected.filter(t => t.startsWith('__') === false)
+
+  if (
+    !Array.isArray(apiVal) ||
+    apiVal.length !== expectedVal.length ||
+    !expectedVal.every(t => apiVal.includes(t))
+  ) {
+    logError(`${name}: wrong definition for prop "${key}" on "${property}": expected ${expectedVal} but found ${apiVal}`)
+    process.exit(1)
+  }
+}
+
 function fillAPI (apiType) {
   return file => {
     const
@@ -427,7 +461,7 @@ function fillAPI (apiType) {
         encoding: 'utf-8'
       })
 
-      ast.evaluate(definition, topSections[apiType], (prop, key) => {
+      ast.evaluate(definition, topSections[apiType], (prop, key, definition) => {
         if (key.startsWith('__')) {
           return
         }
@@ -446,10 +480,38 @@ function fillAPI (apiType) {
             .toLowerCase()
         }
 
-
         if (api[prop] === void 0 || api[prop][key] === void 0) {
           logError(`${name}: missing "${prop}" -> "${key}" definition`)
           process.exit(1)
+        }
+
+        if (definition) {
+          const propApi = api[prop][key]
+          if (typeof definition === 'string' && propApi.type !== definition) {
+            logError(`${name}: wrong definition for prop "${key}": expected "${definition}" but found "${propApi.type}"`)
+            process.exit(1)
+          }
+          else if (Array.isArray(definition)) {
+            validateArray(name, key, 'type', definition, propApi)
+          }
+          else {
+            if (definition.type) {
+              if (Array.isArray(definition.type)) {
+                validateArray(name, key, 'type', definition.type, propApi)
+              }
+              else if (propApi.type !== definition.type) {
+                logError(`${name}: wrong definition for prop "${key}" on "type": expected "${definition.type}" but found "${propApi.type}"`)
+                process.exit(1)
+              }
+            }
+            if (key !== 'value' && definition.required && Boolean(definition.required) !== propApi.required) {
+              logError(`${name}: wrong definition for prop "${key}" on "required": expected "${definition.required}" but found "${propApi.required}"`)
+              process.exit(1)
+            }
+            if (definition.validator && Array.isArray(definition.validator)) {
+              validateArray(name, key, 'values', definition.validator, propApi)
+            }
+          }
         }
       })
     }
