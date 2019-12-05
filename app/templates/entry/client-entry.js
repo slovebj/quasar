@@ -58,7 +58,7 @@ import <%= importName %> from '<%= asset.path %>'
 import { addPreFetchHooks } from './client-prefetch.js'
 <% } %>
 
-<% if (ctx.mode.electron) { %>
+<% if (ctx.mode.electron && electron.nodeIntegration === true) { %>
 import electron from 'electron'
 Vue.prototype.$q.electron = electron
 <% } %>
@@ -161,7 +161,7 @@ async function start () {
     Vue.prototype.$q.capacitor = window.Capacitor
     <% } %>
 
-      new Vue(app)
+    new Vue(app)
 
     <% if (ctx.mode.cordova) { %>
     }, false) // on deviceready

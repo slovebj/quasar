@@ -1,14 +1,15 @@
 import QBtn from '../btn/QBtn.js'
-import QBtnDropdown from '../btn/QBtnDropdown.js'
+import QBtnDropdown from '../btn-dropdown/QBtnDropdown.js'
 import QInput from '../input/QInput.js'
 import QIcon from '../icon/QIcon.js'
 import QTooltip from '../tooltip/QTooltip.js'
-import QList from '../list/QList.js'
-import QItem from '../list/QItem.js'
-import QItemSection from '../list/QItemSection.js'
+import QList from '../item/QList.js'
+import QItem from '../item/QItem.js'
+import QItemSection from '../item/QItemSection.js'
 
 import { prevent } from '../../utils/event.js'
-import slot from '../../utils/slot.js'
+import { slot } from '../../utils/slot.js'
+import { shouldIgnoreKey } from '../../utils/key-composition.js'
 
 function run (e, btn, vm) {
   if (btn.handler) {
@@ -256,6 +257,10 @@ export function getLinkEditor (h, vm) {
         on: {
           input: val => { link = val },
           keydown: event => {
+            if (shouldIgnoreKey(event) === true) {
+              return
+            }
+
             switch (event.keyCode) {
               case 13: // ENTER key
                 prevent(event)

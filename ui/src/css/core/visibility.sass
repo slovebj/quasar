@@ -48,6 +48,15 @@
 .overflow-hidden-y
   overflow-y: hidden !important
 
+.hide-scrollbar
+  scrollbar-width: none
+  -ms-overflow-style: none
+
+  &::-webkit-scrollbar
+    width: 0
+    height: 0
+    display: none
+
 .dimmed, .light-dimmed
   &:after
     content: ''
@@ -80,10 +89,10 @@ $platforms: desktop, mobile, native-mobile, cordova, capacitor, electron, touch,
   .orientation-portrait
     display: none !important
 
-@media (screen)
+@media screen
   .print-only
     display: none !important
-@media (print)
+@media print
   .print-hide
     display: none !important
 
