@@ -55,7 +55,10 @@ export default Vue.extend({
     maxValues: [Number, String],
 
     optionsDense: Boolean,
-    optionsDark: Boolean,
+    optionsDark: {
+      type: Boolean,
+      default: null
+    },
     optionsSelectedClass: String,
     optionsCover: Boolean,
     optionsSanitize: Boolean,
@@ -137,7 +140,9 @@ export default Vue.extend({
 
   computed: {
     isOptionsDark () {
-      return this.isDark === true || this.optionsDark === true
+      return this.optionsDark === null
+        ? this.isDark
+        : this.optionsDark
     },
 
     virtualScrollLength () {
@@ -817,7 +822,7 @@ export default Vue.extend({
         staticClass: 'q-select__input q-placeholder col',
         style: this.inputStyle,
         class: this.computedInputClass,
-        domProps: { value: this.inputValue },
+        domProps: { value: this.inputValue !== void 0 ? this.inputValue : '' },
         attrs: {
           // required for Android in order to show ENTER key when in form
           type: 'search',

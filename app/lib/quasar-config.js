@@ -1,19 +1,20 @@
-const
-  path = require('path'),
-  fs = require('fs'),
-  merge = require('webpack-merge'),
-  chokidar = require('chokidar'),
-  debounce = require('lodash.debounce')
+const path = require('path')
+const fs = require('fs')
+const merge = require('webpack-merge')
+const chokidar = require('chokidar')
+const debounce = require('lodash.debounce')
 
-const
-  appPaths = require('./app-paths'),
-  logger = require('./helpers/logger'),
-  log = logger('app:quasar-conf'),
-  warn = logger('app:quasar-conf', 'red'),
-  appFilesValidations = require('./app-files-validations'),
-  extensionRunner = require('./app-extension/extensions-runner'),
-  supportIE = require('./helpers/support-ie'),
-  cssVariables = require('./helpers/css-variables')
+const appPaths = require('./app-paths')
+const logger = require('./helpers/logger')
+const log = logger('app:quasar-conf')
+const warn = logger('app:quasar-conf', 'red')
+const appFilesValidations = require('./app-files-validations')
+const extensionRunner = require('./app-extension/extensions-runner')
+const supportIE = require('./helpers/support-ie')
+const cssVariables = require('./helpers/css-variables')
+const getDevlandFile = require('./helpers/get-devland-file')
+
+const transformAssetUrls = getDevlandFile('quasar/dist/transform-asset-urls.json')
 
 function encode (obj) {
   return JSON.stringify(obj, (_, value) => {
@@ -180,6 +181,7 @@ class QuasarConfig {
       },
       build: {
         transpileDependencies: [],
+        transformAssetUrls: {},
         stylusLoaderOptions: {},
         sassLoaderOptions: {},
         scssLoaderOptions: {},
@@ -205,6 +207,7 @@ class QuasarConfig {
         metaVariables: {}
       },
       electron: {
+        unPackagedInstallParams: [],
         packager: {},
         builder: {}
       },
@@ -336,14 +339,14 @@ class QuasarConfig {
     // make sure it exists
     cfg.supportIE = supportIE(cfg.supportIE, this.ctx)
 
-    cfg.vendor.add = cfg.vendor.add.filter(v => v).join('|')
-    if (cfg.vendor.add) {
-      cfg.vendor.add = new RegExp(cfg.vendor.add)
-    }
+    if (cfg.vendor.disable !== true) {
+      cfg.vendor.add = cfg.vendor.add.length > 0
+        ? new RegExp(cfg.vendor.add.filter(v => v).join('|'))
+        : void 0
 
-    cfg.vendor.remove = cfg.vendor.remove.filter(v => v).join('|')
-    if (cfg.vendor.remove) {
-      cfg.vendor.remove = new RegExp(cfg.vendor.remove)
+      cfg.vendor.remove = cfg.vendor.remove.length > 0
+        ? new RegExp(cfg.vendor.remove.filter(v => v).join('|'))
+        : void 0
     }
 
     if (cfg.css.length > 0) {
@@ -378,6 +381,13 @@ class QuasarConfig {
     cfg.framework.plugins = cfg.framework.plugins.filter(uniqueFilter)
 
     cfg.build = merge({
+      transformAssetUrls: Object.assign({
+        video: ['src', 'poster'],
+        source: 'src',
+        img: 'src',
+        image: ['xlink:href', 'href'],
+        use: ['xlink:href', 'href']
+      }, transformAssetUrls),
       showProgress: true,
       scopeHoisting: true,
       productName: this.pkg.productName,
@@ -498,7 +508,15 @@ class QuasarConfig {
         ? formatPublicPath(cfg.build.publicPath)
         : (cfg.build.vueRouterMode === 'hash' ? '' : '/')
 
-    cfg.build.vueRouterBase = formatRouterBase(cfg.build.publicPath)
+    /* careful if you configure the following; make sure that you really know what you are doing */
+    cfg.build.vueRouterBase = cfg.build.vueRouterBase !== void 0
+      ? cfg.build.vueRouterBase
+      : formatRouterBase(cfg.build.publicPath)
+
+    /* careful if you configure the following; make sure that you really know what you are doing */
+    cfg.build.appBase = cfg.build.appBase !== void 0
+      ? cfg.build.appBase
+      : cfg.build.publicPath
 
     cfg.sourceFiles = merge({
       rootComponent: 'src/App.vue',
@@ -530,6 +548,7 @@ class QuasarConfig {
     if (this.ctx.mode.ssr) {
       cfg.ssr = merge({
         pwa: false,
+        manualHydration: false,
         componentCache: {
           max: 1000,
           maxAge: 1000 * 60 * 15

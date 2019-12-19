@@ -138,6 +138,7 @@ export default Vue.extend({
       if (mouseTarget !== this.$el) {
         mouseTarget !== void 0 && this.__cleanup()
         mouseTarget = this.$el
+        this.$el.classList.add('q-btn--active')
         document.addEventListener('mouseup', this.__onPressEnd, passiveCapture)
       }
 
@@ -279,7 +280,7 @@ export default Vue.extend({
 
     child.push(
       h('div', {
-        staticClass: 'q-btn__wrapper col row no-wrap q-anchor--skip'
+        staticClass: 'q-btn__wrapper col row q-anchor--skip'
       }, [
         h('div', {
           staticClass: 'q-btn__content text-center col items-center q-anchor--skip',
