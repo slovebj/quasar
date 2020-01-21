@@ -57,6 +57,9 @@ ie_style = @block
     flex-basis: auto
     min-width: 100%
 
+  .q-card__actions--vert
+    flex: 0 0 auto
+
   .column
     min-width: 0%
 
@@ -86,15 +89,18 @@ ie_style = @block
       > button.q-btn--push.q-btn--actionable:active:hover
         .q-btn__wrapper
           margin: 1px 1px -1px -1px
-    > .q-btn
-      > .q-focus-helper
-        z-index: -1
 
   .q-btn
     overflow: visible
 
     &--wrap
       flex-direction: row
+
+    &--fab .q-icon
+      margin: 0
+
+  .q-fab > .q-btn--fab .q-icon
+    margin: auto
 
   /* QCarousel */
   .q-carousel__slide > *
@@ -149,6 +155,10 @@ ie_style = @block
 
     &--float .q-field__label
       max-width: 100%
+
+  /* focus-helper */
+  .q-focus-helper
+    z-index: 1
 
 @media screen and (-ms-high-contrast: active), (-ms-high-contrast: none)
   {ie_style}
