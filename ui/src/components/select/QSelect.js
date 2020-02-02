@@ -367,7 +367,7 @@ export default Vue.extend({
           this.hidePopup()
         }
 
-        if (isDeepEqual(this.__getOptionValue(this.value), optValue) !== true) {
+        if (isDeepEqual(this.__getOptionValue(this.innerValue), optValue) !== true) {
           this.$emit('input', this.emitValue === true ? optValue : opt)
         }
         return
@@ -384,7 +384,7 @@ export default Vue.extend({
 
       const
         model = this.value.slice(),
-        index = this.value.findIndex(v => isDeepEqual(this.__getOptionValue(v), optValue))
+        index = this.innerValue.findIndex(v => isDeepEqual(this.__getOptionValue(v), optValue))
 
       if (index > -1) {
         this.$emit('remove', { index, value: model.splice(index, 1) })
@@ -415,7 +415,7 @@ export default Vue.extend({
       }
     },
 
-    moveOptionSelection (offset = 1) {
+    moveOptionSelection (offset = 1, skipInputValue) {
       if (this.menu === true) {
         let index = this.optionIndex
         do {
@@ -431,7 +431,7 @@ export default Vue.extend({
           this.setOptionIndex(index)
           this.scrollTo(index)
 
-          if (index >= 0 && this.useInput === true && this.fillInput === true) {
+          if (skipInputValue !== true && index >= 0 && this.useInput === true && this.fillInput === true) {
             const inputValue = this.__getOptionLabel(this.options[index])
             if (this.inputValue !== inputValue) {
               this.inputValue = inputValue

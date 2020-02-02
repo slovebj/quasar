@@ -5,6 +5,7 @@ import QChip from '../chip/QChip.js'
 
 import FileMixin from '../../mixins/file.js'
 
+import { isSSR } from '../../plugins/Platform'
 import { humanStorageSize } from '../../utils/format.js'
 import { cache } from '../../utils/vm.js'
 
@@ -14,7 +15,10 @@ export default Vue.extend({
   mixins: [ QField, FileMixin ],
 
   props: {
-    value: [ File, FileList, Array ],
+    /* SSR does not know about File & FileList */
+    value: isSSR === true
+      ? {}
+      : [ File, FileList, Array ],
 
     useChips: Boolean,
     displayValue: [ String, Number ],
@@ -39,9 +43,32 @@ export default Vue.extend({
 
   watch: {
     value (val) {
-      if (val === void 0 || val === null) {
-        this.$refs.input.value = null
+      if (this.$refs.input === void 0) {
+        return
       }
+
+      try {
+        if (val === void 0 || val === null) {
+          this.$refs.input.value = ''
+          return
+        }
+
+        const dt = 'DataTransfer' in window
+          ? new DataTransfer()
+          : ('ClipboardEvent' in window
+            ? new ClipboardEvent('').clipboardData
+            : void 0
+          )
+
+        if (dt !== void 0) {
+          (Array.isArray(val) === true ? val : [val]).forEach(file => {
+            dt.items.add(file)
+          })
+
+          this.$refs.input.files = dt.files
+        }
+      }
+      catch (e) { }
     }
   },
 
@@ -120,17 +147,22 @@ export default Vue.extend({
     },
 
     __getControl (h) {
-      return h('div', {
+      const data = {
         ref: 'target',
         staticClass: 'q-field__native row items-center cursor-pointer',
         attrs: {
           tabindex: this.tabindex
-        },
-        on: cache(this, 'native', {
+        }
+      }
+
+      if (this.editable === true) {
+        data.on = cache(this, 'native', {
           dragover: this.__onDragOver,
           keyup: this.__onKeyup
         })
-      }, [ this.__getInput(h) ].concat(this.__getSelection(h)))
+      }
+
+      return h('div', data, [ this.__getInput(h) ].concat(this.__getSelection(h)))
     },
 
     __getControlChild (h) {
