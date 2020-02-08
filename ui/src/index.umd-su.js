@@ -7,7 +7,7 @@ import * as components from './components.js'
 import * as directives from './directives.js'
 import * as plugins from './plugins.js'
 import * as utils from './utils.js'
-import lang from './lang-su'
+import lang from './lang-su.js'
 import iconSet from './icon-set.js'
 
 Vue.use({ install }, {
@@ -24,5 +24,9 @@ export default {
   components,
   directives,
   plugins,
-  utils
+  utils,
+  ...components,
+  ...directives,
+  ...plugins,
+  ...utils
 }

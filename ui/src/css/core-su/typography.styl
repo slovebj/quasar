@@ -11,7 +11,7 @@ body
   font-size $body-font-size
 
 h1, h2, h3, h4, h5, h6,.h1, .h2, .h3, .h4, .h5, .h6
-  margin-bottom: 0.5rem
+  margin: 0.5em 0
   font-weight: 500
   line-height: 1.2
 
@@ -19,16 +19,13 @@ for $value,i in $h1-h6
   {'h'+(i + 1)},.{'h'+(i + 1)},.{'f'+(6 - i)}
     font-size: $value
 
-for $value,i in $f1-f15
+for $value,i in $f7-f15
   .{'f'+(i + 7)}
     font-size: $value
 
 .initialism
   font-size: 90%
   text-transform: uppercase
-
-.nowrap
-  white-space: nowrap !important
 
 .break
     word-wrap: break-word
@@ -37,61 +34,55 @@ for $value,i in $f1-f15
 .breakall
   word-break: break-all
 
-.uppercase
-    text-transform uppercase
-
-.lowercase
-    text-transform lowercase
-
-.capitalize
-    text-transform capitalize
-
-.ellipsis
-  text-overflow ellipsis
-  white-space nowrap
-  overflow hidden
-  &-2, &-3
-    overflow hidden
-    display -webkit-box
-    -webkit-box-orient vertical
-  &-2
-    -webkit-line-clamp 2
-  &-3
-    -webkit-line-clamp 3
-
 .indent, .indent p, .indent div
   text-indent: 2em
 
 .text-
+  for $heading, $value in $headings
+    &{$heading}
+      font-size: $value.size
+      font-weight: $value.weight
+      line-height: $value.line-height
+      letter-spacing: $value.letter-spacing
+      
   &hide
     font: 0/0
     color: transparent
     text-shadow: none
     background-color: transparent
     border: 0
-  //这几个类不太实用，暂时注释掉 for $heading, $value in $headings
-  //   &{$heading}
-  //     font-size: $value.size
-  //     font-weight: $value.weight
-  //     line-height: $value.line-height
-  //     letter-spacing: $value.letter-spacing
-  &c
-    text-align center
-  &l
-    text-align left
-  &r
-    text-align right
-  &j
-    text-align justify
-    hyphens auto
-  &i
-    font-style italic
-  &b
-    font-weight bold
+  
+  &uppercase
+    text-transform: uppercase
+  &lowercase
+    text-transform: lowercase
+  &capitalize
+    text-transform: capitalize
 
-  for $weight in $text-weights
-    &w{$weight}
-      font-weight $weight
+  &center
+    text-align: center
+  &left
+    text-align: left
+  &right
+    text-align: right
+  &justify
+    text-align: justify
+    hyphens: auto
+
+  &italic
+    font-style: italic
+  &bold
+    font-weight: bold
+
+  &no-wrap
+    white-space: nowrap
+
+  &strike
+    text-decoration: line-through
+
+  for $weight, $value in $text-weights
+    &weight-{$weight}
+      font-weight: $value
 
 p
   margin: 0 0 $spaces.md.y
@@ -142,3 +133,7 @@ dl.row > dd + dt
   content: "";
   display: table;
   clear: both
+
+a,a * {
+  text-decoration: none;
+}

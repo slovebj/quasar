@@ -34,7 +34,7 @@ function generateAddon () {
   return generateFiles({
     sources: [
       'src/css/vars.styl',
-      'src/css/flex-addon-su.styl'
+      'src/css/flex-addon.styl'
     ],
     name: '.addon'
   })

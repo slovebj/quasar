@@ -1,65 +1,76 @@
 process.env.BABEL_ENV = 'production'
 
-const
-  path = require('path'),
-  fs = require('fs'),
-  rollup = require('rollup'),
-  uglify = require('uglify-es'),
-  buble = require('rollup-plugin-buble'),
-  json = require('rollup-plugin-json'),
-  nodeResolve = require('rollup-plugin-node-resolve'),
-  buildConf = require('./build.conf'),
-  buildUtils = require('./build.utils'),
-  bubleConfig = {
+const path = require('path')
+const fs = require('fs')
+const rollup = require('rollup')
+const uglify = require('uglify-es')
+const buble = require('@rollup/plugin-buble')
+const json = require('@rollup/plugin-json')
+const nodeResolve = require('@rollup/plugin-node-resolve')
+
+const buildConf = require('./build.conf')
+const buildUtils = require('./build.utils')
+
+function resolve (_path) {
+  return path.resolve(__dirname, '..', _path)
+}
+
+const bubleConfig = {
     objectAssign: 'Object.assign'
   }
 
+const rollupPlugins = [
+  nodeResolve(),
+  json(),
+  buble(bubleConfig)
+]
+
 const builds = [
-  // {
-  //   rollup: {
-  //     input: {
-  //       input: resolve(`src/index.esm.js`)
-  //     },
-  //     output: {
-  //       file: resolve(`dist/quasar.esm.js`),
-  //       format: 'es'
-  //     }
-  //   },
-  //   build: { minified: true, minExt: false }
-  // },
-  // {
-  //   rollup: {
-  //     input: {
-  //       input: resolve(`src/index.common.js`)
-  //     },
-  //     output: {
-  //       file: resolve(`dist/quasar.common.js`),
-  //       format: 'cjs'
-  //     }
-  //   },
-  //   build: {
-  //     minified: true,
-  //     minExt: false
-  //   }
-  // },
-  // {
-  //   rollup: {
-  //     input: {
-  //       input: resolve('src/ie-compat/ie.js')
-  //     },
-  //     output: {
-  //       file: resolve('dist/quasar.ie.polyfills.js'),
-  //       format: 'es'
-  //     }
-  //   },
-  //   build: { minified: true, minExt: false }
-  // },
-  {
-    rollup: {
-      input: {
-        input: resolve('src/ie-compat/ie.js')
-      },
-      output: {
+// {
+//   rollup: {
+//     input: {
+//       input: resolve(`src/index.esm.js`)
+//     },
+//     output: {
+//       file: resolve(`dist/quasar.esm.js`),
+//       format: 'es'
+//     }
+//   },
+//   build: { minified: true, minExt: false }
+// },
+// {
+//   rollup: {
+//     input: {
+//       input: resolve(`src/index.common.js`)
+//     },
+//     output: {
+//       file: resolve(`dist/quasar.common.js`),
+//       format: 'cjs'
+//     }
+//   },
+//   build: {
+//     minified: true,
+//     minExt: false
+//   }
+// },
+// {
+//   rollup: {
+//     input: {
+//       input: resolve('src/ie-compat/ie.js')
+//     },
+//     output: {
+//       file: resolve('dist/quasar.ie.polyfills.js'),
+//       format: 'es'
+//     }
+//   },
+//   build: { minified: true, minExt: false }
+// },
+{
+  rollup: {
+    input: {
+      input: resolve('src/ie-compat/ie.js')
+    },
+    output: {
         file: resolve('dist/quasar.ie.polyfills.umd.js'),
         format: 'umd'
       }
@@ -84,31 +95,12 @@ const builds = [
   }
 ]
 
-//addAssets(builds, 'lang', 'lang')
-//addAssets(builds, 'icon-set', 'iconSet')
-
-build(builds)
-
-// require('./build.api').generate()
-//   .then(data => {
-//     require('./build.transforms').generate()
-//     require('./build.vetur').generate(data)
-//     require('./build.lang-index').generate()
-//     require('./build.types').generate(data)
-//   })
-
 /**
  * Helpers
  */
 
-function resolve (_path) {
-  return path.resolve(__dirname, '..', _path)
-}
-
 function addAssets (builds, type, injectName) {
-  const
-    files = fs.readdirSync(resolve(type)),
-    plugins = [ buble(bubleConfig) ]
+  const files = fs.readdirSync(resolve(type))
 
   files
     .filter(file => file.endsWith('.js'))
@@ -117,8 +109,7 @@ function addAssets (builds, type, injectName) {
       builds.push({
         rollup: {
           input: {
-            input: resolve(`${type}/${file}`),
-            plugins
+            input: resolve(`${type}/${file}`)
           },
           output: {
             file: addExtension(resolve(`dist/${type}/${file}`), 'umd'),
@@ -140,21 +131,13 @@ function build (builds) {
 }
 
 function genConfig (opts) {
-  const plugins = opts.rollup.input.plugins || [
-    nodeResolve({
-      extensions: ['.js'],
-      preferBuiltins: false
-    }),
-    json(),
-    buble(bubleConfig)
-  ]
-
-  opts.rollup.input.plugins = plugins
-  opts.rollup.output.banner = buildConf.banner
-  opts.rollup.output.name = opts.rollup.output.name || 'Quasar'
+  opts.rollup.input.plugins = rollupPlugins
 
   opts.rollup.input.external = opts.rollup.input.external || []
   opts.rollup.input.external.push('vue')
+
+  opts.rollup.output.banner = buildConf.banner
+  opts.rollup.output.name = opts.rollup.output.name || 'Quasar'
 
   opts.rollup.output.globals = opts.rollup.output.globals || {}
   opts.rollup.output.globals.vue = 'Vue'
@@ -171,8 +154,7 @@ function injectVueRequirement (code) {
   const index = code.indexOf(`Vue = Vue && Vue.hasOwnProperty('default') ? Vue['default'] : Vue`)
 
   if (index === -1) {
-    console.error('UMD code could not find Vue initial declaration. Aborting...')
-    process.exit(1)
+    return code
   }
 
   const checkMe = ` if (Vue === void 0) {
@@ -191,7 +173,7 @@ function buildEntry (config) {
     .rollup(config.rollup.input)
     .then(bundle => bundle.generate(config.rollup.output))
     .then(({ output }) => {
-      const code = config.build.requireVue === true
+      const code = config.rollup.output.format === 'umd'
         ? injectVueRequirement(output[0].code)
         : output[0].code
 
@@ -211,7 +193,7 @@ function buildEntry (config) {
       })
 
       if (minified.error) {
-        return new Promise((resolve, reject) => reject(minified.error))
+        return Promise.reject(minified.error)
       }
 
       return buildUtils.writeFile(
@@ -226,4 +208,21 @@ function buildEntry (config) {
       console.error(err)
       process.exit(1)
     })
+}
+
+module.exports = function () {
+  build(builds)
+  // require('./build.lang-index').generate()
+  //   .then(() => require('./build.svg-icon-sets').generate())
+  //   .then(() => require('./build.api').generate())
+  //   .then(data => {
+  //     require('./build.transforms').generate()
+  //     require('./build.vetur').generate(data)
+  //     require('./build.types').generate(data)
+  //     require('./build.web-types').generate(data)
+
+  //     addAssets(builds, 'lang', 'lang')
+  //     addAssets(builds, 'icon-set', 'iconSet')
+      
+  //   })
 }

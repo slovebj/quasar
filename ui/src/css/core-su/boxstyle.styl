@@ -1,22 +1,9 @@
-.sd-transition
-  transition $shadow-transition !important
 .hoverable
     transition: box-shadow .25s
     box-shadow: 0
 .hoverable:hover
     transition: box-shadow .25s
     box-shadow: 0 8px 17px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)
-
-for $z in 1..24
-  .sd{$z}
-    box-shadow $shadow-+$z
-  .sd-{$z}
-    box-shadow $shadow-up-+$z
-
-.no-sd, .sd0
-  box-shadow none !important
-.sd-inset
-  box-shadow $inset-shadow !important
 
 //Box-radius
 .br0
@@ -102,3 +89,9 @@ for $width,$key in $bd-width
 
 .bs-outset
     border-style: outset
+
+$box-size=32 64 128 256 512 640 768 960
+for $width,$key in $box-size 
+  .size{$key +1}
+    width: $width px
+    height: auto
