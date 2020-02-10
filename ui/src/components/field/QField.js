@@ -59,7 +59,8 @@ export default Vue.extend({
 
     autofocus: Boolean,
 
-    for: [String],
+    for: String,
+
     maxlength: [Number, String],
     maxValues: [Number, String] // private, do not add to JSON; internally needed by QSelect
   },

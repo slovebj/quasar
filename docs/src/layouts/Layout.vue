@@ -210,6 +210,16 @@ export default {
         else {
           this.scrollPage(el)
         }
+
+        el.id = ''
+      }
+
+      window.location.hash = '#' + id
+
+      if (el) {
+        setTimeout(() => {
+          el.id = id
+        }, 300)
       }
     },
 
@@ -384,4 +394,7 @@ export default {
     transition: transform .8s ease-in-out
   &:hover img
     transform: rotate(-360deg)
+
+.q-page-container :target
+  scroll-margin-top: ($toolbar-min-height + 16px)
 </style>

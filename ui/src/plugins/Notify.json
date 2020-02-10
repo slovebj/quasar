@@ -60,6 +60,58 @@
         "examples": [ "top-right" ]
       },
 
+      "group": {
+        "type": [ "Boolean", "String", "Number" ],
+        "desc": "Override the auto generated group with custom one; String or number value inform this is part of a specific group, regardless of its options; When a new notification is triggered with same group name, it replaces the old one and shows a badge with how many times the notification was triggered",
+        "default": "(message + caption + multiline + actions labels + position)",
+        "examples": [ "my-group" ],
+        "addedIn": "v1.9.0"
+      },
+
+      "badgeColor": {
+        "extends": "color",
+        "desc": "Color name for the badge from the Quasar Color Palette",
+        "addedIn": "v1.9.0"
+      },
+      "badgeTextColor": {
+        "extends": "color",
+        "desc": "Color name for the badge text from the Quasar Color Palette",
+        "addedIn": "v1.9.0"
+      },
+      "badgeStyle": {
+        "type": [ "Array", "String", "Object" ],
+        "desc": "Style definitions to be attributed to the badge",
+        "examples": [
+          "background-color: #ff0000",
+          ":content-style=\"{ backgroundColor: '#ff0000' }\""
+        ],
+        "addedIn": "v1.9.0"
+      },
+      "badgeClass": {
+        "type": [ "Array", "String", "Object" ],
+        "desc": "Class definitions to be attributed to the badge",
+        "examples": [
+          "my-special-class",
+          ":content-class=\"{ 'my-special-class': <condition> }\""
+        ],
+        "addedIn": "v1.9.0"
+      },
+
+      "progress": {
+        "type": "Boolean",
+        "desc": "Show progress bar to detail when notification will disappear automatically (unless timeout is 0)",
+        "addedIn": "v1.9.0"
+      },
+      "progressClass": {
+        "type": [ "Array", "String", "Object" ],
+        "desc": "Class definitions to be attributed to the progress bar",
+        "examples": [
+          "my-special-class",
+          ":content-class=\"{ 'my-special-class': <condition> }\""
+        ],
+        "addedIn": "v1.9.0"
+      },
+
       "classes": {
         "type": "String",
         "desc": "Add CSS class(es) to the notification for easier customization",
@@ -76,7 +128,7 @@
       },
 
       "closeBtn": {
-        "type": "String",
+        "type": [ "Boolean", "String" ],
         "desc": "Convenient way to add a dismiss button with a specific label, without using the 'actions' convoluted prop",
         "examples": [ "Close me" ]
       },
@@ -150,6 +202,58 @@
               "examples": [ "top-right" ]
             },
 
+            "group": {
+              "type": [ "Boolean", "String", "Number" ],
+              "desc": "Override the auto generated group with custom one; String or number value inform this is part of a specific group, regardless of its options; When a new notification is triggered with same group name, it replaces the old one and shows a badge with how many times the notification was triggered",
+              "default": "(message + caption + multiline + actions labels + position)",
+              "examples": [ "my-group" ],
+              "addedIn": "v1.9.0"
+            },
+
+            "badgeColor": {
+              "extends": "color",
+              "desc": "Color name for the badge from the Quasar Color Palette",
+              "addedIn": "v1.9.0"
+            },
+            "badgeTextColor": {
+              "extends": "color",
+              "desc": "Color name for the badge text from the Quasar Color Palette",
+              "addedIn": "v1.9.0"
+            },
+            "badgeStyle": {
+              "type": [ "Array", "String", "Object" ],
+              "desc": "Style definitions to be attributed to the badge",
+              "examples": [
+                "background-color: #ff0000",
+                ":content-style=\"{ backgroundColor: '#ff0000' }\""
+              ],
+              "addedIn": "v1.9.0"
+            },
+            "badgeClass": {
+              "type": [ "Array", "String", "Object" ],
+              "desc": "Class definitions to be attributed to the badge",
+              "examples": [
+                "my-special-class",
+                ":content-class=\"{ 'my-special-class': <condition> }\""
+              ],
+              "addedIn": "v1.9.0"
+            },
+
+            "progress": {
+              "type": "Boolean",
+              "desc": "Show progress bar to detail when notification will disappear automatically (unless timeout is 0)",
+              "addedIn": "v1.9.0"
+            },
+            "progressClass": {
+              "type": [ "Array", "String", "Object" ],
+              "desc": "Class definitions to be attributed to the progress bar",
+              "examples": [
+                "my-special-class",
+                ":content-class=\"{ 'my-special-class': <condition> }\""
+              ],
+              "addedIn": "v1.9.0"
+            },
+
             "classes": {
               "type": "String",
               "desc": "Add CSS class(es) to the notification for easier customization",
@@ -184,8 +288,8 @@
             },
 
             "closeBtn": {
-              "type": "String",
-              "desc": "Convenience way to add a dismiss button with a specific label, without using the 'actions' convoluted prop",
+              "type": [ "Boolean", "String" ],
+              "desc": "Convenience way to add a dismiss button with a specific label, without using the 'actions' prop; If set to true, it uses a label accordding to the current Quasar language",
               "examples": [ "Close me" ]
             },
 
@@ -272,6 +376,50 @@
               "examples": [ "top-right" ]
             },
 
+            "badgeColor": {
+              "extends": "color",
+              "desc": "Color name for the badge from the Quasar Color Palette",
+              "addedIn": "v1.9.0"
+            },
+            "badgeTextColor": {
+              "extends": "color",
+              "desc": "Color name for the badge text from the Quasar Color Palette",
+              "addedIn": "v1.9.0"
+            },
+            "badgeStyle": {
+              "type": [ "Array", "String", "Object" ],
+              "desc": "Style definitions to be attributed to the badge",
+              "examples": [
+                "background-color: #ff0000",
+                ":content-style=\"{ backgroundColor: '#ff0000' }\""
+              ],
+              "addedIn": "v1.9.0"
+            },
+            "badgeClass": {
+              "type": [ "Array", "String", "Object" ],
+              "desc": "Class definitions to be attributed to the badge",
+              "examples": [
+                "my-special-class",
+                ":content-class=\"{ 'my-special-class': <condition> }\""
+              ],
+              "addedIn": "v1.9.0"
+            },
+
+            "progress": {
+              "type": "Boolean",
+              "desc": "Show progress bar to detail when notification will disappear automatically (unless timeout is 0)",
+              "addedIn": "v1.9.0"
+            },
+            "progressClass": {
+              "type": [ "Array", "String", "Object" ],
+              "desc": "Class definitions to be attributed to the progress bar",
+              "examples": [
+                "my-special-class",
+                ":content-class=\"{ 'my-special-class': <condition> }\""
+              ],
+              "addedIn": "v1.9.0"
+            },
+
             "classes": {
               "type": "String",
               "desc": "Add CSS class(es) to the notification for easier customization",
@@ -306,8 +454,8 @@
             },
 
             "closeBtn": {
-              "type": "String",
-              "desc": "Convenience way to add a dismiss button with a specific label, without using the 'actions' convoluted prop",
+              "type": [ "Boolean", "String" ],
+              "desc": "Convenience way to add a dismiss button with a specific label, without using the 'actions' prop; If set to true, it uses a label accordding to the current Quasar language",
               "examples": [ "Close me" ]
             },
 

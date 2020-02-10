@@ -2,23 +2,24 @@ import Vue from 'vue'
 
 import { between } from '../../utils/format.js'
 import { setScrollPosition, setHorizontalScrollPosition } from '../../utils/scroll.js'
-import { slot, mergeSlot } from '../../utils/slot.js'
+import { mergeSlot } from '../../utils/slot.js'
 import { cache } from '../../utils/vm.js'
 
 import QResizeObserver from '../resize-observer/QResizeObserver.js'
 import QScrollObserver from '../scroll-observer/QScrollObserver.js'
 import TouchPan from '../../directives/TouchPan.js'
+import DarkMixin from '../../mixins/dark.js'
 
 export default Vue.extend({
   name: 'QScrollArea',
+
+  mixins: [ DarkMixin ],
 
   directives: {
     TouchPan
   },
 
   props: {
-    forceOnMobile: Boolean,
-
     barStyle: [ Array, String, Object ],
     thumbStyle: Object,
     contentStyle: [ Array, String, Object ],
@@ -55,6 +56,11 @@ export default Vue.extend({
   },
 
   computed: {
+    classes () {
+      return 'q-scrollarea' +
+        (this.isDark === true ? ' q-scrollarea--dark' : '')
+    },
+
     thumbHidden () {
       return this.scrollSize <= this.containerSize ||
         (this.active === false && this.hover === false)
@@ -78,7 +84,8 @@ export default Vue.extend({
         this.horizontal === true
           ? {
             left: `${pos}px`,
-            width: `${this.thumbSize}px` }
+            width: `${this.thumbSize}px`
+          }
           : {
             top: `${pos}px`,
             height: `${this.thumbSize}px`
@@ -104,9 +111,7 @@ export default Vue.extend({
     },
 
     containerSize () {
-      return this.horizontal === true
-        ? this.containerWidth
-        : this.containerHeight
+      return this[`container${this.horizontal === true ? 'Width' : 'Height'}`]
     },
 
     dirProps () {
@@ -180,6 +185,10 @@ export default Vue.extend({
     },
 
     __panThumb (e) {
+      if (this.thumbHidden === true) {
+        return
+      }
+
       if (e.isFirst === true) {
         this.refPos = this.scrollPosition
         this.__setActive(true, true)
@@ -193,6 +202,18 @@ export default Vue.extend({
       const distance = this.horizontal ? e.distance.x : e.distance.y
       const pos = this.refPos + (e.direction === this.direction ? 1 : -1) * distance * multiplier
       this.__setScroll(pos)
+    },
+
+    __mouseDown (evt) {
+      if (this.thumbHidden !== true) {
+        const pos = evt[`offset${this.horizontal === true ? 'X' : 'Y'}`] - this.thumbSize / 2
+        this.__setScroll(pos / this.containerSize * this.scrollSize)
+
+        // activate thumb pan
+        if (this.$refs.thumb !== void 0) {
+          this.$refs.thumb.dispatchEvent(new MouseEvent(evt.type, evt))
+        }
+      }
     },
 
     __setActive (active, timer) {
@@ -229,20 +250,8 @@ export default Vue.extend({
   },
 
   render (h) {
-    if (this.forceOnMobile !== true && this.$q.platform.is.desktop !== true) {
-      return h('div', {
-        staticClass: 'q-scrollarea',
-        style: this.contentStyle
-      }, [
-        h('div', {
-          ref: 'target',
-          staticClass: 'scroll relative-position fit'
-        }, slot(this, 'default'))
-      ])
-    }
-
     return h('div', {
-      staticClass: 'q-scrollarea',
+      class: this.classes,
       on: this.visible === null
         ? cache(this, 'desk', {
           mouseenter: () => { this.hover = true },
@@ -279,18 +288,16 @@ export default Vue.extend({
         style: this.barStyle,
         class: this.barClass,
         on: cache(this, 'bar', {
-          click: e => {
-            const pos = e[`offset${this.horizontal === true ? 'X' : 'Y'}`] - this.thumbSize / 2
-            this.__setScroll(pos / this.containerSize * this.scrollSize)
-          }
+          mousedown: this.__mouseDown
         })
       }),
 
       h('div', {
+        ref: 'thumb',
         staticClass: 'q-scrollarea__thumb',
         style: this.style,
         class: this.thumbClass,
-        directives: this.thumbHidden === true ? null : cache(this, 'thumb#' + this.horizontal, [{
+        directives: cache(this, 'thumb#' + this.horizontal, [{
           name: 'touch-pan',
           modifiers: {
             vertical: !this.horizontal,

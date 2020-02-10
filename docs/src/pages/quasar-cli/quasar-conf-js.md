@@ -2,7 +2,7 @@
 title: Configuring quasar.conf.js
 desc: Where, how and what you can configure in a Quasar app.
 ---
-Quasar makes use of some awesome development tools under it's hood, like [Webpack](https://webpack.js.org/). One of the great things about Quasar is its handling of most of the complex configuration needed by the underlying tools for you. As a result, you don't even need to know Webpack or any of the other development tools in order to use Quasar.
+Quasar makes use of some awesome development tools under its hood, like [Webpack](https://webpack.js.org/). One of the great things about Quasar is its handling of most of the complex configuration needed by the underlying tools for you. As a result, you don't even need to know Webpack or any of the other development tools in order to use Quasar.
 
 So what can you configure through `/quasar.conf.js`?
 * Quasar components, directives and plugins that you'll be using in your website/app
@@ -84,6 +84,18 @@ module.exports = function (ctx) {
 ```
 
 The possibilities are endless.
+
+---
+
+Starting with v1.9, you can wrap the returned function with `configure()` helper to get a better IDE autocomplete experience (through Typescript):
+
+```js
+const { configure } = require('quasar/wrappers')
+
+module.exports = configure(function (ctx) {
+  /* configuration options */
+})
+```
 
 ## Options to Configure
 Let's take each option one by one:
@@ -271,7 +283,7 @@ devServer: {
 | vueCompiler | Boolean | Include vue runtime + compiler version, instead of default Vue runtime-only |
 | uglifyOptions | Object | Minification options. [Full list](https://github.com/webpack-contrib/terser-webpack-plugin/#minify). |
 | preloadChunks | Boolean | Default is "true". Preload chunks when browser is idle to improve user's later navigation to the other pages. |
-| scssLoaderOptions | Object | Options to supply to `sass-loader` for `.scss` files. |
+| scssLoaderOptions | Object | Options to supply to `sass-loader` for `.scss` files. Example: scssLoaderOptions: { prependData: '@import "src/css/abstracts/_mixins.scss";'} |
 | sassLoaderOptions | Object | Options to supply to `sass-loader` for `.sass` files. |
 | stylusLoaderOptions | Object | Options to supply to `stylus-loader`. |
 | lessLoaderOptions | Object | Options to supply to `less-loader`. |

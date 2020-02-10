@@ -3,6 +3,7 @@ import Vue from 'vue'
 import QField from '../field/QField.js'
 import QChip from '../chip/QChip.js'
 
+import { FormFieldMixin } from '../../mixins/form.js'
 import FileMixin from '../../mixins/file.js'
 
 import { isSSR } from '../../plugins/Platform'
@@ -12,7 +13,7 @@ import { cache } from '../../utils/vm.js'
 export default Vue.extend({
   name: 'QFile',
 
-  mixins: [ QField, FileMixin ],
+  mixins: [ QField, FileMixin, FormFieldMixin ],
 
   props: {
     /* SSR does not know about File & FileList */
@@ -218,12 +219,13 @@ export default Vue.extend({
         ref: 'input',
         staticClass: 'q-field__input fit absolute-full cursor-pointer',
         attrs: {
-          id: this.targetUid,
           tabindex: -1,
           type: 'file',
           title: '', // try to remove default tooltip,
           accept: this.accept,
+          name: this.nameProp,
           ...this.$attrs,
+          id: this.targetUid,
           disabled: this.editable !== true
         },
         on: cache(this, 'input', {

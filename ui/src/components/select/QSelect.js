@@ -18,6 +18,7 @@ import { shouldIgnoreKey, isKeyCode } from '../../utils/key-composition.js'
 import { mergeSlot } from '../../utils/slot.js'
 import { cache } from '../../utils/vm.js'
 
+import { FormFieldMixin } from '../../mixins/form.js'
 import VirtualScroll from '../../mixins/virtual-scroll.js'
 import CompositionMixin from '../../mixins/composition.js'
 
@@ -26,7 +27,7 @@ const validateNewValueMode = v => ['add', 'add-unique', 'toggle'].includes(v)
 export default Vue.extend({
   name: 'QSelect',
 
-  mixins: [ QField, VirtualScroll, CompositionMixin ],
+  mixins: [ QField, VirtualScroll, CompositionMixin, FormFieldMixin ],
 
   props: {
     value: {
@@ -201,11 +202,17 @@ export default Vue.extend({
         .join(', ')
     },
 
+    sanitizeFn () {
+      return this.optionsSanitize === true
+        ? () => true
+        : opt => opt !== void 0 && opt !== null && opt.sanitize === true
+    },
+
     displayAsText () {
       return this.displayValueSanitize === true || (
         this.displayValue === void 0 && (
           this.optionsSanitize === true ||
-          this.innerValue.some(opt => opt !== null && opt.sanitize === true)
+          this.innerValue.some(this.sanitizeFn)
         )
       )
     },
@@ -218,7 +225,7 @@ export default Vue.extend({
       return this.innerValue.map((opt, i) => ({
         index: i,
         opt,
-        sanitize: this.optionsSanitize === true || opt.sanitize === true,
+        sanitize: this.sanitizeFn(opt),
         selected: true,
         removeAtIndex: this.__removeAtIndexAndFocus,
         toggleOption: this.toggleOption,
@@ -234,7 +241,7 @@ export default Vue.extend({
       const { from, to } = this.virtualScrollSliceRange
 
       return this.options.slice(from, to).map((opt, i) => {
-        const disable = this.__isDisabled(opt)
+        const disable = this.__getOptionDisabled(opt) === true
         const index = from + i
 
         const itemProps = {
@@ -265,7 +272,7 @@ export default Vue.extend({
         return {
           index,
           opt,
-          sanitize: this.optionsSanitize === true || opt.sanitize === true,
+          sanitize: this.sanitizeFn(opt),
           selected: itemProps.active,
           focused: itemProps.focused,
           toggleOption: this.toggleOption,
@@ -294,6 +301,22 @@ export default Vue.extend({
       return this.optionsSelectedClass !== void 0
         ? this.optionsSelectedClass
         : (this.color !== void 0 ? `text-${this.color}` : '')
+    },
+
+    innerOptionsValue () {
+      return this.innerValue.map(opt => this.__getOptionValue(opt))
+    },
+
+    __getOptionValue () {
+      return this.__getPropValueFn('optionValue', 'value')
+    },
+
+    __getOptionLabel () {
+      return this.__getPropValueFn('optionLabel', 'label')
+    },
+
+    __getOptionDisabled () {
+      return this.__getPropValueFn('optionDisable', 'disable')
     }
   },
 
@@ -348,7 +371,7 @@ export default Vue.extend({
     },
 
     toggleOption (opt, keepOpen) {
-      if (this.editable !== true || opt === void 0 || this.__isDisabled(opt) === true) {
+      if (this.editable !== true || opt === void 0 || this.__getOptionDisabled(opt) === true) {
         return
       }
 
@@ -384,7 +407,7 @@ export default Vue.extend({
 
       const
         model = this.value.slice(),
-        index = this.innerValue.findIndex(v => isDeepEqual(this.__getOptionValue(v), optValue))
+        index = this.innerOptionsValue.findIndex(v => isDeepEqual(v, optValue))
 
       if (index > -1) {
         this.$emit('remove', { index, value: model.splice(index, 1) })
@@ -425,7 +448,7 @@ export default Vue.extend({
             this.virtualScrollLength - 1
           )
         }
-        while (index !== -1 && index !== this.optionIndex && this.__isDisabled(this.options[index]) === true)
+        while (index !== -1 && index !== this.optionIndex && this.__getOptionDisabled(this.options[index]) === true)
 
         if (this.optionIndex !== index) {
           this.setOptionIndex(index)
@@ -446,46 +469,21 @@ export default Vue.extend({
       return this.options.find(fn) || innerValueCache.find(fn) || value
     },
 
-    __getOptionValue (opt) {
-      if (typeof this.optionValue === 'function') {
-        return this.optionValue(opt)
-      }
-      if (Object(opt) === opt) {
-        return typeof this.optionValue === 'string'
-          ? opt[this.optionValue]
-          : opt.value
-      }
-      return opt
-    },
+    __getPropValueFn (propName, defaultVal) {
+      const val = this[propName] !== void 0
+        ? this[propName]
+        : defaultVal
 
-    __getOptionLabel (opt) {
-      if (typeof this.optionLabel === 'function') {
-        return this.optionLabel(opt)
-      }
-      if (Object(opt) === opt) {
-        return typeof this.optionLabel === 'string'
-          ? opt[this.optionLabel]
-          : opt.label
-      }
-      return opt
-    },
-
-    __isDisabled (opt) {
-      if (typeof this.optionDisable === 'function') {
-        return this.optionDisable(opt) === true
-      }
-      if (Object(opt) === opt) {
-        return typeof this.optionDisable === 'string'
-          ? opt[this.optionDisable] === true
-          : opt.disable === true
-      }
-      return false
+      return typeof val === 'function'
+        ? val
+        : opt => Object(opt) === opt && val in opt
+          ? opt[val]
+          : opt
     },
 
     __isSelected (opt) {
       const val = this.__getOptionValue(opt)
-      return this.innerValue
-        .find(v => isDeepEqual(this.__getOptionValue(v), val)) !== void 0
+      return this.innerOptionsValue.find(v => isDeepEqual(v, val)) !== void 0
     },
 
     __onTargetKeyup (e) {
@@ -584,7 +582,7 @@ export default Vue.extend({
             index = normalizeToInterval(index + 1, -1, optionsLength - 1)
           }
           while (index !== this.optionIndex && (
-            this.__isDisabled(this.options[index]) === true ||
+            this.__getOptionDisabled(this.options[index]) === true ||
             searchRe.test(this.__getOptionLabel(this.options[index])) !== true
           ))
         }
@@ -710,7 +708,7 @@ export default Vue.extend({
         return this.selectedScope.map((scope, i) => h(QChip, {
           key: 'option-' + i,
           props: {
-            removable: this.__isDisabled(scope.opt) !== true,
+            removable: this.__getOptionDisabled(scope.opt) !== true,
             dense: true,
             textColor: this.color,
             tabindex: this.computedTabindex
@@ -761,6 +759,22 @@ export default Vue.extend({
             keypress: this.__onTargetKeypress
           })
         }))
+      }
+
+      if (this.nameProp !== void 0 && this.disable !== true && this.innerOptionsValue.length > 0) {
+        const opts = this.innerOptionsValue.map(value => h('option', {
+          attrs: { value, selected: true }
+        }))
+
+        child.push(
+          h('select', {
+            staticClass: 'hidden',
+            attrs: {
+              name: this.nameProp,
+              multiple: this.multiple
+            }
+          }, opts)
+        )
       }
 
       return h('div', { staticClass: 'q-field__native row items-center', attrs: this.$attrs }, child)
