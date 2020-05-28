@@ -1,12 +1,11 @@
 import Vue from 'vue'
 
 import { isSSR } from './plugins/Platform.js'
-import materialIcons from '../icon-set/material-icons.js'
+import iconfont from '../icon-set/iconfont.js'
 
 export default {
-  __installed: false,
   install ($q, iconSet) {
-    this.set = (iconDef = materialIcons) => {
+    this.set = (iconDef = iconfont) => {
       iconDef.set = this.set
 
       if (isSSR === true || $q.iconSet !== void 0) {
@@ -21,5 +20,9 @@ export default {
     }
 
     this.set(iconSet)
+
+    if (isSSR !== true) {
+      Vue.util.defineReactive($q, 'iconMapFn', void 0)
+    }
   }
 }
