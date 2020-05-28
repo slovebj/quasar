@@ -4,18 +4,47 @@ import QAvatar from '../components/avatar/QAvatar.js'
 import QIcon from '../components/icon/QIcon.js'
 import QBtn from '../components/btn/QBtn.js'
 
-import clone from '../utils/clone.js'
 import { noop } from '../utils/event.js'
 import { isSSR } from './Platform.js'
 
 let uid = 0
 let defaults = {}
 
+const attrs = { role: 'alert' }
+
 const positionList = [
   'top-left', 'top-right',
   'bottom-left', 'bottom-right',
   'top', 'bottom', 'left', 'right', 'center'
 ]
+
+const badgePositions = [
+  'top-left', 'top-right',
+  'bottom-left', 'bottom-right'
+]
+
+const notifTypes = {
+  positive: {
+    icon () { return this.$q.iconSet.type.positive },
+    color: 'positive'
+  },
+
+  negative: {
+    icon () { return this.$q.iconSet.type.negative },
+    color: 'negative'
+  },
+
+  warning: {
+    icon () { return this.$q.iconSet.type.warning },
+    color: 'warning',
+    textColor: 'dark'
+  },
+
+  info: {
+    icon () { return this.$q.iconSet.type.info },
+    color: 'info'
+  }
+}
 
 const groups = {}
 const positionClass = {}
@@ -51,17 +80,23 @@ const Notifications = {
         Object.assign(notif, defaults)
       }
 
-      Object.assign(
-        notif,
-        typeof config === 'string'
-          ? { message: config }
-          : clone(config)
-      )
+      if (Object(config) === config) {
+        Object.assign(notif, notifTypes[config.type], config)
 
-      notif.meta = {}
+        if (typeof notif.icon === 'function') {
+          notif.icon = notif.icon.call(this)
+        }
+      }
+      else {
+        notif.message = config
+      }
+
+      notif.meta = {
+        hasMedia: Boolean(notif.icon || notif.avatar)
+      }
 
       if (notif.position) {
-        if (!positionList.includes(notif.position)) {
+        if (positionList.includes(notif.position) === false) {
           console.error(`Notify: wrong position: ${notif.position}`)
           return false
         }
@@ -91,8 +126,19 @@ const Notifications = {
         }
       }
 
-      const actions = (config.actions || [])
-        .concat(config.ignoreDefaults !== true && Array.isArray(defaults.actions) === true ? defaults.actions : [])
+      const actions = (
+        Array.isArray(config.actions) === true
+          ? config.actions
+          : []
+      ).concat(
+        config.ignoreDefaults !== true && Array.isArray(defaults.actions) === true
+          ? defaults.actions
+          : []
+      ).concat(
+        notifTypes[config.type] !== void 0 && Array.isArray(notifTypes[config.type].actions) === true
+          ? notifTypes[config.type].actions
+          : []
+      )
 
       notif.closeBtn && actions.push({
         label: typeof notif.closeBtn === 'string'
@@ -105,8 +151,8 @@ const Notifications = {
         on: {
           click: typeof handler === 'function'
             ? () => {
-              noDismiss !== true && notif.meta.close()
               handler()
+              noDismiss !== true && notif.meta.close()
             }
             : () => {
               notif.meta.close()
@@ -114,21 +160,23 @@ const Notifications = {
         }
       }))
 
-      if (typeof config.onDismiss === 'function') {
-        notif.onDismiss = config.onDismiss
-      }
-
       if (notif.multiLine === void 0) {
         notif.multiLine = notif.actions.length > 1
       }
 
-      notif.meta.staticClass = [
-        `q-notification row items-stretch`,
-        notif.color && `bg-${notif.color}`,
-        notif.textColor && `text-${notif.textColor}`,
-        `q-notification--${notif.multiLine === true ? 'multi-line' : 'standard'}`,
-        notif.classes
-      ].filter(n => n).join(' ')
+      Object.assign(notif.meta, {
+        staticClass: `q-notification row items-stretch` +
+          ` q-notification--${notif.multiLine === true ? 'multi-line' : 'standard'}` +
+          (notif.color !== void 0 ? ` bg-${notif.color}` : '') +
+          (notif.textColor !== void 0 ? ` text-${notif.textColor}` : '') +
+          (notif.classes !== void 0 ? ` ${notif.classes}` : ''),
+
+        wrapperClass: 'q-notification__wrapper col relative-position border-radius-inherit ' +
+          (notif.multiLine === true ? 'column no-wrap justify-center' : 'row items-center'),
+
+        contentClass: 'q-notification__content row items-center' +
+          (notif.multiLine === true ? '' : ' col')
+      })
 
       if (notif.group === false) {
         notif.group = void 0
@@ -150,6 +198,11 @@ const Notifications = {
 
       if (notif.actions.length === 0) {
         notif.actions = void 0
+      }
+      else {
+        notif.meta.actionsClass = 'q-notification__actions row items-center ' +
+          (notif.multiLine === true ? 'justify-end' : 'col-auto') +
+          (notif.meta.hasMedia === true ? ' q-notification__actions--with-media' : '')
       }
 
       const groupNotif = groups[notif.group]
@@ -184,13 +237,24 @@ const Notifications = {
 
         const original = groups[notif.group]
 
+        if (notif.badgePosition !== void 0) {
+          if (badgePositions.includes(notif.badgePosition) === false) {
+            console.error(`Notify - wrong badgePosition specified: ${notif.badgePosition}`)
+            return false
+          }
+        }
+        else {
+          notif.badgePosition = `top-${notif.position.indexOf('left') > -1 ? 'right' : 'left'}`
+        }
+
         notif.meta.uid = original.meta.uid
         notif.meta.badge = original.meta.badge + 1
-        notif.meta.badgeStaticClass = 'q-notification__badge' +
+        notif.meta.badgeStaticClass = `q-notification__badge q-notification__badge--${notif.badgePosition}` +
           (notif.badgeColor !== void 0 ? ` bg-${notif.badgeColor}` : '') +
           (notif.badgeTextColor !== void 0 ? ` text-${notif.badgeTextColor}` : '')
 
-        notif = Object.assign(original, notif)
+        const index = this.notifs[notif.position].indexOf(original)
+        this.notifs[notif.position][index] = groups[notif.group] = notif
       }
 
       notif.meta.close = () => {
@@ -209,7 +273,7 @@ const Notifications = {
     },
 
     remove (notif) {
-      if (notif.meta.timer) { clearTimeout(notif.meta.timer) }
+      clearTimeout(notif.meta.timer)
 
       const index = this.notifs[notif.position].indexOf(notif)
       if (index !== -1) {
@@ -273,20 +337,23 @@ const Notifications = {
 
         const mainChild = []
 
-        if (notif.icon) {
-          mainChild.push(
-            h(QIcon, {
-              staticClass: 'q-notification__icon col-auto',
-              props: { name: notif.icon }
-            })
-          )
-        }
-        else if (notif.avatar) {
-          mainChild.push(
-            h(QAvatar, { staticClass: 'q-notification__avatar col-auto' }, [
-              h('img', { attrs: { src: notif.avatar } })
-            ])
-          )
+        if (meta.hasMedia === true) {
+          if (notif.icon) {
+            mainChild.push(
+              h(QIcon, {
+                staticClass: 'q-notification__icon col-auto',
+                attrs: { role: 'img' },
+                props: { name: notif.icon }
+              })
+            )
+          }
+          else if (notif.avatar) {
+            mainChild.push(
+              h(QAvatar, { staticClass: 'q-notification__avatar col-auto' }, [
+                h('img', { attrs: { src: notif.avatar, 'aria-hidden': 'true' } })
+              ])
+            )
+          }
         }
 
         mainChild.push(
@@ -294,10 +361,7 @@ const Notifications = {
         )
 
         const child = [
-          h('div', {
-            staticClass: 'row items-center' +
-              (notif.multiLine === true ? '' : ' col')
-          }, mainChild)
+          h('div', { staticClass: meta.contentClass }, mainChild)
         ]
 
         notif.progress === true && child.push(
@@ -311,8 +375,7 @@ const Notifications = {
 
         notif.actions !== void 0 && child.push(
           h('div', {
-            staticClass: 'q-notification__actions row items-center ' +
-              (notif.multiLine === true ? 'justify-end' : 'col-auto')
+            staticClass: meta.actionsClass
           }, notif.actions.map(a => h(QBtn, { props: a.props, on: a.on })))
         )
 
@@ -328,12 +391,10 @@ const Notifications = {
         return h('div', {
           ref: `notif_${meta.uid}`,
           key: meta.uid,
-          staticClass: meta.staticClass
+          staticClass: meta.staticClass,
+          attrs
         }, [
-          h('div', {
-            staticClass: 'col relative-position border-radius-inherit ' +
-              (notif.multiLine === true ? 'column no-wrap justify-center' : 'row items-center')
-          }, child)
+          h('div', { staticClass: meta.wrapperClass }, child)
         ])
       }))
     }))
@@ -348,6 +409,11 @@ export default {
   setDefaults (opts) {
     opts === Object(opts) && Object.assign(defaults, opts)
   },
+  registerType (typeName, typeOpts) {
+    if (isSSR !== true && typeOpts === Object(typeOpts)) {
+      notifTypes[typeName] = typeOpts
+    }
+  },
 
   install ({ cfg, $q }) {
     if (isSSR === true) {
@@ -360,6 +426,7 @@ export default {
 
     $q.notify = this.create.bind(this)
     $q.notify.setDefaults = this.setDefaults
+    $q.notify.registerType = this.registerType
 
     const node = document.createElement('div')
     document.body.appendChild(node)

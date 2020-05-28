@@ -7,7 +7,7 @@ related:
 ---
 
 The QIcon component allows you to easily insert icons within other components or any other area of your pages.
-Quasar supports out of the box: [Material Icons](https://material.io/icons/), [Font Awesome](http://fontawesome.io/icons/), [Ionicons](http://ionicons.com/), [MDI](https://materialdesignicons.com/), [Eva Icons](https://akveo.github.io/eva-icons), [Themify Icons](https://themify.me/themify-icons) and [Line Awesome](https://icons8.com/line-awesome).
+Quasar supports out of the box: [Material Icons](https://material.io/icons/), [Font Awesome](http://fontawesome.io/icons/), [Ionicons](https://ionicons.com/), [MDI](https://materialdesignicons.com/), [Eva Icons](https://akveo.github.io/eva-icons), [Themify Icons](https://themify.me/themify-icons) and [Line Awesome](https://icons8.com/line-awesome).
 
 Furthermore you can [add support by yourself](/vue-components/icon#Custom-mapping) for any icon lib.
 
@@ -55,8 +55,7 @@ If you are using webfont-based icons, make sure that you [installed the icon lib
 | material-icons-sharp | s_ | s_thumb_up | Notice the underline character instead of dash or space; **Quasar 1.0.5+** |
 | ionicons-v4 | ion-, ion-md-, ion-ios-, ion-logo- | ion-heart, ion-logo-npm, ion-md-airplane | Use QIcon instead of `<ion-icon>` component; Logo icons require 'ion-logo-' prefix |
 | fontawesome-v5 | fa[s,r,l,d,b] fa- | "fas fa-ambulance" | QIcon "name" property is same as "class" attribute value in Fontawesome docs examples (where they show `<i>` tags) |
-| mdi-v4 | mdi- | mdi-alert-circle-outline | Notice the use of dash characters; Use only one of mdi-v4 or mdi-v3 |
-| mdi-v3 | mdi- | mdi-alert-circle-outline | Notice the use of dash characters; Use only one of mdi-v4 or mdi-v3 |
+| mdi-v5/v4/v3 | mdi- | mdi-alert-circle-outline | Notice the use of dash characters; Use only one of mdi-v5, mdi-v4 or mdi-v3 |
 | eva-icons | eva- | eva-shield-outline, eva-activity-outline | Notice the use of dash characters |
 | themify | ti- | ti-hand-point-up | Notice the use of dash characters |
 | line-awesome | la[s,r,l,d,b] la- | "las la-atom" | QIcon "name" property is same as "class" attribute value in Line Awesome docs examples (where they show `<i>` tags); **Quasar 1.8+ & @quasar/extras v1.5+** |
@@ -81,7 +80,7 @@ If you are using webfont-based icons, make sure that you [installed the icon lib
 #### Ionicons
 
 * Icon names are in hyphen-separated case and always begin with "ion-", "ion-md-", "ion-ios-" or "ion-logo-" prefixes.
-* Go to [Ionicons](https://ionicons.com/), look for your desired icon, click on it. At the bottom of the page there will appear a popup. Notice something like `<ion-icon name="square-outline"></ion-icon>`. Remember the name (eg. "square-outline"). Based on the variant that you want (auto-detect platform, material or iOS), you'd get the result: `ion-square-outline` or `ion-md-square-outline` or `ion-ios-square-outline`.
+* Go to [Ionicons](https://ionicons.com/v4), look for your desired icon, click on it. At the bottom of the page there will appear a popup. Notice something like `<ion-icon name="square-outline"></ion-icon>`. Remember the name (eg. "square-outline"). Based on the variant that you want (auto-detect platform, material or iOS), you'd get the result: `ion-square-outline` or `ion-md-square-outline` or `ion-ios-square-outline`.
 
 #### Eva Icons
 
@@ -98,10 +97,7 @@ If you are using webfont-based icons, make sure that you [installed the icon lib
 * Icon names are in hyphen-separated case and always begin with "la" prefix.
 * Go to [Line Awesome](https://icons8.com/line-awesome), look for your desired icon, click on it. A dialog box will appear. You'll see something like `<i class="lab la-behance-square"></i>`. Remember its name (eg. "lab la-behance-square") and use it.
 
-## Svg icons
-
-<q-badge label="Quasar v1.7+" />
-<q-badge class="q-ml-sm" label="@quasar/extras v1.4+" />
+## Svg icons <q-badge align="top" label="Quasar v1.7+" /> <q-badge align="top" class="q-ml-xs" label="@quasar/extras v1.4+" />
 
 There are many advantages of using only svg icons in your website/app:
 * Better app footprint -- only used icons will be included in the final build (treeshaking in action)
@@ -125,7 +121,7 @@ Notice in the example below that we want to avoid Vue observable wrapping, so we
 
 <script>
 import { matMenu } from '@quasar/extras/material-icons'
-import { mdiAbTesting } from '@quasar/extras/mdi-v4'
+import { mdiAbTesting } from '@quasar/extras/mdi-v5'
 import { fasFont } from '@quasar/extras/fontawesome-v5'
 
 export default {
@@ -145,9 +141,10 @@ If you are only using svg icons (and have configured a [Quasar Icon Set](/option
 | Vendor | Quasar IconSet name | Import Icons from | Notes |
 | --- | --- | --- | --- |
 | Material Icons (Google) | svg-material-icons | @quasar/extras/material-icons | |
-| MDI (Material Design Icons) | svg-mdi-v4 | @quasar/extras/mdi-v4 | |
+| MDI (Material Design Icons) | svg-mdi-v5 | @quasar/extras/mdi-v5 | |
 | Font Awesome | svg-fontawesome-v5 | @quasar/extras/fontawesome-v5 | |
-| Ionicons | svg-ionicons-v4 | @quasar/extras/ionicons-v4 | |
+| Ionicons v5 | svg-ionicons-v5 | @quasar/extras/ionicons-v5 | `@quasar/extras` v1.7+ |
+| Ionicons v4 | svg-ionicons-v4 | @quasar/extras/ionicons-v4 | |
 | Eva Icons | svg-eva-icons | @quasar/extras/eva-icons | |
 | Themify Icons | svg-themify | @quasar/extras/themify | |
 | Line Awesome | svg-line-awesome | @quasar/extras/line-awesome | `@quasar/extras` v1.5+ |
@@ -170,7 +167,7 @@ The SVG format of Material Icons from Google is parsed from **their official rep
 
 * Icon names are in camel-case and always begin with "mdi" prefix.
 * Go to [MDI](https://materialdesignicons.com/), look for your desired icon, click on it. A dialog box will appear. Get the title (eg. "account-key"), prefix it with "mdi" and camel-case the result (eg. "mdiAccountKey").
-* Import statement example: `import { mdiAccountKey } from '@quasar/extras/mdi-v4'`.
+* Import statement example: `import { mdiAccountKey } from '@quasar/extras/mdi-v5'`.
 
 #### SVG Fontawesome
 
@@ -182,8 +179,8 @@ The SVG format of Material Icons from Google is parsed from **their official rep
 #### SVG Ionicons
 
 * Icon names are in camel-case and always begin with "ionMd" or "ionIos" prefixes.
-* Go to [Ionicons](https://ionicons.com/), look for your desired icon, click on it. At the bottom of the page there will appear a popup. Notice something like `<ion-icon name="square-outline"></ion-icon>`. Remember the name (eg. "square-outline"). Camel-case this name and prefix it with either "ionMd" (for material variant) or "ionIos" (for iOS variant).
-* Import statement example: `import { ionMdSquareOutline } from '@quasar/extras/ionicons-v4'`.
+* Go to [Ionicons v5](https://ionicons.com/) or [Ionicons v4](https://ionicons.com/v4/), look for your desired icon, click on it. At the bottom of the page there will appear a popup. Notice something like `<ion-icon name="square-outline"></ion-icon>`. Remember the name (eg. "square-outline"). Camel-case this name and prefix it with either "ionMd" (for material variant) or "ionIos" (for iOS variant).
+* Import statement example: `import { ionMdSquareOutline } from '@quasar/extras/ionicons-v5'` (or `-v4`).
 
 #### SVG Eva Icons
 
@@ -203,25 +200,120 @@ The SVG format of Material Icons from Google is parsed from **their official rep
 * Go to [Line Awesome](https://icons8.com/line-awesome), look for your desired icon, click on it. A dialog box will appear. You'll see something like `<i class="lab la-behance-square"></i>`. This would translate to: `laBehanceSquare`. There is a special case though (only for solid icons!): if the prefix before "la-" is "las" (eg. `<i class="las la-atom"></i>`), then you need to suffix "la-atom" with "-solid" and camel-case the result (eg. `laAtomSolid`).
 * Import statement example: `import { laBehanceSquare } from '@quasar/extras/line-awesome'`.
 
-### Svg icon format
+### Svg icon format <q-badge align="top" label="enhanced on v1.11+" />
 
 You can also supply your own svg icons. An svg icon is essentially a String with the following syntax:
 
 ```
-Syntax: "<path>|<viewBox>" or "<path>" (with implicit 0 0 24 24 viewBox)
+Syntax: "<path>&&<path>&&...|<viewBox>"
+           P       P             V
+                (optional)   (optional)
+                             (default: 0 0 24 24)
+
+P is a path tag with following syntax (each are attributes):
+        "<d>@@<style>@@<transform>"
+        (required)
+            (optional)
+                     (optional)
+```
+
 Examples:
-  M9 3L5 6.99h3V14h2V6.99h3L9 3zm7 14.01V10h-2v7.01h-3L15 21l4-3.99h-3z|0 0 104 104
+
+```
+// Simplest ("<path>"):
   M9 3L5 6.99h3V14h2V6.99h3L9 3zm7 14.01V10h-2v7.01h-3L15 21l4-3.99h-3z
 
-// equivalent to the original svg:
+// equivalent to:
+<svg viewBox="0 0 24 24">
+  <path d="M9 3L5 6.99h3V....."/>
+</svg>
+```
+
+```
+// Simplest with custom viewBox ("<path>|<viewBox>"):
+  M9 3L5 6.99h3V14h2V6.99h3L9 3zm7 14.01V10h-2v7.01h-3L15 21l4-3.99h-3z|0 0 104 104
+
+// equivalent to:
 <svg viewBox="0 0 104 104">
   <path d="M9 3L5 6.99h3V....."/>
 </svg>
 ```
 
-## Inlined svg
+```
+// Path with custom style ("<path>@@<style>|<viewBox>"):
+  M48,96L464,96 464,416 48,416z@@fill:none;stroke:currentColor.....|0 0 512 512
 
-<q-badge label="v1.7+" />
+// equivalent to:
+<svg viewBox="0 0 512 512">
+  <path d="M416,480,256,357....." style="fill:none;stroke:curren..." />
+</svg>
+```
+
+```
+// Path with custom style and transform ("<path>@@<style>@@transform"):
+  M9 3L5 6.99h3V...@@fill:none;stroke:cu.....@@translate(10 1) rotate(180)
+
+// equivalent to:
+<svg viewBox="0 0 24 24">
+  <path
+    d="M9 3L5 6.99h3V....."
+    style="fill:none;stroke:curren..."
+    transform="translate(10 1) rotate(180)"
+  />
+</svg>
+```
+
+```
+// Path with custom transform ("<path>@@@@transform"):
+// (Notice style separator is still specified)
+
+  M9 3L5 6.99h3V...@@@@translate(2 4) rotate(180)
+
+// equivalent to:
+<svg viewBox="0 0 24 24">
+  <path
+    d="M9 3L5 6.99h3V....."
+    transform="translate(2 4) rotate(180)"
+  />
+</svg>
+```
+
+```
+// Multi-paths -- any number of paths are possible ("<path>&&<path>|<viewBox>"):
+  M416,480,256,357.41,96,480V32H416Z&&M368,64L144 256 368 448 368 64z|0 0 512 512
+
+// equivalent to:
+<svg viewBox="0 0 512 512">
+  <path d="M416,480,256,357....." />
+  <path d="M368,64L144 256 368...." />
+</svg>
+```
+
+```
+// Multi-paths, each with style and transform ("<path>&&<path>|<viewBox>"):
+  M9 3L5 6.99h3V...@@stroke-width:5px@@rotate(45)&&M416,480,256,...@@stroke-width:2px@@rotate(15)&&M368,64L144 2...@@stroke-width:12px@@rotate(5)|0 0 512 512
+
+// equivalent to:
+<svg viewBox="0 0 512 512">
+  <path
+    d="M9 3L5 6.99h3V....."
+    style="stroke-width:5px"
+    transform="rotate(45)"
+  />
+  <path
+    d="M416,480,256,..."
+    style="stroke-width:2px"
+    transform="rotate(15)"
+  />
+  <path
+    d="M368,64L144 2..."
+    style="stroke-width:12px"
+    transform="rotate(5)"
+  />
+</svg>
+```
+
+## Inlined svg <q-badge align="top" label="v1.7+" />
 
 If you don't want to use the webfont or svg variants from above, note that QIcon also supports one inlined `<svg>` tag (the content of the svg can be anything, not only a path).
 
@@ -278,9 +370,7 @@ You can also base64 encode an image and supply it. The example below is with a Q
 img:data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==" ... />
 ```
 
-## Custom mapping
-
-<q-badge label="v1.4+" />
+## Custom mapping <q-badge align="top" label="v1.4+" />
 
 Should you want, you can customize the mapping of icon names. This can be done by overriding `$q.iconMapFn`. The recommended place to do it is in the `created()` hook of your `/src/App.vue` component.
 

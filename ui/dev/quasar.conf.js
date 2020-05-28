@@ -24,13 +24,14 @@ module.exports = function (ctx) {
 
     framework: {
       // iconSet: 'svg-mdi-v4',
+      // config: { ripple: { early: true } },
       all: true
     },
 
     supportIE: true,
 
     build: {
-      rtl: true,
+      rtl: false,
       vueRouterMode: 'history',
       showProgress: true,
 

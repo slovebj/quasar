@@ -1,6 +1,4 @@
 const fs = require('fs')
-const path = require('path')
-const compileTemplate = require('lodash.template')
 
 const appPaths = require('../../app-paths')
 const getFixedDeps = require('../../helpers/get-fixed-deps')
@@ -41,15 +39,17 @@ module.exports = class SsrProdArtifacts {
         scripts: {
           start: 'node index.js'
         },
-        dependencies: Object.assign(appDeps, {
-          '@quasar/babel-preset-app': cliDeps['@quasar/babel-preset-app'],
-          'compression': '^1.0.0',
-          'express': '^4.0.0',
-          'lru-cache': cliDeps['lru-cache'],
-          'vue': cliDeps.vue,
-          'vue-server-renderer': cliDeps['vue-server-renderer'],
-          'vue-router': cliDeps['vue-router']
-        }),
+        dependencies: Object.assign(appDeps,
+          this.cfg.build.modern === true ? {} : { '@quasar/babel-preset-app': cliDeps['@quasar/babel-preset-app'] },
+          {
+            'compression': '^1.0.0',
+            'express': '^4.0.0',
+            'lru-cache': cliDeps['lru-cache'],
+            'vue': cliDeps.vue,
+            'vue-server-renderer': cliDeps['vue-server-renderer'],
+            'vue-router': cliDeps['vue-router']
+          }
+        ),
         engines: appPkg.engines,
         quasar: { ssr: true }
       }

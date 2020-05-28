@@ -3,11 +3,10 @@ const fs = require('fs')
 const merge = require('webpack-merge')
 const chokidar = require('chokidar')
 const debounce = require('lodash.debounce')
+const { underline } = require('chalk')
 
 const appPaths = require('./app-paths')
-const logger = require('./helpers/logger')
-const log = logger('app:quasar-conf')
-const warn = logger('app:quasar-conf', 'red')
+const { log, warn, fatal } = require('./helpers/logger')
 const appFilesValidations = require('./app-files-validations')
 const extensionRunner = require('./app-extension/extensions-runner')
 const supportIE = require('./helpers/support-ie')
@@ -15,6 +14,7 @@ const cssVariables = require('./helpers/css-variables')
 const getDevlandFile = require('./helpers/get-devland-file')
 
 const transformAssetUrls = getDevlandFile('quasar/dist/transform-asset-urls.json')
+const urlRegex = /^http(s)?:\/\//
 
 function encode (obj) {
   return JSON.stringify(obj, (_, value) => {
@@ -33,7 +33,7 @@ function formatPublicPath (path) {
     path = `${path}/`
   }
 
-  if (path.startsWith('http://') || path.startsWith('https://')) {
+  if (urlRegex.test(path) === true) {
     return path
   }
 
@@ -122,9 +122,8 @@ class QuasarConfig {
         }
         catch (e) {
           if (e.message !== 'NETWORK_ERROR') {
-            console.log(e)
-            warn(`⚠️  quasar.conf.js has JS errors. Please fix them then save file again.`)
-            warn()
+            console.error(e)
+            warn(`quasar.conf.js has JS errors. Please fix them then save file again.\n`)
           }
 
           return
@@ -160,7 +159,7 @@ class QuasarConfig {
             opts.onBuildChange()
           }
           else {
-            warn(`⚠️  [FAIL] Please fix the error then save the file so we can continue.`)
+            warn(`[FAIL] Please fix the error then save the file so we can continue.`)
           }
         }, 1000))
       }
@@ -214,6 +213,11 @@ class QuasarConfig {
       cordova: {},
       capacitor: {},
       bin: {},
+      bex: {
+        builder: {
+          directories: {}
+        }
+      },
       htmlVariables: {}
     }, this.quasarConfigFunction(this.ctx))
 
@@ -300,8 +304,7 @@ class QuasarConfig {
       this.quasarConfigFunction = require(this.filename)
     }
     else {
-      warn(`⚠️  [FAIL] Could not load quasar.conf.js config file`)
-      process.exit(1)
+      fatal(`[FAIL] Could not load quasar.conf.js config file`)
     }
   }
 
@@ -322,7 +325,8 @@ class QuasarConfig {
         cfg.framework ? cfg.framework.all + cfg.framework.autoImportComponentCase : '',
         cfg.devServer ? encode(cfg.devServer) : '',
         cfg.pwa ? encode(cfg.pwa) : '',
-        cfg.electron ? encode(cfg.electron) : ''
+        cfg.electron ? encode(cfg.electron) : '',
+        cfg.bex ? encode(cfg.bex) : ''
       ].join('')
 
       if (this.oldConfigSnapshot) {
@@ -336,8 +340,9 @@ class QuasarConfig {
     cfg.__needsAppMountHook = false
     cfg.__vueDevtools = false
 
-    // make sure it exists
+    // make sure these exist
     cfg.supportIE = supportIE(cfg.supportIE, this.ctx)
+    cfg.supportTS = cfg.supportTS || false
 
     if (cfg.vendor.disable !== true) {
       cfg.vendor.add = cfg.vendor.add.length > 0
@@ -381,6 +386,7 @@ class QuasarConfig {
     cfg.framework.plugins = cfg.framework.plugins.filter(uniqueFilter)
 
     cfg.build = merge({
+      modern: false,
       transformAssetUrls: Object.assign({
         video: ['src', 'poster'],
         source: 'src',
@@ -394,12 +400,14 @@ class QuasarConfig {
       productDescription: this.pkg.description,
       extractCSS: this.ctx.prod,
       sourceMap: this.ctx.dev,
-      minify: this.ctx.prod,
+      minify: this.ctx.prod && this.ctx.mode.bex !== true,
       distDir: path.join('dist', this.ctx.modeName),
       htmlFilename: 'index.html',
+      ssrPwaHtmlFilename: 'offline.html', // do NOT use index.html as name!
+                                          // will mess up SSR
       webpackManifest: this.ctx.prod,
       vueRouterMode: 'hash',
-      preloadChunks: this.ctx.prod,
+      preloadChunks: false,
       forceDevPublicPath: false,
       // transpileDependencies: [], // leaving here for completeness
       devtool: this.ctx.dev
@@ -451,6 +459,28 @@ class QuasarConfig {
       }
     }, cfg.build)
 
+    if (this.opts.modern === true) {
+      cfg.build.modern = true
+    }
+
+    if (cfg.build.modern === true) {
+      log(underline('Using MODERN build (ES6+)'))
+      if (cfg.build.uglifyOptions.ecma === void 0) {
+        cfg.build.uglifyOptions.ecma = 6
+      }
+
+      // force disable IE11 support
+      if (cfg.supportIE === true) {
+        console.log()
+        warn(`IE11 support is requested but it was disabled because build mode is set to modern.`)
+        console.log()
+        cfg.supportIE = false
+      }
+    }
+    else {
+      log(underline('Generating legacy js code (ES5); use "--modern" param for ES6+'))
+    }
+
     cfg.build.transpileDependencies = cfg.build.transpileDependencies.filter(uniqueRegexFilter)
 
     cfg.__loadingBar = cfg.framework.all === true || cfg.framework.plugins.includes('LoadingBar')
@@ -463,8 +493,10 @@ class QuasarConfig {
       })
     }
     if (this.ctx.dev) {
-      cfg.build.extractCSS = false
-      cfg.build.preloadChunks = false
+      Object.assign(cfg.build, {
+        extractCSS: false,
+        preloadChunks: false
+      })
     }
     if (this.ctx.debug) {
       cfg.build.sourceMap = true
@@ -477,7 +509,7 @@ class QuasarConfig {
         gzip: false
       })
     }
-    else if (this.ctx.mode.cordova || this.ctx.mode.capacitor || this.ctx.mode.electron) {
+    else if (this.ctx.mode.cordova || this.ctx.mode.capacitor || this.ctx.mode.electron || this.ctx.mode.bex) {
       Object.assign(cfg.build, {
         htmlFilename: 'index.html',
         vueRouterMode: 'hash',
@@ -498,7 +530,7 @@ class QuasarConfig {
     if (this.ctx.mode.cordova || this.ctx.mode.capacitor) {
       cfg.build.distDir = appPaths.resolve[this.ctx.modeName]('www')
     }
-    else if (this.ctx.mode.electron) {
+    else if (this.ctx.mode.electron || this.ctx.mode.bex) {
       cfg.build.packagedDistDir = cfg.build.distDir
       cfg.build.distDir = path.join(cfg.build.distDir, 'UnPackaged')
     }
@@ -586,7 +618,10 @@ class QuasarConfig {
         inline: true,
         overlay: true,
         quiet: true,
-        historyApiFallback: !this.ctx.mode.ssr,
+        historyApiFallback: this.ctx.mode.ssr !== true
+          ? { index: `${cfg.build.publicPath || '/'}${cfg.build.htmlFilename}` }
+          : false,
+        index: cfg.build.htmlFilename,
         noInfo: true,
         disableHostCheck: true,
         compress: true,
@@ -679,7 +714,6 @@ class QuasarConfig {
 
     if (this.ctx.mode.pwa) {
       cfg.build.webpackManifest = false
-      cfg.build.preloadChunks = true
 
       cfg.pwa = merge({
         workboxPluginMode: 'GenerateSW',
@@ -695,9 +729,9 @@ class QuasarConfig {
           appleMobileWebAppCapable: 'yes',
           appleMobileWebAppStatusBarStyle: 'default',
           appleTouchIcon120: 'statics/icons/apple-icon-120x120.png',
-          appleTouchIcon180: 'statics/icons/apple-icon-180x180.png',
           appleTouchIcon152: 'statics/icons/apple-icon-152x152.png',
           appleTouchIcon167: 'statics/icons/apple-icon-167x167.png',
+          appleTouchIcon180: 'statics/icons/apple-icon-180x180.png',
           appleSafariPinnedTab: 'statics/icons/safari-pinned-tab.svg',
           msapplicationTileImage: 'statics/icons/ms-icon-144x144.png',
           msapplicationTileColor: '#000000'
@@ -739,7 +773,9 @@ class QuasarConfig {
       }
 
       cfg.pwa.manifest.icons = cfg.pwa.manifest.icons.map(icon => {
-        icon.src = `${cfg.build.publicPath}${icon.src}`
+        if (urlRegex.test(icon.src) === false) {
+          icon.src = `${cfg.build.publicPath}${icon.src}`
+        }
         return icon
       })
     }
@@ -755,7 +791,7 @@ class QuasarConfig {
 
       cfg.build.APP_URL = `http${cfg.devServer.https ? 's' : ''}://${host}:${cfg.devServer.port}${cfg.build.publicPath}${urlPath}`
     }
-    else if (this.ctx.mode.cordova || this.ctx.mode.capacitor) {
+    else if (this.ctx.mode.cordova || this.ctx.mode.capacitor || this.ctx.mode.bex) {
       cfg.build.APP_URL = 'index.html'
     }
     else if (this.ctx.mode.electron) {
@@ -868,6 +904,16 @@ class QuasarConfig {
 
         bundler.ensureInstall(cfg.electron.bundler)
       }
+    }
+    else if (this.ctx.mode.bex) {
+      cfg.bex = merge(cfg.bex, {
+        builder: {
+          directories: {
+            input: cfg.build.distDir,
+            output: path.join(cfg.build.packagedDistDir, 'Packaged')
+          }
+        }
+      })
     }
 
     if (this.ctx.mode.capacitor && cfg.capacitor.hideSplashscreen !== false) {

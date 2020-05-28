@@ -40,6 +40,21 @@
           <input v-model="native" :autofocus="autofocusEl === 0">
         </div>
 
+        <my-comp />
+
+        <q-select
+          ref="title"
+          name="title"
+          v-model="title"
+          :options="titles"
+          :dark="dark"
+          :color="dark ? 'yellow' : 'primary'"
+          filled
+          label="Title"
+          :rules="[ val => !!val ]"
+          :autofocus="autofocusEl === 4"
+        />
+
         <q-input
           ref="name"
           :dark="dark"
@@ -59,13 +74,27 @@
           filled
           type="number"
           v-model="age"
-          label="Your age *"
+          label="Your age * (lazy)"
           lazy-rules
           :rules="[
             val => val !== null && val !== '' || 'Please type your age',
             val => val > 0 && val < 100 || 'Please type a real age'
           ]"
           :autofocus="autofocusEl === 2"
+        />
+
+        <q-input
+          ref="age"
+          :dark="dark"
+          filled
+          type="number"
+          v-model="age"
+          label="Your age * (lazy ondemand)"
+          lazy-rules="ondemand"
+          :rules="[
+            val => val !== null && val !== '' || 'Please type your age',
+            val => val > 0 && val < 100 || 'Please type a real age'
+          ]"
         />
 
         <q-input
@@ -87,13 +116,37 @@
       </div>
     </q-form>
 
-    <q-form class="q-mt-xl q-pa-md" autocomplete="on" :class="dark ? 'bg-grey-8' : void 0" @submit="onSubmit" @reset="onReset">
+    <div class="q-mt-xl q-pa-sm bg-grey-2 rounded-borders">
+      <q-toggle v-model="nativeSubmit" label="Use native submit (else it calls onSubmit)" />
+    </div>
+
+    <q-form
+      class="q-pa-md"
+      autocomplete="on"
+      :class="dark ? 'bg-grey-8' : void 0"
+      v-on="formListeners"
+      action="http://localhost:4444/upload"
+      method="post"
+      enctype="multipart/form-data"
+      target="wind1"
+    >
       <div class="q-col-gutter-md">
         <div class="q-gutter-md">
           <q-badge :label="user || 'N/A'" />
           <q-badge :label="pwd || 'N/A'" />
         </div>
+        <q-select
+          name="title"
+          v-model="title"
+          :options="titles"
+          :dark="dark"
+          :color="dark ? 'yellow' : 'primary'"
+          filled
+          label="Title"
+          :rules="[ val => !!val ]"
+        />
         <q-input
+          name="user"
           v-model="user"
           :dark="dark"
           :color="dark ? 'yellow' : 'primary'"
@@ -103,6 +156,7 @@
           :rules="[ val => !!val ]"
         />
         <q-input
+          name="password"
           v-model="pwd"
           :dark="dark"
           :color="dark ? 'yellow' : 'primary'"
@@ -137,6 +191,31 @@ export default {
           }
         })
       }
+    },
+
+    myComp: {
+      render (h) {
+        return h('div', {
+          staticClass: 'q-validation-component'
+        }, [
+          h('q-card', {
+            staticClass: 'text-subtitle2',
+            props: {
+              bordered: true,
+              flat: true
+            }
+          }, [
+            h('q-card-section', [ 'a custom component' ])
+          ])
+        ])
+      },
+
+      methods: {
+        validate () {
+          console.log('called my-comp.validate()')
+          return true
+        }
+      }
     }
   },
   data () {
@@ -155,17 +234,37 @@ export default {
         { value: 0, label: 'Native input' },
         { value: 1, label: 'Name' },
         { value: 2, label: 'Age' },
-        { value: 3, label: 'Toggle' }
+        { value: 3, label: 'Toggle' },
+        { value: 4, label: 'Title' },
       ],
       autofocusEl: 1,
 
       dark: null,
       greedy: false,
 
+      titles: [ 'Mr.', 'Ms.' ],
+
+      title: null,
       user: null,
       pwd: null,
       customValue: '',
-      customInput: true
+      customInput: true,
+
+      nativeSubmit: false
+    }
+  },
+
+  computed: {
+    formListeners () {
+      const listeners = {
+        reset: this.onReset
+      }
+
+      if (this.nativeSubmit !== true) {
+        listeners.submit = this.onSubmit
+      }
+
+      return listeners
     }
   },
 
@@ -178,9 +277,11 @@ export default {
       })
     },
 
-    onSubmit () {
+    onSubmit (evt) {
       this.$q.notify('submit')
       console.log('@submit')
+
+      // evt.target.submit()
     },
 
     onReset () {

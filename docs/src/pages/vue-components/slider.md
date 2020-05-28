@@ -18,6 +18,10 @@ Also check its “sibling”, the [QRange](/vue-components/range) component.
 
 <doc-example title="Standard" file="QSlider/Standard" />
 
+### Vertical
+
+<doc-example title="Vertical orientation" file="QSlider/Vertical" />
+
 ### With step
 
 <doc-example title="With step" file="QSlider/Step" />
@@ -26,11 +30,11 @@ The `step` property can also be floating point number (or numeric `0` if you nee
 
 <doc-example title="Floating point" file="QSlider/FloatingPoint" />
 
-In the example below, move the slider to see the label.
-
 <doc-example title="Snap to steps" file="QSlider/Snap" />
 
 ### With label
+
+In the example below, move the slider to see the label.
 
 <doc-example title="With label" file="QSlider/Label" />
 
@@ -54,9 +58,7 @@ The example below is better highlighting how QSlider handles label positioning s
 
 <doc-example title="Null value" file="QSlider/Null" />
 
-### Reverse
-
-<q-badge label="v1.5+" />
+### Reverse <q-badge align="top" label="v1.5+" />
 
 <doc-example title="In reverse" file="QSlider/Reverse" />
 
@@ -71,6 +73,12 @@ The example below is better highlighting how QSlider handles label positioning s
 ### With QItem
 
 <doc-example title="With QItem" file="QSlider/List" />
+
+### Native form submit <q-badge align="top" label="v1.9+" />
+
+When dealing with a native form which has an `action` and a `method` (eg. when using Quasar with ASP.NET controllers), you need to specify the `name` property on QSlider, otherwise formData will not contain it (if it should):
+
+<doc-example title="Native form" file="QSlider/NativeForm" />
 
 ## QSlider API
 <doc-api file="QSlider" />

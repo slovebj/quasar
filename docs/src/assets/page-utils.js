@@ -18,7 +18,12 @@ export function copyHeading (id) {
     el.id = ''
   }
 
-  window.location.hash = '#' + id
+  if ('replaceState' in history) {
+    history.replaceState('', '', `${location.pathname}#${id}`)
+  }
+  else {
+    window.location.hash = '#' + id
+  }
 
   if (el) {
     setTimeout(() => {
@@ -33,7 +38,7 @@ export function copyHeading (id) {
     color: 'white',
     textColor: 'primary',
     position: 'top',
-    actions: [ { icon: 'close', color: 'primary' } ],
+    actions: [ { icon: 'close', color: 'primary', dense: true, round: true } ],
     timeout: 2000
   })
 }

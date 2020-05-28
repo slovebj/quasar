@@ -14,13 +14,14 @@ import QInput from '../input/QInput.js'
 import QOptionGroup from '../option-group/QOptionGroup.js'
 
 import DarkMixin from '../../mixins/dark.js'
+import AttrsMixin from '../../mixins/attrs.js'
 
-import { cache } from '../../utils/vm.js'
+import cache from '../../utils/cache.js'
 
 export default Vue.extend({
   name: 'DialogPlugin',
 
-  mixins: [ DarkMixin ],
+  mixins: [ DarkMixin, AttrsMixin ],
 
   inheritAttrs: false,
 
@@ -91,30 +92,22 @@ export default Vue.extend({
     },
 
     okProps () {
-      return Object.assign(
-        {
-          color: this.vmColor,
-          label: this.okLabel,
-          ripple: false
-        },
-        Object(this.ok) === this.ok
-          ? this.ok
-          : { flat: true },
-        { disable: this.okDisabled }
-      )
+      return {
+        color: this.vmColor,
+        label: this.okLabel,
+        ripple: false,
+        ...(Object(this.ok) === this.ok ? this.ok : { flat: true }),
+        disable: this.okDisabled
+      }
     },
 
     cancelProps () {
-      return Object.assign(
-        {
-          color: this.vmColor,
-          label: this.cancelLabel,
-          ripple: false
-        },
-        Object(this.cancel) === this.cancel
-          ? this.cancel
-          : { flat: true }
-      )
+      return {
+        color: this.vmColor,
+        label: this.cancelLabel,
+        ripple: false,
+        ...(Object(this.cancel) === this.cancel ? this.cancel : { flat: true })
+      }
     }
   },
 
@@ -133,11 +126,17 @@ export default Vue.extend({
           props: {
             value: this.prompt.model,
             type: this.prompt.type,
+            label: this.prompt.label,
+            stackLabel: this.prompt.stackLabel,
+            outlined: this.prompt.outlined,
+            filled: this.prompt.filled,
+            standout: this.prompt.standout,
             color: this.vmColor,
             dense: true,
             autofocus: true,
             dark: this.isDark
           },
+          attrs: this.prompt.attrs,
           on: cache(this, 'prompt', {
             input: v => { this.prompt.model = v },
             keyup: evt => {
@@ -253,7 +252,7 @@ export default Vue.extend({
       ref: 'dialog',
 
       props: {
-        ...this.$attrs,
+        ...this.qAttrs,
         value: this.value
       },
 

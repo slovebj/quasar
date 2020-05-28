@@ -2,6 +2,8 @@ import Vue from 'vue'
 
 import DarkMixin from '../../mixins/dark.js'
 import { getSizeMixin } from '../../mixins/size.js'
+import ListenersMixin from '../../mixins/listeners.js'
+
 import { mergeSlot } from '../../utils/slot.js'
 
 function width (val) {
@@ -12,6 +14,7 @@ export default Vue.extend({
   name: 'QLinearProgress',
 
   mixins: [
+    ListenersMixin,
     DarkMixin,
     getSizeMixin({
       xs: 2,
@@ -36,7 +39,9 @@ export default Vue.extend({
     stripe: Boolean,
     indeterminate: Boolean,
     query: Boolean,
-    rounded: Boolean
+    rounded: Boolean,
+
+    instantFeedback: Boolean
   },
 
   computed: {
@@ -56,20 +61,31 @@ export default Vue.extend({
     },
 
     trackClass () {
-      return 'q-linear-progress__track--' + (this.isDark === true ? 'dark' : 'light') +
+      return `q-linear-progress__track--with${this.instantFeedback === true ? 'out' : ''}-transition` +
+        ` q-linear-progress__track--${this.isDark === true ? 'dark' : 'light'}` +
         (this.trackColor !== void 0 ? ` bg-${this.trackColor}` : '')
     },
 
     modelStyle () {
-      return width(this.motion ? 1 : this.value)
+      return width(this.motion === true ? 1 : this.value)
     },
 
     modelClasses () {
-      return `q-linear-progress__model--${this.motion ? 'in' : ''}determinate`
+      return `q-linear-progress__model--with${this.instantFeedback === true ? 'out' : ''}-transition` +
+        ` q-linear-progress__model--${this.motion === true ? 'in' : ''}determinate`
     },
 
     stripeStyle () {
       return { width: (this.value * 100) + '%' }
+    },
+
+    attrs () {
+      return {
+        role: 'progressbar',
+        'aria-valuemin': 0,
+        'aria-valuemax': 1,
+        'aria-valuenow': this.indeterminate === true ? void 0 : this.value
+      }
     }
   },
 
@@ -98,7 +114,8 @@ export default Vue.extend({
     return h('div', {
       style: this.sizeStyle,
       class: this.classes,
-      on: this.$listeners
+      attrs: this.attrs,
+      on: { ...this.qListeners }
     }, mergeSlot(child, this, 'default'))
   }
 })

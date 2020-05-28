@@ -1,6 +1,6 @@
 import { client } from '../plugins/Platform.js'
-import { getModifierDirections, updateModifiers, addEvt, cleanEvt, getTouchTarget, shouldStart } from '../utils/touch.js'
-import { position, leftClick, stopAndPrevent, preventDraggable, noop } from '../utils/event.js'
+import { getModifierDirections, updateModifiers, getTouchTarget, shouldStart } from '../utils/touch.js'
+import { addEvt, cleanEvt, position, leftClick, stopAndPrevent, preventDraggable, noop } from '../utils/event.js'
 import { clearSelection } from '../utils/selection.js'
 
 function parseArg (arg) {
@@ -174,7 +174,7 @@ export default {
           stopAndPrevent(evt)
 
           if (ctx.event.mouse === true) {
-            document.body.classList.add('no-pointer-events')
+            document.body.classList.add('no-pointer-events--children')
             document.body.classList.add('non-selectable')
             clearSelection()
 
@@ -184,7 +184,7 @@ export default {
               document.body.classList.remove('non-selectable')
 
               const remove = () => {
-                document.body.classList.remove('no-pointer-events')
+                document.body.classList.remove('no-pointer-events--children')
               }
 
               if (withDelay === true) { setTimeout(remove, 50) }

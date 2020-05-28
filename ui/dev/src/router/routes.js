@@ -1,13 +1,13 @@
 import pages from './pages-list'
 
 function load (component) {
-  return () => import(`pages/${component}.vue`)
+  return () => import('pages/' + component + '.vue')
 }
 
 function component (path) {
   return {
     path: '/' + path.slice(0, path.length - 4),
-    component: () => import(`pages/${path}`)
+    component: () => import('pages/' + path)
   }
 }
 
@@ -24,6 +24,10 @@ let routes = [
     path: '/meta/layout_1',
     component: load('meta/layout_1'),
     children: metaChildren
+  },
+  {
+    path: '/meta/title',
+    component: load('meta/title')
   },
   {
     path: '/meta/layout_2',

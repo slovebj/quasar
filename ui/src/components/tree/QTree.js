@@ -5,8 +5,10 @@ import QCheckbox from '../checkbox/QCheckbox.js'
 import QSlideTransition from '../slide-transition/QSlideTransition.js'
 import QSpinner from '../spinner/QSpinner.js'
 import DarkMixin from '../../mixins/dark.js'
+
 import { stopAndPrevent } from '../../utils/event.js'
 import { shouldIgnoreKey } from '../../utils/key-composition.js'
+import cache from '../../utils/cache.js'
 
 export default Vue.extend({
   name: 'QTree',
@@ -25,6 +27,10 @@ export default Vue.extend({
     labelKey: {
       type: String,
       default: 'label'
+    },
+    childrenKey: {
+      type: String,
+      default: 'children'
     },
 
     color: String,
@@ -103,7 +109,7 @@ export default Vue.extend({
         const tickStrategy = node.tickStrategy || (parent ? parent.tickStrategy : this.tickStrategy)
         const
           key = node[this.nodeKey],
-          isParent = node.children && node.children.length > 0,
+          isParent = node[this.childrenKey] && node[this.childrenKey].length > 0,
           isLeaf = isParent !== true,
           selectable = node.disabled !== true && this.hasSelection === true && node.selectable !== false,
           expandable = node.disabled !== true && node.expandable !== false,
@@ -152,7 +158,7 @@ export default Vue.extend({
         meta[key] = m
 
         if (isParent === true) {
-          m.children = node.children.map(n => travel(n, m))
+          m.children = node[this.childrenKey].map(n => travel(n, m))
 
           if (this.filter) {
             if (m.matchesFilter !== true) {
@@ -239,8 +245,8 @@ export default Vue.extend({
         if (node[this.nodeKey] === key) {
           return node
         }
-        if (node.children) {
-          return find(null, node.children)
+        if (node[this.childrenKey]) {
+          return find(null, node[this.childrenKey])
         }
       }
 
@@ -274,10 +280,10 @@ export default Vue.extend({
       const
         expanded = this.innerExpanded,
         travel = node => {
-          if (node.children && node.children.length > 0) {
+          if (node[this.childrenKey] && node[this.childrenKey].length > 0) {
             if (node.expandable !== false && node.disabled !== true) {
               expanded.push(node[this.nodeKey])
-              node.children.forEach(travel)
+              node[this.childrenKey].forEach(travel)
             }
           }
         }
@@ -305,7 +311,7 @@ export default Vue.extend({
           done: children => {
             this.lazy[key] = 'loaded'
             if (children) {
-              this.$set(node, 'children', children)
+              this.$set(node, this.childrenKey, children)
             }
             this.$nextTick(() => {
               const m = this.meta[key]
@@ -451,7 +457,7 @@ export default Vue.extend({
           : this.$scopedSlots['default-header']
 
       const children = meta.isParent === true
-        ? this.__getChildren(h, node.children)
+        ? this.__getChildren(h, node[this.childrenKey])
         : []
 
       const isParent = children.length > 0 || (meta.lazy && meta.lazy !== 'loaded')
@@ -510,7 +516,7 @@ export default Vue.extend({
                   staticClass: 'q-tree__arrow q-mr-xs',
                   class: { 'q-tree__arrow--rotate': meta.expanded },
                   props: { name: this.computedIcon },
-                  nativeOn: {
+                  on: {
                     click: e => {
                       this.__onExpandClick(node, meta, e)
                     }
@@ -554,7 +560,11 @@ export default Vue.extend({
 
         isParent === true
           ? h(QSlideTransition, {
-            props: { duration: this.duration }
+            props: { duration: this.duration },
+            on: cache(this, 'slide', {
+              show: () => { this.$emit('after-show') },
+              hide: () => { this.$emit('after-hide') }
+            })
           }, [
             h('div', {
               staticClass: 'q-tree__node-collapsible',

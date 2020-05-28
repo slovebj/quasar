@@ -5,6 +5,7 @@ import { Caret } from './editor-caret.js'
 
 import FullscreenMixin from '../../mixins/fullscreen.js'
 import DarkMixin from '../../mixins/dark.js'
+import ListenersMixin from '../../mixins/listeners.js'
 
 import { isSSR } from '../../plugins/Platform.js'
 import { stopAndPrevent } from '../../utils/event.js'
@@ -14,7 +15,7 @@ import { shouldIgnoreKey } from '../../utils/key-composition.js'
 export default Vue.extend({
   name: 'QEditor',
 
-  mixins: [ FullscreenMixin, DarkMixin ],
+  mixins: [ ListenersMixin, FullscreenMixin, DarkMixin ],
 
   props: {
     value: {
@@ -31,6 +32,7 @@ export default Vue.extend({
     height: String,
     definitions: Object,
     fonts: Object,
+    placeholder: String,
 
     toolbar: {
       type: Array,
@@ -236,11 +238,31 @@ export default Vue.extend({
           this.contentStyle
         ]
     },
+
+    classes () {
+      return `q-editor q-editor--${this.isViewingSource === true ? 'source' : 'default'}` +
+        (this.disable === true ? ' disabled' : '') +
+        (this.inFullscreen === true ? ' fullscreen column' : '') +
+        (this.square === true ? ' q-editor--square no-border-radius' : '') +
+        (this.flat === true ? ' q-editor--flat' : '') +
+        (this.dense === true ? ' q-editor--dense' : '') +
+        (this.isDark === true ? ' q-editor--dark q-dark' : '')
+    },
+
     innerClass () {
       return [
         this.contentClass,
         { col: this.inFullscreen, 'overflow-auto': this.inFullscreen || this.maxHeight }
       ]
+    },
+
+    attrs () {
+      if (this.disable === true) {
+        return { 'aria-disabled': '' }
+      }
+      if (this.readonly === true) {
+        return { 'aria-readonly': '' }
+      }
     }
   },
 
@@ -265,7 +287,7 @@ export default Vue.extend({
 
   methods: {
     __onInput () {
-      if (this.editWatcher === true) {
+      if (this.editWatcher === true && this.$refs.content !== void 0) {
         const val = this.isViewingSource
           ? this.$refs.content.innerText
           : this.$refs.content.innerHTML
@@ -301,8 +323,10 @@ export default Vue.extend({
     },
 
     __onBlur () {
-      const { scrollTop, scrollHeight } = this.$refs.content
-      this.__offsetBottom = scrollHeight - scrollTop
+      if (this.$refs.content !== void 0) {
+        const { scrollTop, scrollHeight } = this.$refs.content
+        this.__offsetBottom = scrollHeight - scrollTop
+      }
       this.$q.platform.is.ie !== true && this.caret.save()
       this.$emit('blur')
     },
@@ -317,21 +341,21 @@ export default Vue.extend({
 
     __onMouseup (e) {
       this.caret.save()
-      if (this.$listeners.mouseup !== void 0) {
+      if (this.qListeners.mouseup !== void 0) {
         this.$emit('mouseup', e)
       }
     },
 
     __onKeyup (e) {
       this.caret.save()
-      if (this.$listeners.keyup !== void 0) {
+      if (this.qListeners.keyup !== void 0) {
         this.$emit('keyup', e)
       }
     },
 
     __onTouchend (e) {
       this.caret.save()
-      if (this.$listeners.touchend !== void 0) {
+      if (this.qListeners.touchend !== void 0) {
         this.$emit('touchend', e)
       }
     },
@@ -359,7 +383,7 @@ export default Vue.extend({
     },
 
     focus () {
-      this.$refs.content.focus()
+      this.$refs.content !== void 0 && this.$refs.content.focus()
     },
 
     getContentEl () {
@@ -367,11 +391,13 @@ export default Vue.extend({
     },
 
     __setContent (v) {
-      if (this.isViewingSource) {
-        this.$refs.content.innerText = v
-      }
-      else {
-        this.$refs.content.innerHTML = v
+      if (this.$refs.content !== void 0) {
+        if (this.isViewingSource) {
+          this.$refs.content.innerText = v
+        }
+        else {
+          this.$refs.content.innerHTML = v
+        }
       }
     }
   },
@@ -418,7 +444,7 @@ export default Vue.extend({
     }
 
     const on = {
-      ...this.$listeners,
+      ...this.qListeners,
       input: this.__onInput,
       keydown: this.__onKeydown,
       click: this.__onClick,
@@ -431,40 +457,32 @@ export default Vue.extend({
       touchend: this.__onTouchend
     }
 
-    return h(
-      'div',
-      {
-        staticClass: 'q-editor',
-        style: {
-          height: this.inFullscreen === true ? '100vh' : null
-        },
-        'class': {
-          disabled: this.disable,
-          'fullscreen column': this.inFullscreen,
-          'q-editor--square no-border-radius': this.square,
-          'q-editor--flat': this.flat,
-          'q-editor--dense': this.dense,
-          'q-editor--dark q-dark': this.isDark
-        }
+    return h('div', {
+      style: {
+        height: this.inFullscreen === true ? '100vh' : null
       },
-      [
-        toolbars,
+      class: this.classes,
+      attrs: this.attrs
+    }, [
+      toolbars,
 
-        h(
-          'div',
-          {
-            ref: 'content',
-            staticClass: `q-editor__content`,
-            style: this.innerStyle,
-            class: this.innerClass,
-            attrs: { contenteditable: this.editable },
-            domProps: isSSR
-              ? { innerHTML: this.value }
-              : undefined,
-            on
-          }
-        )
-      ]
-    )
+      h(
+        'div',
+        {
+          ref: 'content',
+          staticClass: `q-editor__content`,
+          style: this.innerStyle,
+          class: this.innerClass,
+          attrs: {
+            contenteditable: this.editable,
+            placeholder: this.placeholder
+          },
+          domProps: isSSR
+            ? { innerHTML: this.value }
+            : undefined,
+          on
+        }
+      )
+    ])
   }
 })

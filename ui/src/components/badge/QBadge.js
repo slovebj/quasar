@@ -1,9 +1,13 @@
 import Vue from 'vue'
 
+import ListenersMixin from '../../mixins/listeners.js'
+
 import { slot } from '../../utils/slot.js'
 
 export default Vue.extend({
   name: 'QBadge',
+
+  mixins: [ ListenersMixin ],
 
   props: {
     color: String,
@@ -43,6 +47,13 @@ export default Vue.extend({
         (text !== void 0 ? ` text-${text}` : '') +
         (this.floating === true ? ' q-badge--floating' : '') +
         (this.transparent === true ? ' q-badge--transparent' : '')
+    },
+
+    attrs () {
+      return {
+        role: 'alert',
+        'aria-label': this.label
+      }
     }
   },
 
@@ -50,7 +61,8 @@ export default Vue.extend({
     return h('div', {
       style: this.style,
       class: this.classes,
-      on: this.$listeners
+      attrs: this.attrs,
+      on: { ...this.qListeners }
     }, this.label !== void 0 ? [ this.label ] : slot(this, 'default'))
   }
 })

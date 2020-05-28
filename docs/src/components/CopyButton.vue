@@ -1,5 +1,5 @@
 <template lang="pug">
-div.relative
+.relative
   q-btn(
     color="primary"
     round
@@ -16,13 +16,13 @@ div.relative
   )
     q-badge.absolute(
       v-show="copied"
-      style="top: 12px; right: 58px;"
+      style="top: 8px; right: 58px;"
     ) Copied to clipboard
 </template>
 
 <script>
 import { copyToClipboard } from 'quasar'
-import { mdiContentCopy } from '@quasar/extras/mdi-v4'
+import { mdiContentCopy } from '@quasar/extras/mdi-v5'
 
 export default {
   props: {

@@ -8,7 +8,7 @@ import FullscreenMixin from '../../mixins/fullscreen.js'
 
 import { isNumber } from '../../utils/is.js'
 import { mergeSlot } from '../../utils/slot.js'
-import { cache } from '../../utils/vm.js'
+import cache from '../../utils/cache.js'
 
 export default Vue.extend({
   name: 'QCarousel',
@@ -19,12 +19,14 @@ export default Vue.extend({
     height: String,
     padding: Boolean,
 
-    controlColor: String,
     controlType: {
       type: String,
       validator: v => [ 'regular', 'flat', 'outline', 'push', 'unelevated' ].includes(v),
       default: 'flat'
     },
+    controlColor: String,
+    controlTextColor: String,
+
     autoplay: [Number, Boolean],
 
     arrows: Boolean,
@@ -84,8 +86,9 @@ export default Vue.extend({
     controlProps () {
       return {
         color: this.controlColor,
+        textColor: this.controlTextColor,
         round: true,
-        [this.controlType]: true,
+        [ this.controlType ]: true,
         dense: true
       }
     },
@@ -147,10 +150,11 @@ export default Vue.extend({
           return h(QBtn, {
             key: name,
             class: `q-carousel__navigation-icon q-carousel__navigation-icon--${name === this.value ? '' : 'in'}active`,
-            props: Object.assign({
+            props: {
               icon: this.navIcon,
-              size: 'sm'
-            }, this.controlProps),
+              size: 'sm',
+              ...this.controlProps
+            },
             on: cache(this, 'nav#' + name, { click: () => { this.goTo(name) } })
           })
         }))
@@ -180,7 +184,7 @@ export default Vue.extend({
             staticClass: `q-carousel__control q-carousel__arrow q-carousel__prev-arrow q-carousel__prev-arrow--${this.direction} absolute flex flex-center`
           }, [
             h(QBtn, {
-              props: Object.assign({ icon: this.arrowIcons[0] }, this.controlProps),
+              props: { icon: this.arrowIcons[0], ...this.controlProps },
               on: cache(this, 'prev', { click: this.previous })
             })
           ]),
@@ -188,7 +192,7 @@ export default Vue.extend({
             staticClass: `q-carousel__control q-carousel__arrow q-carousel__next-arrow q-carousel__next-arrow--${this.direction} absolute flex flex-center`
           }, [
             h(QBtn, {
-              props: Object.assign({ icon: this.arrowIcons[1] }, this.controlProps),
+              props: { icon: this.arrowIcons[1], ...this.controlProps },
               on: cache(this, 'next', { click: this.next })
             })
           ])
@@ -202,7 +206,7 @@ export default Vue.extend({
       return h('div', {
         style: this.style,
         class: this.classes,
-        on: this.$listeners
+        on: { ...this.qListeners }
       }, [
         h('div', {
           staticClass: 'q-carousel__slides-container',
@@ -213,7 +217,7 @@ export default Vue.extend({
   },
 
   mounted () {
-    this.autoplay === true && this.__startTimer()
+    this.autoplay && this.__startTimer()
   },
 
   beforeDestroy () {

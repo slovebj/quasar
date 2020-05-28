@@ -2,7 +2,7 @@ const fs = require('fs')
 const path = require('path')
 const compileTemplate = require('lodash.template')
 
-const log = require('./helpers/logger')('app:generator')
+const { log } = require('./helpers/logger')
 const appPaths = require('./app-paths')
 const quasarFolder = appPaths.resolve.app('.quasar')
 
@@ -22,8 +22,12 @@ class Generator {
     if (preFetch) {
       paths.push('client-prefetch.js')
     }
+
     if (ctx.mode.ssr) {
       paths.push('server-entry.js')
+      if (ctx.mode.pwa) {
+        paths.push('ssr-pwa.js')
+      }
     }
 
     this.files = paths.map(file => {

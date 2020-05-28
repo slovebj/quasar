@@ -12,9 +12,9 @@ const injectStyleRules = require('./inject.style-rules')
 module.exports = function (cfg, configName) {
   const chain = new WebpackChain()
 
-  const needsHash = !cfg.ctx.dev && !['electron', 'cordova', 'capacitor'].includes(cfg.ctx.modeName)
-  const fileHash = needsHash ? '.[hash:8]' : ''
-  const chunkHash = needsHash ? '.[contenthash:8]' : ''
+  const needsHash = !cfg.ctx.dev && !['electron', 'cordova', 'capacitor', 'bex'].includes(cfg.ctx.modeName)
+  const fileHash = needsHash ? '.[contenthash:8]' : ''
+  const chunkHash = needsHash ? '.[chunkhash:8]' : ''
   const resolveModules = [
     'node_modules',
     appPaths.resolve.app('node_modules'),
@@ -48,7 +48,7 @@ module.exports = function (cfg, configName) {
   chain.resolve.symlinks(false)
 
   chain.resolve.extensions
-    .merge([ '.js', '.vue', '.json' ])
+    .merge([ '.mjs', '.js', '.vue', '.json', '.wasm' ])
 
   chain.resolve.modules
     .merge(resolveModules)
@@ -61,7 +61,9 @@ module.exports = function (cfg, configName) {
       layouts: appPaths.resolve.src(`layouts`),
       pages: appPaths.resolve.src(`pages`),
       assets: appPaths.resolve.src(`assets`),
-      boot: appPaths.resolve.src(`boot`)
+      boot: appPaths.resolve.src(`boot`),
+
+      'src-bex': appPaths.bexDir // needed for app/templates
     })
 
   if (cfg.framework.all === true) {
@@ -75,9 +77,7 @@ module.exports = function (cfg, configName) {
     .merge(resolveModules)
 
   chain.module.noParse(
-    cfg.framework.all === true
-      ? /^(vue|vue-router|vuex|vuex-router-sync|@quasar[\\/]extras|quasar)$/
-      : /^(vue|vue-router|vuex|vuex-router-sync|@quasar[\\/]extras)$/
+    /^(vue|vue-router|vuex|vuex-router-sync|@quasar[\\/]extras|quasar)$/
   )
 
   const vueRule = chain.module.rule('vue')
@@ -85,7 +85,7 @@ module.exports = function (cfg, configName) {
 
   if (cfg.framework.all === 'auto') {
     vueRule.use('quasar-auto-import')
-      .loader(path.join(__dirname, 'loader.auto-import.js'))
+      .loader(path.join(__dirname, `loader.auto-import-${configName === 'Server' ? 'server' : 'client'}.js`))
       .options(cfg.framework.autoImportComponentCase)
   }
 
@@ -99,51 +99,68 @@ module.exports = function (cfg, configName) {
       transformAssetUrls: cfg.build.transformAssetUrls
     })
 
-  chain.module.rule('babel')
-    .test(/\.jsx?$/)
-    .exclude
-      .add(filepath => {
-        // always transpile js(x) in Vue files
-        if (/\.vue\.jsx?$/.test(filepath)) {
-          return false
-        }
+  if (cfg.framework.all !== true && configName !== 'Server') {
+    chain.module.rule('transform-quasar-imports')
+      .test(/\.(t|j)sx?$/)
+      .use('transform-quasar-imports')
+        .loader(path.join(__dirname, 'loader.transform-quasar-imports.js'))
+  }
 
-        if (filepath.match(/[\\/]node_modules[\\/]quasar[\\/]/)) {
-          if (configName === 'Server') {
-            // transpile only if not from 'quasar/dist' folder
-            if (!filepath.match(/[\\/]node_modules[\\/]quasar[\\/]dist/)) {
-              return false
-            }
-          }
-          else {
-            // always transpile Quasar
+  if (cfg.build.modern !== true) {
+    chain.module.rule('babel')
+      .test(/\.jsx?$/)
+      .exclude
+        .add(filepath => {
+          if (
+            // transpile js(x) in Vue files:
+            /\.vue\.jsx?$/.test(filepath) ||
+
+            // transpile Quasar:
+            (configName !== 'Server' && filepath.match(/[\\/]node_modules[\\/]quasar[\\/]/)) ||
+
+            // explicit config to transpile some deps:
+            cfg.build.transpileDependencies.some(dep => filepath.match(dep))
+          ) {
             return false
           }
-        }
 
-        if (cfg.build.transpileDependencies.some(dep => filepath.match(dep))) {
-          return false
-        }
-
-        // Don't transpile anything else in node_modules
-        return /[\\/]node_modules[\\/]/.test(filepath)
-      })
-      .end()
-    .use('babel-loader')
-      .loader('babel-loader')
-        .options({
-          extends: appPaths.resolve.app('babel.config.js'),
-          plugins: cfg.framework.all !== true && configName !== 'Server' ? [
-            [
-              'transform-imports', {
-                quasar: {
-                  transform: `quasar/dist/babel-transforms/imports.js`,
-                  preventFullImport: true
-                }
-              }
-            ]
-          ] : []
+          // Don't transpile anything else in node_modules
+          return /[\\/]node_modules[\\/]/.test(filepath)
         })
+        .end()
+      .use('babel-loader')
+        .loader('babel-loader')
+          .options({
+            compact: false,
+            extends: appPaths.resolve.app('babel.config.js')
+          })
+  }
+
+  if (cfg.supportTS !== false) {
+    chain.resolve.extensions.add('.ts').add('.tsx')
+
+    chain.module
+      .rule('typescript')
+      .test(/\.tsx?$/)
+      .use('ts-loader')
+        .loader('ts-loader')
+        .options({
+          // custom config is merged if present, but vue setup and type checking disable are always applied
+          ...(cfg.supportTS.tsLoaderConfig || {}),
+          appendTsSuffixTo: [ /\.vue$/ ],
+          // Type checking is handled by fork-ts-checker-webpack-plugin
+          transpileOnly: true
+        })
+
+    const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
+    chain
+      .plugin('ts-checker')
+      // https://github.com/TypeStrong/fork-ts-checker-webpack-plugin#options
+      .use(ForkTsCheckerWebpackPlugin, [
+        // custom config is merged if present, but vue option is always enabled
+        { ...(cfg.supportTS.tsCheckerConfig || {}), vue: true }
+      ])
+  }
 
   chain.module.rule('images')
     .test(/\.(png|jpe?g|gif|svg)(\?.*)?$/)
@@ -187,6 +204,14 @@ module.exports = function (cfg, configName) {
     lessLoaderOptions: cfg.build.lessLoaderOptions
   })
 
+  chain.module // fixes https://github.com/graphql/graphql-js/issues/1272
+    .rule('mjs')
+    .test(/\.mjs$/)
+    .include
+      .add(/[\\/]node_modules[\\/]/)
+      .end()
+    .type('javascript/auto')
+
   chain.plugin('vue-loader')
     .use(VueLoaderPlugin)
 
@@ -220,8 +245,8 @@ module.exports = function (cfg, configName) {
             test: add !== void 0 || remove !== void 0
               ? module => {
                 if (module.resource) {
-                  if (add !== void 0 && add.test(module.resource)) { return true }
                   if (remove !== void 0 && remove.test(module.resource)) { return false }
+                  if (add !== void 0 && add.test(module.resource)) { return true }
                 }
                 return regex.test(module.resource)
               }
@@ -257,7 +282,7 @@ module.exports = function (cfg, configName) {
       .use(FriendlyErrorsPlugin, [{
         clearConsole: true,
         compilationSuccessInfo: ['spa', 'pwa', 'ssr'].includes(cfg.ctx.modeName)
-          ? { notes: [ devCompilationSuccess(cfg.ctx, cfg.build.APP_URL, appPaths.appDir) ] }
+          ? { notes: [ devCompilationSuccess(cfg.ctx, cfg.build.APP_URL, appPaths.appDir, cfg.build.modern) ] }
           : undefined
       }])
   }

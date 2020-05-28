@@ -10,9 +10,10 @@ import QSeparator from '../separator/QSeparator.js'
 import { RouterLinkMixin } from '../../mixins/router-link.js'
 import ModelToggleMixin from '../../mixins/model-toggle.js'
 import DarkMixin from '../../mixins/dark.js'
+
 import { stopAndPrevent } from '../../utils/event.js'
 import { slot } from '../../utils/slot.js'
-import { cache } from '../../utils/vm.js'
+import cache from '../../utils/cache.js'
 
 const eventName = 'q:expansion-item:close'
 
@@ -222,7 +223,7 @@ export default Vue.extend({
 
         data.props.clickable = true
         data[evtProp] = {
-          ...this.$listeners,
+          ...this.qListeners,
           click: this.__onHeaderClick
         }
 
@@ -240,7 +241,11 @@ export default Vue.extend({
         this.__getHeader(h),
 
         h(QSlideTransition, {
-          props: { duration: this.duration }
+          props: { duration: this.duration },
+          on: cache(this, 'slide', {
+            show: () => { this.$emit('after-show') },
+            hide: () => { this.$emit('after-hide') }
+          })
         }, [
           h('div', {
             staticClass: 'q-expansion-item__content relative-position',

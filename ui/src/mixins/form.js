@@ -19,7 +19,8 @@ export default {
         this.$createElement('input', {
           staticClass: 'hidden',
           class: className,
-          attrs: this.formAttrs
+          attrs: this.formAttrs,
+          domProps: this.formDomProps
         })
       )
     }

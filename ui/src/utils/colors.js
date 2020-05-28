@@ -1,3 +1,5 @@
+const reRGBA = /^rgb(a)?\((\d{1,3}),(\d{1,3}),(\d{1,3}),?([01]?\.?\d*?)?\)$/
+
 export function rgbToHex ({ r, g, b, a }) {
   const alpha = a !== void 0
 
@@ -23,27 +25,6 @@ export function rgbToHex ({ r, g, b, a }) {
 
 export function rgbToString ({ r, g, b, a }) {
   return `rgb${a !== void 0 ? 'a' : ''}(${r},${g},${b}${a !== void 0 ? ',' + (a / 100) : ''})`
-}
-
-export function stringToRgb (str) {
-  if (typeof str !== 'string') {
-    throw new TypeError('Expected a string')
-  }
-
-  str = str.replace(/ /g, '')
-
-  if (str.startsWith('#')) {
-    return hexToRgb(str)
-  }
-
-  const model = str.substring(str.indexOf('(') + 1, str.length - 1).split(',')
-
-  return {
-    r: parseInt(model[0], 10),
-    g: parseInt(model[1], 10),
-    b: parseInt(model[2], 10),
-    a: model[3] !== void 0 ? parseFloat(model[3]) * 100 : void 0
-  }
 }
 
 export function hexToRgb (hex) {
@@ -154,26 +135,31 @@ export function rgbToHsv ({ r, g, b, a }) {
   }
 }
 
-const reRGBA = /^\s*rgb(a)?\s*\((\s*(\d+)\s*,\s*?){2}(\d+)\s*,?\s*([01]?\.?\d*?)?\s*\)\s*$/
-
-export function textToRgb (color) {
-  if (typeof color !== 'string') {
+export function textToRgb (str) {
+  if (typeof str !== 'string') {
     throw new TypeError('Expected a string')
   }
 
+  const color = str.replace(/ /g, '')
+
   const m = reRGBA.exec(color)
-  if (m) {
-    const rgb = {
-      r: Math.min(255, parseInt(m[2], 10)),
-      g: Math.min(255, parseInt(m[3], 10)),
-      b: Math.min(255, parseInt(m[4], 10))
-    }
-    if (m[1]) {
-      rgb.a = Math.min(1, parseFloat(m[5]))
-    }
-    return rgb
+
+  if (m === null) {
+    return hexToRgb(color)
   }
-  return hexToRgb(color)
+
+  const rgb = {
+    r: Math.min(255, parseInt(m[2], 10)),
+    g: Math.min(255, parseInt(m[3], 10)),
+    b: Math.min(255, parseInt(m[4], 10))
+  }
+
+  if (m[1]) {
+    const alpha = parseFloat(m[5])
+    rgb.a = Math.min(1, isNaN(alpha) === true ? 1 : alpha) * 100
+  }
+
+  return rgb
 }
 
 /* works as darken if percent < 0 */
@@ -300,6 +286,26 @@ export function getBrand (color, element = document.body) {
   return getComputedStyle(element).getPropertyValue(`--q-color-${color}`).trim() || null
 }
 
+export function getPaletteColor (colorName) {
+  if (typeof colorName !== 'string') {
+    throw new TypeError('Expected a string as color')
+  }
+
+  const el = document.createElement('div')
+
+  el.className = `text-${colorName} invisible fixed no-pointer-events`
+  document.body.appendChild(el)
+
+  const result = getComputedStyle(el).getPropertyValue('color')
+
+  el.remove()
+
+  return rgbToHex(textToRgb(result))
+}
+
+// TODO: remove in v2
+export const stringToRgb = textToRgb
+
 export default {
   rgbToHex,
   hexToRgb,
@@ -312,5 +318,6 @@ export default {
   blend,
   changeAlpha,
   setBrand,
-  getBrand
+  getBrand,
+  getPaletteColor
 }

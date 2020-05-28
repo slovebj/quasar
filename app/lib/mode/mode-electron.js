@@ -2,16 +2,14 @@ const fs = require('fs')
 const fse = require('fs-extra')
 
 const appPaths = require('../app-paths')
-const logger = require('../helpers/logger')
-const log = logger('app:mode-electron')
-const warn = logger('app:mode-electron', 'red')
+const { log, warn } = require('../helpers/logger')
 const { spawnSync } = require('../helpers/spawn')
 const nodePackager = require('../helpers/node-packager')
 const { bundlerIsInstalled } = require('../electron/bundler')
 
 const electronDeps = {
-  'electron': '^7.0.0',
-  'electron-debug': '^3.0.0',
+  'electron': '^8.0.1',
+  'electron-debug': '^3.0.1',
   'electron-devtools-installer': '^2.2.4',
   'devtron': '^1.4.0'
 }
@@ -37,7 +35,7 @@ class Mode {
       cmdParam.concat(Object.keys(electronDeps).map(dep => {
         return `${dep}@${electronDeps[dep]}`
       })),
-      { cwd: appPaths.appDir },
+      { cwd: appPaths.appDir, env: { ...process.env, NODE_ENV: 'development' } },
       () => warn('Failed to install Electron dependencies')
     )
 
@@ -75,7 +73,7 @@ class Mode {
     spawnSync(
       nodePackager,
       cmdParam.concat(deps),
-      { cwd: appPaths.appDir },
+      { cwd: appPaths.appDir, env: { ...process.env, NODE_ENV: 'development' } },
       () => warn('Failed to uninstall Electron dependencies')
     )
 

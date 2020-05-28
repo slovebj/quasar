@@ -1,7 +1,10 @@
 import Vue from 'vue'
 
 import TouchPan from '../../directives/TouchPan.js'
+
 import DarkMixin from '../../mixins/dark.js'
+import ListenersMixin from '../../mixins/listeners.js'
+
 import { slot } from '../../utils/slot.js'
 
 const slotsDef = [
@@ -14,7 +17,7 @@ const slotsDef = [
 export default Vue.extend({
   name: 'QSlideItem',
 
-  mixins: [ DarkMixin ],
+  mixins: [ DarkMixin, ListenersMixin ],
 
   props: {
     leftColor: String,
@@ -25,6 +28,14 @@ export default Vue.extend({
 
   directives: {
     TouchPan
+  },
+
+  computed: {
+    langDir () {
+      return this.$q.lang.rtl === true
+        ? { left: 'right', right: 'left' }
+        : { left: 'left', right: 'right' }
+    }
   },
 
   methods: {
@@ -78,8 +89,8 @@ export default Vue.extend({
       }
 
       if (
-        (this.$scopedSlots.left === void 0 && evt.direction === 'right') ||
-        (this.$scopedSlots.right === void 0 && evt.direction === 'left') ||
+        (this.$scopedSlots.left === void 0 && evt.direction === this.langDir.right) ||
+        (this.$scopedSlots.right === void 0 && evt.direction === this.langDir.left) ||
         (this.$scopedSlots.top === void 0 && evt.direction === 'down') ||
         (this.$scopedSlots.bottom === void 0 && evt.direction === 'up')
       ) {
@@ -91,7 +102,7 @@ export default Vue.extend({
 
       if (this.__axis === 'X') {
         dir = evt.direction === 'left' ? -1 : 1
-        showing = dir * (this.$q.lang.rtl === true ? -1 : 1) === 1 ? 'left' : 'right'
+        showing = dir === 1 ? this.langDir.left : this.langDir.right
         dist = evt.distance.x
       }
       else {
@@ -126,8 +137,8 @@ export default Vue.extend({
   render (h) {
     const
       content = [],
-      left = this.$scopedSlots.right !== void 0,
-      right = this.$scopedSlots.left !== void 0,
+      left = this.$scopedSlots[this.langDir.right] !== void 0,
+      right = this.$scopedSlots[this.langDir.left] !== void 0,
       up = this.$scopedSlots.bottom !== void 0,
       down = this.$scopedSlots.top !== void 0
 
@@ -171,7 +182,7 @@ export default Vue.extend({
     return h('div', {
       staticClass: 'q-slide-item q-item-type overflow-hidden',
       class: this.isDark === true ? `q-slide-item--dark q-dark` : '',
-      on: this.$listeners
+      on: { ...this.qListeners }
     }, content)
   },
 

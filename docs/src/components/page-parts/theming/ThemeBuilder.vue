@@ -11,8 +11,8 @@
           glossy
           unelevated
         )
-          .text-caption.text-capitalize.text-weight-light
-            div {{ color }}
+          .text-caption.text-weight-light
+            .text-capitalize {{ color }}
             div {{ colors[color] }}
 
           q-menu(anchor="top left", self="top left")
@@ -116,7 +116,7 @@ import {
 
 import {
   mdiArrowLeft, mdiMagnify, mdiMenu, mdiMapMarkerRadius
-} from '@quasar/extras/mdi-v4'
+} from '@quasar/extras/mdi-v5'
 
 const { setBrand, luminosity } = colors
 
