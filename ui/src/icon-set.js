@@ -1,45 +1,28 @@
 import Vue from 'vue'
 
 import { isSSR } from './plugins/Platform.js'
-import materialIcons from '../icon-set/material-icons.js'
+import iconfont from '../icon-set/iconfont.js'
 
 export default {
-  install ($q, queues, iconSet) {
-    const initialSet = iconSet || materialIcons
+  install ($q, iconSet) {
+    this.set = (iconDef = iconfont) => {
+      iconDef.set = this.set
 
-    this.set = (setObject, ssrContext) => {
-      const def = { ...setObject }
-
-      if (isSSR === true) {
-        if (ssrContext === void 0) {
-          console.error('SSR ERROR: second param required: Quasar.iconSet.set(iconSet, ssrContext)')
-          return
-        }
-
-        def.set = ssrContext.$q.iconSet.set
-        ssrContext.$q.iconSet = def
+      if (isSSR === true || $q.iconSet !== void 0) {
+        $q.iconSet = iconDef
       }
       else {
-        def.set = this.set
-        $q.iconSet = def
+        Vue.util.defineReactive($q, 'iconSet', iconDef)
       }
+
+      this.name = iconDef.name
+      this.def = iconDef
     }
 
-    if (isSSR === true) {
-      queues.server.push((q, ctx) => {
-        q.iconSet = {}
-        q.iconSet.set = setObject => {
-          this.set(setObject, ctx.ssr)
-        }
+    this.set(iconSet)
 
-        q.iconSet.set(initialSet)
-      })
-    }
-    else {
+    if (isSSR !== true) {
       Vue.util.defineReactive($q, 'iconMapFn', void 0)
-      Vue.util.defineReactive($q, 'iconSet', {})
-
-      this.set(initialSet)
     }
   }
 }
