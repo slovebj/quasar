@@ -83,8 +83,8 @@ function parseAssetProperty (prefix) {
   }
 }
 
-function uniqueFilter (value, index, self) {
-  return self.indexOf(value) === index
+function getUniqueArray (original) {
+  return Array.from(new Set(original))
 }
 
 function uniquePathFilter (value, index, self) {
@@ -369,7 +369,7 @@ class QuasarConfig {
     }
 
     if (cfg.extras.length > 0) {
-      cfg.extras = cfg.extras.filter(uniqueFilter)
+      cfg.extras = getUniqueArray(cfg.extras)
     }
 
     if (cfg.framework.all !== true && cfg.framework.all !== 'auto') {
@@ -381,9 +381,9 @@ class QuasarConfig {
       }
     }
 
-    cfg.framework.components = cfg.framework.components.filter(uniqueFilter)
-    cfg.framework.directives = cfg.framework.directives.filter(uniqueFilter)
-    cfg.framework.plugins = cfg.framework.plugins.filter(uniqueFilter)
+    cfg.framework.components = getUniqueArray(cfg.framework.components)
+    cfg.framework.directives = getUniqueArray(cfg.framework.directives)
+    cfg.framework.plugins = getUniqueArray(cfg.framework.plugins)
 
     cfg.build = merge({
       modern: false,
@@ -465,9 +465,6 @@ class QuasarConfig {
 
     if (cfg.build.modern === true) {
       log(underline('Using MODERN build (ES6+)'))
-      if (cfg.build.uglifyOptions.ecma === void 0) {
-        cfg.build.uglifyOptions.ecma = 6
-      }
 
       // force disable IE11 support
       if (cfg.supportIE === true) {
