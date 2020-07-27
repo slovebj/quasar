@@ -465,9 +465,9 @@ export function endOfDate (date, unit) {
   return t
 }
 
-export function getMaxDate (/* date, ...args */) {
-  let t = 0
-  Array.prototype.slice.call(arguments).forEach(d => {
+export function getMaxDate (date /* , ...args */) {
+  let t = new Date(date)
+  Array.prototype.slice.call(arguments, 1).forEach(d => {
     t = Math.max(t, new Date(d))
   })
   return t
@@ -489,7 +489,7 @@ function getDiff (t, sub, interval) {
 }
 
 export function getDateDiff (date, subtract, unit = 'days') {
-  let
+  const
     t = new Date(date),
     sub = new Date(subtract)
 
@@ -825,7 +825,7 @@ export function formatDate (val, mask, dateLocale, __forcedYear, __forcedTimezon
     return
   }
 
-  let date = new Date(val)
+  const date = new Date(val)
 
   if (isNaN(date)) {
     return

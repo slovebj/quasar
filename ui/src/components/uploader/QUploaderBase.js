@@ -82,7 +82,7 @@ export default Vue.extend({
     canAddFiles () {
       return (
         this.editable === true &&
-        this.isUploading === false &&
+        this.isUploading !== true &&
         // if single selection and no files are queued:
         (this.multiple === true || this.queuedFiles.length === 0) &&
         // if max-files is set and current number of files does not exceeds it:
@@ -296,6 +296,7 @@ export default Vue.extend({
             type: 'file',
             title: '', // try to remove default tooltip
             accept: this.accept,
+            capture: this.capture,
             ...(this.multiple === true ? { multiple: true } : {})
           },
           on: cache(this, 'input', {

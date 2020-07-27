@@ -18,7 +18,7 @@ const metaChildren = [
   { path: 'third', component: load('meta/pages/third') }
 ]
 
-let routes = [
+const routes = [
   { path: '/', component: load('Index') },
   {
     path: '/meta/layout_1',
@@ -100,11 +100,9 @@ pages.forEach(page => {
 })
 
 // Always leave this as last one
-if (process.env.MODE !== 'ssr') {
-  routes.push({
-    path: '*',
-    component: () => import('pages/Error404.vue')
-  })
-}
+routes.push({
+  path: '*',
+  component: () => import('pages/Error404.vue')
+})
 
 export default routes

@@ -33,7 +33,7 @@ export function getModel (ratio, min, max, step, decimals) {
   return between(model, min, max)
 }
 
-export let SliderMixin = {
+export const SliderMixin = {
   mixins: [ DarkMixin, FormMixin ],
 
   directives: {
@@ -96,8 +96,7 @@ export let SliderMixin = {
       return `q-slider q-slider${this.axis} q-slider--${this.active === true ? '' : 'in'}active` +
         (this.isReversed === true ? ' q-slider--reversed' : '') +
         (this.color !== void 0 ? ` text-${this.color}` : '') +
-        (this.disable === true ? ' disabled' : '') +
-        (this.editable === true ? ' q-slider--editable' : '') +
+        (this.disable === true ? ' disabled' : ' q-slider--enabled' + (this.editable === true ? ' q-slider--editable' : '')) +
         (this.focus === 'both' ? ' q-slider--focus' : '') +
         (this.label || this.labelAlways === true ? ' q-slider--label' : '') +
         (this.labelAlways === true ? ' q-slider--label-always' : '') +
@@ -106,7 +105,7 @@ export let SliderMixin = {
     },
 
     editable () {
-      return !this.disable && !this.readonly
+      return this.disable !== true && this.readonly !== true
     },
 
     decimals () {

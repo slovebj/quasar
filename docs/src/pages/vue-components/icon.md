@@ -141,6 +141,9 @@ If you are only using svg icons (and have configured a [Quasar Icon Set](/option
 | Vendor | Quasar IconSet name | Import Icons from | Notes |
 | --- | --- | --- | --- |
 | Material Icons (Google) | svg-material-icons | @quasar/extras/material-icons | |
+| Material Icons Outlined (Google) | svg-material-icons-outlined | @quasar/extras/material-icons-outlined | `@quasar/extras` v1.9+ |
+| Material Icons Sharp (Google) | svg-material-icons-sharp | @quasar/extras/material-icons-sharp | `@quasar/extras` v1.9+ |
+| Material Icons Round (Google) | svg-material-icons-round | @quasar/extras/material-icons-round | `@quasar/extras` v1.9+ |
 | MDI (Material Design Icons) | svg-mdi-v5 | @quasar/extras/mdi-v5 | |
 | Font Awesome | svg-fontawesome-v5 | @quasar/extras/fontawesome-v5 | |
 | Ionicons v5 | svg-ionicons-v5 | @quasar/extras/ionicons-v5 | `@quasar/extras` v1.7+ |
@@ -155,13 +158,27 @@ Svg icons are supplied by `@quasar/extras` (although you can supply [your own sv
 
 #### SVG Material Icons (Google)
 
-::: warning
-The SVG format of Material Icons from Google is parsed from **their official repo which is years out of date**. It's best if you choose the MDI svgs instead.
-:::
-
 * Icon names are in camel-case and always begin with "mat" prefix.
 * Go to [Material Icons](https://material.io/icons/), look for your desired icon and remember its name (eg. "all_inbox"), prefix it with "mat" and camel-case the result (eg. "matAllInbox").
 * Import statement example: `import { matAllInbox } from '@quasar/extras/material-icons'`.
+
+#### SVG Material Icons Outlined (Google) <q-badge align="top" label="Quasar v1.12.13+" /> <q-badge align="top" class="q-ml-xs" label="@quasar/extras v1.9+" />
+
+* Icon names are in camel-case and always begin with "outlined" prefix.
+* Go to [Material Icons](https://material.io/icons/), look for your desired icon and remember its name (eg. "all_inbox"), prefix it with "outlined" and camel-case the result (eg. "outlinedAllInbox").
+* Import statement example: `import { outlinedAllInbox } from '@quasar/extras/material-icons-outlined'`.
+
+#### SVG Material Icons Sharp (Google) <q-badge align="top" label="Quasar v1.12.13+" /> <q-badge align="top" class="q-ml-xs" label="@quasar/extras v1.9+" />
+
+* Icon names are in camel-case and always begin with "sharp" prefix.
+* Go to [Material Icons](https://material.io/icons/), look for your desired icon and remember its name (eg. "all_inbox"), prefix it with "sharp" and camel-case the result (eg. "sharpAllInbox").
+* Import statement example: `import { sharpAllInbox } from '@quasar/extras/material-icons-sharp'`.
+
+#### SVG Material Icons Round (Google) <q-badge align="top" label="Quasar v1.12.13+" /> <q-badge align="top" class="q-ml-xs" label="@quasar/extras v1.9+" />
+
+* Icon names are in camel-case and always begin with "round" prefix.
+* Go to [Material Icons](https://material.io/icons/), look for your desired icon and remember its name (eg. "all_inbox"), prefix it with "round" and camel-case the result (eg. "roundAllInbox").
+* Import statement example: `import { roundAllInbox } from '@quasar/extras/material-icons-round'`.
 
 #### SVG MDI (Material Design Icons)
 
@@ -329,7 +346,7 @@ Reasoning on why to use an `<svg>` in a QIcon is that the svg will respect the s
 ```
 
 Some limitations:
-* do not use "height"/"width" attributes on the `<svg>` tag (it will brake QIcon's way of handling the size)
+* do not use "height"/"width" attributes on the `<svg>` tag (it will break QIcon's way of handling the size)
 * all `<path>`s will have "fill: currentColor" CSS applied by default; if you don't want that, then add `fill="none"` to the `<path>` tag
 
 ## Image icons
@@ -340,19 +357,21 @@ You can also make an icon point to an image URL instead of relying on any webfon
 ```html
 <q-icon name="img:https://cdn.quasar.dev/logo/svg/quasar-logo.svg" />
 <q-btn icon="img:https://cdn.quasar.dev/logo/svg/quasar-logo.svg" ... />
-<q-icon name="img:statics/my/path/to/some.svg" />
+
+<!-- reference from /public: -->
+<q-icon name="img:my/path/to/some.svg" />
 ```
 
 ::: tip
-Remember that you can place images in your `/src/statics` folder too and point to them. You don't always need a full URL.
+Remember that you can place images in your `/public` folder too and point to them. You don't always need a full URL.
 :::
 
 This is not restricted to SVG only. You can use whatever image type you want (png, jpg, ...):
 
 ```html
-<q-icon name="img:statics/bla/bla/my.png" />
-<q-btn icon="img:statics/bla/bla/my.jpg" ... />
-<q-input clearable clear-icon="img:statics/bla/bla/my.gif" ... />
+<q-icon name="img:bla/bla/my.png" />
+<q-btn icon="img:bla/bla/my.jpg" ... />
+<q-input clearable clear-icon="img:bla/bla/my.gif" ... />
 ```
 
 It is also possible to inline the image (svg, png, jpeg, gif...) and dynamically change its style (svg):

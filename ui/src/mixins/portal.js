@@ -1,5 +1,8 @@
 import Vue from 'vue'
 
+import { isSSR } from '../plugins/Platform.js'
+import { getBodyFullscreenElement } from '../utils/dom.js'
+
 export function closePortalMenus (vm, evt) {
   do {
     if (vm.$options.name === 'QMenu') {
@@ -43,35 +46,44 @@ export function closePortals (vm, evt, depth) {
   }
 }
 
-export default {
+function isOnGlobalDialog (vm) {
+  while (vm !== void 0) {
+    if (vm.$options.name === 'QGlobalDialog') {
+      return true
+    }
+    if (vm.$options.name === 'QDialog') {
+      return false
+    }
+
+    vm = vm.$parent
+  }
+  return false
+}
+
+const Portal = {
   inheritAttrs: false,
 
   props: {
-    contentClass: [Array, String, Object],
-    contentStyle: [Array, String, Object]
+    contentClass: [ Array, String, Object ],
+    contentStyle: [ Array, String, Object ]
   },
 
   methods: {
     __showPortal () {
       if (this.$q.fullscreen !== void 0 && this.$q.fullscreen.isCapable === true) {
-        const append = (isFullscreen) => {
+        const append = isFullscreen => {
           if (this.__portal === void 0) {
             return
           }
 
-          let newParent = document.body
-
-          if (isFullscreen === true) {
-            newParent = document.fullscreenElement ||
-              document.mozFullScreenElement ||
-              document.webkitFullscreenElement ||
-              document.msFullscreenElement ||
-              document.body
-          }
+          const newParent = getBodyFullscreenElement(
+            isFullscreen,
+            this.$q.fullscreen.activeEl
+          )
 
           if (
             this.__portal.$el.parentElement !== newParent &&
-            newParent.contains(this.$el) === true
+            newParent.contains(this.$el) === (this.__onGlobalDialog === false)
           ) {
             newParent.appendChild(this.__portal.$el)
           }
@@ -79,9 +91,13 @@ export default {
 
         this.unwatchFullscreen = this.$watch('$q.fullscreen.isActive', append)
 
-        append(this.$q.fullscreen.isActive)
+        const isActive = this.$q.fullscreen.isActive
+
+        if (this.__onGlobalDialog === false || isActive === true) {
+          append(isActive)
+        }
       }
-      else if (this.__portal !== void 0) {
+      else if (this.__portal !== void 0 && this.__onGlobalDialog === false) {
         document.body.appendChild(this.__portal.$el)
       }
     },
@@ -93,34 +109,56 @@ export default {
           this.unwatchFullscreen = void 0
         }
 
-        this.__portal.$destroy()
-        this.__portal.$el.remove()
+        if (this.__onGlobalDialog === false) {
+          this.__portal.$destroy()
+          this.__portal.$el.remove()
+        }
+
         this.__portal = void 0
       }
     },
 
     __preparePortal () {
       if (this.__portal === void 0) {
-        this.__portal = new Vue({
-          name: 'QPortal',
-          parent: this,
+        this.__portal = this.__onGlobalDialog === true
+          ? {
+            $el: this.$el,
+            $refs: this.$refs
+          }
+          : new Vue({
+            name: 'QPortal',
+            parent: this,
 
-          inheritAttrs: false,
+            inheritAttrs: false,
 
-          render: h => this.__renderPortal(h),
+            render: h => this.__renderPortal(h),
 
-          components: this.$options.components,
-          directives: this.$options.directives
-        }).$mount()
+            components: this.$options.components,
+            directives: this.$options.directives
+          }).$mount()
       }
     }
   },
 
-  render () {
-    this.__portal !== void 0 && this.__portal.$forceUpdate()
+  render (h) {
+    if (this.__onGlobalDialog === true) {
+      return this.__renderPortal(h)
+    }
+
+    if (this.__portal !== void 0) {
+      this.__portal.$forceUpdate()
+    }
   },
 
   beforeDestroy () {
     this.__hidePortal()
   }
 }
+
+if (isSSR === false) {
+  Portal.created = function () {
+    this.__onGlobalDialog = isOnGlobalDialog(this.$parent)
+  }
+}
+
+export default Portal
