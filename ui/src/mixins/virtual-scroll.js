@@ -172,26 +172,64 @@ function sumSize (sizeAgg, size, from, to) {
 
 const commonVirtScrollProps = {
   virtualScrollSliceSize: {
-    type: Number,
+    type: [ Number, String ],
     default: null
   },
 
+  virtualScrollSliceRatioBefore: {
+    type: [ Number, String ],
+    default: 1
+  },
+
+  virtualScrollSliceRatioAfter: {
+    type: [ Number, String ],
+    default: 1
+  },
+
   virtualScrollItemSize: {
-    type: Number,
+    type: [ Number, String ],
     default: 24
   },
 
   virtualScrollStickySizeStart: {
-    type: Number,
+    type: [ Number, String ],
     default: 0
   },
 
   virtualScrollStickySizeEnd: {
-    type: Number,
+    type: [ Number, String ],
     default: 0
   },
 
   tableColspan: [ Number, String ]
+}
+
+let id = 1
+
+function setOverflowAnchor (id, index) {
+  if (setOverflowAnchor.isSupported === void 0) {
+    setOverflowAnchor.isSupported = window.getComputedStyle(document.body).overflowAnchor !== void 0
+  }
+
+  if (setOverflowAnchor.isSupported === false) {
+    return
+  }
+
+  const ssId = id + '_ss'
+
+  let styleSheet = document.getElementById(ssId)
+
+  if (styleSheet === null) {
+    styleSheet = document.createElement('style')
+    styleSheet.type = 'text/css'
+    styleSheet.id = ssId
+    document.head.appendChild(styleSheet)
+  }
+
+  if (styleSheet.qChildIndex !== index) {
+    styleSheet.qChildIndex = index
+    styleSheet.innerHTML = `#${id} > *:nth-child(${index}) { overflow-anchor: auto }`
+  }
 }
 
 export const commonVirtPropsList = Object.keys(commonVirtScrollProps)
@@ -204,12 +242,13 @@ export default {
 
   data () {
     return {
-      virtualScrollSliceRange: { from: 0, to: 0 }
+      virtualScrollSliceRange: { from: 0, to: 0 },
+      id: 'qvs_' + id++
     }
   },
 
   watch: {
-    virtualScrollHorizontal () {
+    needsSliceRecalc () {
       this.__setVirtualScrollSize()
     },
 
@@ -220,7 +259,12 @@ export default {
 
   computed: {
     needsReset () {
-      return ['virtualScrollItemSize', 'virtualScrollHorizontal']
+      return ['virtualScrollItemSizeComputed', 'virtualScrollHorizontal']
+        .map(p => this[p]).join(';')
+    },
+
+    needsSliceRecalc () {
+      return this.needsReset + ';' + ['virtualScrollSliceRatioBefore', 'virtualScrollSliceRatioAfter']
         .map(p => this[p]).join(';')
     },
 
@@ -228,6 +272,10 @@ export default {
       return this.tableColspan !== void 0
         ? { colspan: this.tableColspan }
         : { colspan: 100 }
+    },
+
+    virtualScrollItemSizeComputed () {
+      return this.virtualScrollItemSize
     }
   },
 
@@ -293,10 +341,10 @@ export default {
       if (this.prevScrollStart === scrollDetails.scrollStart) {
         return
       }
-      this.prevScrollStart = void 0
 
       if (scrollDetails.scrollMaxSize <= 0) {
         this.__setVirtualScrollSliceRange(scrollEl, scrollDetails, 0, 0)
+
         return
       }
 
@@ -304,9 +352,11 @@ export default {
 
       this.__updateVirtualScrollSizes(this.virtualScrollSliceRange.from)
 
-      const scrollMaxStart = scrollDetails.scrollMaxSize - Math.max(scrollDetails.scrollViewSize, scrollDetails.offsetEnd) - this.virtualScrollSizes[listLastIndex]
+      const scrollMaxStart = Math.floor(scrollDetails.scrollMaxSize -
+        Math.max(scrollDetails.scrollViewSize, scrollDetails.offsetEnd) -
+        Math.min(this.virtualScrollSizes[listLastIndex], scrollDetails.scrollViewSize / 2))
 
-      if (scrollMaxStart > 0 && scrollDetails.scrollStart >= scrollMaxStart) {
+      if (scrollMaxStart > 0 && Math.ceil(scrollDetails.scrollStart) >= scrollMaxStart) {
         this.__setVirtualScrollSliceRange(
           scrollEl,
           scrollDetails,
@@ -353,17 +403,40 @@ export default {
       )
     },
 
+    __calcAlignRange (alignEnd, toIndex) {
+      if (alignEnd !== void 0) {
+        return alignEnd
+      }
+
+      if (toIndex > this.prevToIndex) {
+        return 'start'
+      }
+
+      return toIndex === this.prevToIndex && this.prevAlignRange !== void 0
+        ? this.prevAlignRange
+        : 'end'
+    },
+
     __setVirtualScrollSliceRange (scrollEl, scrollDetails, toIndex, offset, align) {
       const alignForce = typeof align === 'string' && align.indexOf('-force') > -1
       const alignEnd = alignForce === true ? align.replace('-force', '') : align
+      const alignRange = this.__calcAlignRange(alignEnd, toIndex)
+
+      this.prevAlignRange = alignRange
 
       let
-        from = Math.max(0, Math.ceil(toIndex - this.virtualScrollSliceSizeComputed / (alignEnd === void 0 || alignEnd === 'center' ? 2 : (alignEnd === 'start' ? 3 : 1.5)))),
-        to = from + this.virtualScrollSliceSizeComputed
+        from = Math.max(0, Math.ceil(toIndex - this.virtualScrollSliceSizeComputed[alignRange])),
+        to = from + this.virtualScrollSliceSizeComputed.total
 
       if (to > this.virtualScrollLength) {
         to = this.virtualScrollLength
-        from = Math.max(0, to - this.virtualScrollSliceSizeComputed)
+        from = Math.max(0, to - this.virtualScrollSliceSizeComputed.total)
+      }
+
+      this.prevScrollStart = scrollDetails.scrollStart
+
+      if (this.$refs.content !== void 0 && this.$refs.content.contains(document.activeElement)) {
+        this.$refs.content.focus()
       }
 
       const rangeChanged = from !== this.virtualScrollSliceRange.from || to !== this.virtualScrollSliceRange.to
@@ -374,7 +447,8 @@ export default {
         return
       }
 
-      const hadFocus = rangeChanged === true && typeof scrollEl.contains === 'function' && scrollEl.contains(document.activeElement)
+      setOverflowAnchor(this.id, toIndex - from + 1)
+
       const sizeBefore = alignEnd !== void 0 ? this.virtualScrollSizes.slice(from, toIndex).reduce(sumFn, 0) : 0
 
       if (rangeChanged === true) {
@@ -383,14 +457,10 @@ export default {
         this.virtualScrollPaddingAfter = sumSize(this.virtualScrollSizesAgg, this.virtualScrollSizes, to, this.virtualScrollLength)
       }
 
-      this.__activeScrollStart = scrollDetails.scrollStart
-
       requestAnimationFrame(() => {
-        if (hadFocus === true && scrollEl.contains(document.activeElement) !== true) {
-          scrollEl.focus()
-        }
-
-        if (this.__activeScrollStart !== scrollDetails.scrollStart) {
+        // if the scroll was changed give up
+        // (another call to __setVirtualScrollSliceRange before animation frame)
+        if (this.prevScrollStart !== scrollDetails.scrollStart) {
           return
         }
 
@@ -401,8 +471,7 @@ export default {
         const
           sizeAfter = this.virtualScrollSizes.slice(from, toIndex).reduce(sumFn, 0),
           posStart = sizeAfter + scrollDetails.offsetStart + this.virtualScrollPaddingBefore,
-          posEnd = posStart + this.virtualScrollSizes[toIndex],
-          rtl = this.$q.lang.rtl === true
+          posEnd = posStart + this.virtualScrollSizes[toIndex]
 
         let scrollPosition = posStart + offset
 
@@ -425,7 +494,7 @@ export default {
           scrollEl,
           scrollPosition,
           this.virtualScrollHorizontal,
-          rtl
+          this.$q.lang.rtl
         )
 
         this.__emitScroll(toIndex)
@@ -469,7 +538,7 @@ export default {
     },
 
     __resetVirtualScroll (toIndex, fullReset) {
-      const defaultSize = this.virtualScrollItemSize
+      const defaultSize = this.virtualScrollItemSizeComputed
 
       if (fullReset === true || Array.isArray(this.virtualScrollSizes) === false) {
         this.virtualScrollSizes = []
@@ -513,12 +582,6 @@ export default {
     },
 
     __setVirtualScrollSize (scrollViewSize) {
-      if (this.virtualScrollSliceSize > 0) {
-        this.virtualScrollSliceSizeComputed = this.virtualScrollSliceSize
-
-        return
-      }
-
       if (scrollViewSize === void 0 && typeof window !== 'undefined') {
         const scrollEl = this.__getVirtualScrollTarget()
 
@@ -538,9 +601,23 @@ export default {
 
       this.__scrollViewSize = scrollViewSize
 
-      this.virtualScrollSliceSizeComputed = scrollViewSize === void 0 || scrollViewSize <= 0
-        ? 30
-        : Math.ceil(scrollViewSize / this.virtualScrollItemSize * 3)
+      const multiplier = 1 + this.virtualScrollSliceRatioBefore + this.virtualScrollSliceRatioAfter
+      const onView = Math.ceil(Math.max(
+        scrollViewSize === void 0 || scrollViewSize <= 0
+          ? 10
+          : scrollViewSize / this.virtualScrollItemSizeComputed,
+        this.virtualScrollSliceSize / multiplier
+      ))
+
+      this.virtualScrollSliceSizeComputed = {
+        total: Math.ceil(onView * multiplier),
+        start: Math.ceil(onView * this.virtualScrollSliceRatioBefore),
+        center: Math.ceil(onView * (0.5 + this.virtualScrollSliceRatioBefore)),
+        end: Math.ceil(onView * (1 + this.virtualScrollSliceRatioBefore)),
+        view: scrollViewSize === void 0 || scrollViewSize <= 0
+          ? 1
+          : Math.ceil(scrollViewSize / this.virtualScrollItemSizeComputed)
+      }
     },
 
     __padVirtualScroll (h, tag, content) {
@@ -570,7 +647,8 @@ export default {
         h(tag, {
           staticClass: 'q-virtual-scroll__content',
           key: 'content',
-          ref: 'content'
+          ref: 'content',
+          attrs: { id: this.id, tabindex: -1 }
         }, content),
 
         tag === 'tbody'
@@ -616,7 +694,12 @@ export default {
 
   beforeMount () {
     buggyRTL === void 0 && detectBuggyRTL()
-    this.__onVirtualScrollEvt = debounce(this.__onVirtualScrollEvt, this.$q.platform.is.ios === true ? 120 : 70)
+    this.__onVirtualScrollEvt = debounce(this.__onVirtualScrollEvt, this.$q.platform.is.ios === true ? 120 : 35)
     this.__setVirtualScrollSize()
+  },
+
+  beforeDestroy () {
+    const styleSheet = document.getElementById(this.id + '_ss')
+    styleSheet !== null && styleSheet.remove()
   }
 }

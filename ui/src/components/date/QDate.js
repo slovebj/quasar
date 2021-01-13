@@ -43,7 +43,6 @@ export default Vue.extend({
     events: [ Array, Function ],
     eventColor: [ String, Function ],
 
-    // DEPRECATED; TODO: remove in v2
     emitImmediately: Boolean,
 
     options: [ Array, Function ],
@@ -135,11 +134,10 @@ export default Vue.extend({
         (this.disable === true ? ' disabled' : (this.readonly === true ? ' q-date--readonly' : ''))
     },
 
-    // DEPRECATED; TODO: remove in v2
     isImmediate () {
       return this.emitImmediately === true &&
-        this.daysModel[0] !== void 0 &&
-        this.daysModel[0].dateHash !== null
+        this.multiple !== true &&
+        this.range !== true
     },
 
     normalizedModel () {
@@ -1179,10 +1177,6 @@ export default Vue.extend({
       return date.year + '/' + pad(date.month)
     },
 
-    __getDayHash (date) {
-      return date.year + '/' + pad(date.month) + '/' + pad(date.day)
-    },
-
     __toggleDate (date, monthHash) {
       const month = this.daysMap[monthHash]
       const fn = month !== void 0 && month.includes(date.day) === true
@@ -1303,9 +1297,10 @@ export default Vue.extend({
       this.$emit('input', value, reason, details)
     },
 
-    // DEPRECATED - TODO: remove in v2
     __emitImmediately (reason) {
-      const date = this.daysModel[0]
+      const date = this.daysModel[0] !== void 0 && this.daysModel[0].dateHash !== null
+        ? this.daysModel[0]
+        : { ...this.viewModel } // inherit day, hours, minutes, milliseconds...
 
       // nextTick required because of animation delay in viewModel
       this.$nextTick(() => {

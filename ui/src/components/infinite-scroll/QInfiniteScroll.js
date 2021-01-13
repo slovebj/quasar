@@ -156,11 +156,19 @@ export default Vue.extend({
 
     __setDebounce (val) {
       val = parseInt(val, 10)
-      if (val <= 0) {
-        this.poll = this.immediatePoll
-      }
-      else {
-        this.poll = debounce(this.immediatePoll, isNaN(val) === true ? 100 : val)
+
+      const oldPoll = this.poll
+
+      this.poll = val <= 0
+        ? this.immediatePoll
+        : debounce(this.immediatePoll, isNaN(val) === true ? 100 : val)
+
+      if (this.__scrollTarget && this.working === true) {
+        if (oldPoll !== void 0) {
+          this.__scrollTarget.removeEventListener('scroll', oldPoll, listenOpts.passive)
+        }
+
+        this.__scrollTarget.addEventListener('scroll', this.poll, listenOpts.passive)
       }
     }
   },
@@ -170,7 +178,6 @@ export default Vue.extend({
     this.__setDebounce(this.debounce)
 
     this.updateScrollTarget()
-    this.immediatePoll()
 
     if (this.reverse === true) {
       const
@@ -179,6 +186,8 @@ export default Vue.extend({
 
       setScrollPosition(this.__scrollTarget, scrollHeight - containerHeight)
     }
+
+    this.immediatePoll()
   },
 
   beforeDestroy () {

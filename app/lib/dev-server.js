@@ -95,7 +95,8 @@ module.exports = class DevServer {
 
       const handleError = err => {
         if (err.url) {
-          res.redirect(err.url)
+          if (err.code) res.redirect(err.code, err.url)
+          else res.redirect(err.url)
         }
         else if (err.code === 404) {
           res.status(404).send('404 | Page Not Found')
@@ -232,11 +233,10 @@ module.exports = class DevServer {
           app,
 
           ssr: {
-            renderToString ({ req, res }, fn) {
+            renderToString (opts, fn) {
               const context = {
-                url: req.url,
-                req,
-                res
+                ...opts,
+                url: opts.req.url
               }
 
               renderer.renderToString(context, (err, html) => {

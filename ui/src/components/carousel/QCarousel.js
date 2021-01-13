@@ -141,7 +141,7 @@ export default Vue.extend({
       }, [
         h('div', {
           staticClass: 'q-carousel__navigation-inner flex flex-center no-wrap'
-        }, this.__getAvailablePanels().map(mapping))
+        }, this.__getEnabledPanels().map(mapping))
       ])
     },
 
@@ -152,11 +152,11 @@ export default Vue.extend({
         const fn = this.$scopedSlots['navigation-icon'] !== void 0
           ? this.$scopedSlots['navigation-icon']
           : opts => h(QBtn, {
-              key: 'nav' + opts.name,
-              class: `q-carousel__navigation-icon q-carousel__navigation-icon--${opts.active === true ? '' : 'in'}active`,
-              props: opts.btnProps,
-              on: cache(this, 'nav#' + opts.name, { click: opts.onClick })
-            })
+            key: 'nav' + opts.name,
+            class: `q-carousel__navigation-icon q-carousel__navigation-icon--${opts.active === true ? '' : 'in'}active`,
+            props: opts.btnProps,
+            on: cache(this, 'nav#' + opts.name, { click: opts.onClick })
+          })
 
         const maxIndex = this.panels.length - 1
         node.push(

@@ -52,6 +52,16 @@
         @focus="onTextFillEvent"
       />
 
+      <q-input
+        v-bind="props"
+        v-model="textFill"
+        placeholder="Fill value and shadow text"
+        hint="Press TAB to autocomplete suggested value or ESC to cancel suggestion"
+        :shadow-text="textFillValue"
+        @keydown="onTextFillEvent"
+        @focus="onTextFillEvent"
+      />
+
       <q-input v-bind="props" v-model="text" required label="Required" placeholder="Write something" color="green" />
 
       <q-field v-bind="props" v-model="text" required label="Required - Custom input">
@@ -67,6 +77,8 @@
       <q-input v-bind="props" v-model="number" type="number" step="0.1" label="Number - step 0.1" placeholder="Write a number" />
 
       <q-input v-bind="props" v-model="email" type="email" label="eMail" placeholder="Write an email address" />
+
+      <q-input v-bind="props" type="date" v-model="date" label="Date" stack-label clearable />
 
       <q-input v-bind="props" v-model="text" label="Tooltip and menu">
         <q-icon slot="prepend" name="event">
@@ -512,6 +524,7 @@ export default {
       invalid: '123',
       number: 1.1,
       email: 'a',
+      date: null,
 
       prefix: null,
       suffix: null,

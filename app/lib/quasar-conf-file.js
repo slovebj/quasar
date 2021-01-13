@@ -209,7 +209,9 @@ class QuasarConfFile {
         builder: {}
       },
       cordova: {},
-      capacitor: {},
+      capacitor: {
+        capacitorCliPreparationParams: []
+      },
       bin: {},
       bex: {
         builder: {
@@ -236,12 +238,9 @@ class QuasarConfFile {
     if (!cfg.framework.config) {
       cfg.framework.config = {}
     }
-
-    // legacy; left here so it won't break older App Extensions
     if (!cfg.framework.components) {
       cfg.framework.components = []
     }
-    // legacy; left here so it won't break older App Extensions
     if (!cfg.framework.directives) {
       cfg.framework.directives = []
     }
@@ -554,6 +553,10 @@ class QuasarConfFile {
     // make sure we have preFetch in config
     cfg.preFetch = cfg.preFetch || false
 
+    if (this.ctx.mode.capacitor & cfg.capacitor.capacitorCliPreparationParams.length === 0) {
+      cfg.capacitor.capacitorCliPreparationParams = [ 'sync', this.ctx.targetName ]
+    }
+
     if (this.ctx.mode.ssr) {
       cfg.ssr = merge({
         pwa: false,
@@ -589,6 +592,8 @@ class QuasarConfFile {
       const originalBefore = cfg.devServer.before
       const openInEditor = require('launch-editor-middleware')
 
+      delete cfg.devServer.before
+
       cfg.devServer = merge({
         publicPath: cfg.build.publicPath,
         hot: true,
@@ -613,7 +618,7 @@ class QuasarConfFile {
         contentBase: false,
         watchContentBase: false,
 
-        before: app => {
+        before: (app, server, compiler) => {
           if (!this.ctx.mode.ssr) {
             const express = require('express')
 
@@ -631,7 +636,7 @@ class QuasarConfFile {
 
           app.use('/__open-in-editor', openInEditor(void 0, appPaths.appDir))
 
-          originalBefore && originalBefore(app)
+          originalBefore && originalBefore(app, server, compiler)
         }
       })
 
@@ -701,6 +706,7 @@ class QuasarConfFile {
       cfg.pwa = merge({
         workboxPluginMode: 'GenerateSW',
         workboxOptions: {},
+        useCredentials: false,
         manifest: {
           name: this.pkg.productName || this.pkg.name || 'Quasar App',
           short_name: this.pkg.name || 'quasar-pwa',
@@ -766,6 +772,7 @@ class QuasarConfFile {
       SERVER: false,
       DEV: this.ctx.dev,
       PROD: this.ctx.prod,
+      DEBUGGING: this.ctx.debug || this.ctx.dev,
       MODE: this.ctx.modeName,
       VUE_ROUTER_MODE: cfg.build.vueRouterMode,
       VUE_ROUTER_BASE: cfg.build.vueRouterBase,

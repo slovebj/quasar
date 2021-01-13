@@ -147,7 +147,8 @@ export default Vue.extend({
         'q-field--rounded': this.rounded,
         'q-field--square': this.square,
 
-        'q-field--focused': this.focused === true || this.hasError === true,
+        'q-field--focused': this.focused === true,
+        'q-field--highlighted': this.focused === true || this.hasError === true,
         'q-field--float': this.floatingLabel,
         'q-field--labeled': this.hasLabel,
 
@@ -236,7 +237,7 @@ export default Vue.extend({
 
   methods: {
     focus () {
-      if (this.showPopup !== void 0 && this.hasDialog === true) {
+      if (this.showPopup !== void 0) {
         this.showPopup()
         return
       }
@@ -490,8 +491,14 @@ export default Vue.extend({
     __clearValue (e) {
       // prevent activating the field but keep focus on desktop
       stopAndPrevent(e)
-      const el = this.$refs.target || this.$el
-      el.focus()
+
+      if (this.$q.platform.is.mobile !== true) {
+        const el = this.$refs.target || this.$el
+        el.focus()
+      }
+      else if (this.$el.contains(document.activeElement) === true) {
+        document.activeElement.blur()
+      }
 
       if (this.type === 'file') {
         // do not let focus be triggered
@@ -502,6 +509,14 @@ export default Vue.extend({
 
       this.$emit('input', null)
       this.$emit('clear', this.value)
+
+      this.$nextTick(() => {
+        this.resetValidation()
+
+        if (this.lazyRules !== 'ondemand' && this.$q.platform.is.mobile !== true) {
+          this.isDirty = false
+        }
+      })
     },
 
     __emitValue (value) {
