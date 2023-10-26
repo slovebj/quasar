@@ -26,7 +26,7 @@
     "dev:capacitor:android": "cd ./dev && node ./script.dev.js dev -m capacitor -T android && cd ..",
     "dev:umd": "node build/script.test-umd.js",
     "dev:quploader": "cd dev/upload-server && yarn && cd ../.. && node dev/upload-server/server.js",
-    "build": "node build/script.build.js",
+    "build": "node build/script.build-su.js",
     "lint": "eslint --ext .js,.vue src dev --report-unused-disable-directives",
     "lint-fix": "eslint --ext .js,.vue src dev --fix --report-unused-disable-directives",
     "format:types": "prettier --write \"types/**/*.{d.ts,ts,json}\"",
