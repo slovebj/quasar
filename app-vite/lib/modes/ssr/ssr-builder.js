@@ -1,4 +1,3 @@
-
 import { join } from 'node:path'
 import { writeFileSync } from 'node:fs'
 import { merge } from 'webpack-merge'
