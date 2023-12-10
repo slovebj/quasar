@@ -674,6 +674,7 @@ export class QuasarConfigFile {
     cfg.framework.plugins = getUniqueArray(cfg.framework.plugins)
 
     Object.assign(cfg.metaConf, {
+      packageTypeBasedExtension: this.#ctx.pkg.appPkg.type === 'module' ? 'js' : 'mjs',
       hasLoadingBarPlugin: cfg.framework.plugins.includes('LoadingBar'),
       hasMetaPlugin: cfg.framework.plugins.includes('Meta')
     })
@@ -748,7 +749,7 @@ export class QuasarConfigFile {
     }
 
     if (!cfg.build.target.node) {
-      cfg.build.target.node = 'node16'
+      cfg.build.target.node = 'node18'
     }
 
     if (this.#ctx.mode.ssr) {
@@ -873,10 +874,6 @@ export class QuasarConfigFile {
       }
 
       this.#ctx.mode.pwa = cfg.ctx.mode.pwa = cfg.ssr.pwa === true
-
-      if (this.#ctx.prod) {
-        cfg.metaConf.ssrServerEntryPointExtension = this.#ctx.pkg.appPkg.type === 'module' ? 'js' : 'mjs'
-      }
     }
 
     if (this.#ctx.dev) {
@@ -953,7 +950,6 @@ export class QuasarConfigFile {
     else if (this.#ctx.mode.cordova || this.#ctx.mode.capacitor || this.#ctx.mode.bex) {
       cfg.metaConf.APP_URL = 'index.html'
     }
-    // Electron is handled in lib/modes/electron/electron-builder.js -> #replaceAppUrl()
 
     Object.assign(cfg.build.env, {
       NODE_ENV: this.#ctx.prod ? 'production' : 'development',
