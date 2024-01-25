@@ -1,6 +1,6 @@
 {
   "name": "@quasar/app-vite",
-  "version": "2.0.0-alpha.44",
+  "version": "2.0.0-alpha.46",
   "description": "Quasar Framework App CLI with Vite",
   "bin": {
     "quasar": "./bin/quasar.js"
@@ -98,7 +98,7 @@
     "quasar": "^2.14.0",
     "ts-essentials": "^9.1.2",
     "typescript": "^5.2.2",
-    "vue": "^3.3.4",
+    "vue": "^3.4.15",
     "vue-router": "^4.2.1",
     "vuex": "^4.0.0",
     "workbox-build": "^7.0.0"
