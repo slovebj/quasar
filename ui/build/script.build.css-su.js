@@ -57,9 +57,9 @@ function renderAsset (cssCode, middleName = '') {
       return code.css
     })
     .then(code => Promise.all([
-      generateUMD(code, middleName),
-      postcss([ rtl({}) ]).process(code, { from: void 0 })
-        .then(code => generateUMD(code.css, middleName, '.rtl'))
+      generateUMD(code, middleName)//,
+      // postcss([ rtl({}) ]).process(code, { from: void 0 })
+      //   .then(code => generateUMD(code.css, middleName, '.rtl'))
     ]))
 }
 
@@ -76,8 +76,8 @@ function generateBase (source) {
   return Promise.all([
     renderAsset(cssCode),
 
-    getConcatenatedContent(depsList)
-      .then(code => buildUtils.writeFile(sassDistDest, code))
+    //getConcatenatedContent(depsList)
+     // .then(code => buildUtils.writeFile(sassDistDest, code))
   ])
 }
 

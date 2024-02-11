@@ -72,81 +72,81 @@ const uglifyJsOptions = {
 }
 
 const builds = [
-  {
-    // client entry-point used by @quasar/vite-plugin for DEV only
-    // (has flags untouched; required to replace them)
-    rollup: {
-      input: {
-        input: resolve('src/index.dev.js')
-      },
-      output: {
-        file: resolve('dist/quasar.esm.js'),
-        format: 'es'
-      }
-    },
-    build: {
-      unminified: true,
-      replace: {
-        __QUASAR_VERSION__: `'${ version }'`,
-        __QUASAR_SSR_SERVER__: false
-      }
-    }
-  },
+  // {
+  //   // client entry-point used by @quasar/vite-plugin for DEV only
+  //   // (has flags untouched; required to replace them)
+  //   rollup: {
+  //     input: {
+  //       input: resolve('src/index.dev.js')
+  //     },
+  //     output: {
+  //       file: resolve('dist/quasar.esm.js'),
+  //       format: 'es'
+  //     }
+  //   },
+  //   build: {
+  //     unminified: true,
+  //     replace: {
+  //       __QUASAR_VERSION__: `'${ version }'`,
+  //       __QUASAR_SSR_SERVER__: false
+  //     }
+  //   }
+  // },
 
-  {
-    // client prod entry-point that is not used by Quasar CLI,
-    // but pointed to in package.json > module;
-    // (no flags; not required to replace them)
-    rollup: {
-      input: {
-        input: resolve('src/index.prod.js')
-      },
-      output: {
-        file: resolve('dist/quasar.esm.js'),
-        format: 'es'
-      }
-    },
-    build: {
-      minified: true,
-      replace: {
-        __QUASAR_VERSION__: `'${ version }'`,
-        __QUASAR_SSR__: false,
-        __QUASAR_SSR_SERVER__: false,
-        __QUASAR_SSR_CLIENT__: false,
-        __QUASAR_SSR_PWA__: false
-      }
-    }
-  },
+  // {
+  //   // client prod entry-point that is not used by Quasar CLI,
+  //   // but pointed to in package.json > module;
+  //   // (no flags; not required to replace them)
+  //   rollup: {
+  //     input: {
+  //       input: resolve('src/index.prod.js')
+  //     },
+  //     output: {
+  //       file: resolve('dist/quasar.esm.js'),
+  //       format: 'es'
+  //     }
+  //   },
+  //   build: {
+  //     minified: true,
+  //     replace: {
+  //       __QUASAR_VERSION__: `'${ version }'`,
+  //       __QUASAR_SSR__: false,
+  //       __QUASAR_SSR_SERVER__: false,
+  //       __QUASAR_SSR_CLIENT__: false,
+  //       __QUASAR_SSR_PWA__: false
+  //     }
+  //   }
+  // },
 
-  {
-    // SSR server prod entry-point
-    // (no flags; not required to replace them)
-    rollup: {
-      input: {
-        input: resolve('src/index.ssr.js')
-      },
-      output: {
-        file: resolve('dist/quasar.cjs.js'),
-        format: 'cjs'
-      }
-    },
-    build: {
-      minified: true,
-      replace: {
-        __QUASAR_VERSION__: `'${ version }'`,
-        __QUASAR_SSR__: true,
-        __QUASAR_SSR_SERVER__: true,
-        __QUASAR_SSR_CLIENT__: false,
-        __QUASAR_SSR_PWA__: false
-      }
-    }
-  },
+  // {
+  //   // SSR server prod entry-point
+  //   // (no flags; not required to replace them)
+  //   rollup: {
+  //     input: {
+  //       input: resolve('src/index.ssr.js')
+  //     },
+  //     output: {
+  //       file: resolve('dist/quasar.cjs.js'),
+  //       format: 'cjs'
+  //     }
+  //   },
+  //   build: {
+  //     minified: true,
+  //     replace: {
+  //       __QUASAR_VERSION__: `'${ version }'`,
+  //       __QUASAR_SSR__: true,
+  //       __QUASAR_SSR_SERVER__: true,
+  //       __QUASAR_SSR_CLIENT__: false,
+  //       __QUASAR_SSR_PWA__: false
+  //     }
+  //   }
+  // },
 
   {
     // UMD entry
     rollup: {
       input: {
-        input: resolve('src/index.umd.js')
+        input: resolve('src/index.umd-su.js')
       },
       output: {
         file: resolve('dist/quasar.umd.js'),
@@ -154,7 +154,7 @@ const builds = [
       }
     },
     build: {
-      unminified: true,
+      unminified: false,
       minified: true,
       replace: {
         __QUASAR_VERSION__: `'${ version }'`,
@@ -293,18 +293,18 @@ function buildEntry (config) {
 
 const runBuild = {
   async full () {
-    await require('./build.lang').generate()
-    await require('./build.icon-sets').generate()
+    // await require('./build.lang-su').generate()
+    // await require('./build.icon-sets').generate()
 
-    const data = await require('./build.api').generate()
+    // const data = await require('./build.api').generate()
 
     require('./build.transforms').generate()
-    require('./build.vetur').generate(data)
-    await require('./build.types').generate(data)
-    require('./build.web-types').generate(data)
+    // require('./build.vetur').generate(data)
+    // await require('./build.types').generate(data)
+    // require('./build.web-types').generate(data)
 
-    addUmdAssets(builds, 'lang', 'lang')
-    addUmdAssets(builds, 'icon-set', 'iconSet')
+    // addUmdAssets(builds, 'lang', 'lang')
+    // addUmdAssets(builds, 'icon-set', 'iconSet')
 
     await build(builds)
   },
@@ -349,8 +349,8 @@ const runBuild = {
 
 module.exports = function (subtype) {
   if (runBuild[ subtype ] === void 0) {
-    console.log(` Unrecognized subtype specified: "${ subtype }".`)
-    console.log(` Available: ${ Object.keys(runBuild).join(' | ') }\n`)
+    console.log(` 未识别的子类型: "${ subtype }".`)
+    console.log(` 可用: ${ Object.keys(runBuild).join(' | ') }\n`)
     process.exit(1)
   }
 

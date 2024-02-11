@@ -9,3 +9,5 @@ package-lock.json
 ui/.vscode/
 
 node_modules/
+yarn-error.log
+yarn-error.log
