@@ -1,6 +1,6 @@
 const path = require('path')
 const sass = require('sass')
-//const rtl = require('postcss-rtlcss')
+// const rtl = require('postcss-rtlcss')
 const postcss = require('postcss')
 const cssnano = require('cssnano')
 const autoprefixer = require('autoprefixer')
@@ -74,10 +74,10 @@ function generateBase (source) {
   const depsList = result.stats.includedFiles
 
   return Promise.all([
-    renderAsset(cssCode),
+    renderAsset(cssCode)
 
-    //getConcatenatedContent(depsList)
-     // .then(code => buildUtils.writeFile(sassDistDest, code))
+    // getConcatenatedContent(depsList)
+    // .then(code => buildUtils.writeFile(sassDistDest, code))
   ])
 }
 
@@ -97,8 +97,8 @@ module.exports = function (withDiff) {
 
   Promise
     .all([
-      generateBase('src/css/index.sass'),
-      generateAddon('src/css/flex-addon.sass')
+      generateBase('src/css/index-su.sass')
+      // generateAddon('src/css/flex-addon.sass')
     ])
     .catch(e => {
       console.error(e)

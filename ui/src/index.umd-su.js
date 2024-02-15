@@ -2,9 +2,9 @@
  * UMD entry-point
  */
 
-import installQuasar from './install-quasar.js'
+import installQuasar from './install-quasar-su.js'
 import lang from './lang-su.js'
-import iconSet from './icon-set.js'
+import iconSet from './icon-set-su.js'
 
 import * as components from './components.js'
 import * as directives from './directives.js'
