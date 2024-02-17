@@ -196,6 +196,7 @@ export default createComponent({
         showControls: true,
         inControls: false,
         pIndex: 0,
+        playMode: 2,
         volume: 100,
         muted: false,
         currentTime: 0.01,
@@ -1009,7 +1010,21 @@ export default createComponent({
         emit('emptied')
       }
       else if (event.type === 'ended') {
-        state.playing = false
+        if (state.playMode === 1) {
+          play()
+        }
+        else if (state.playMode === 2) {
+          playNext()
+        }
+        else if (state.playMode === 3) {
+          props.sources.length === 1 ? play() : playRound()
+        }
+        else if (state.playMode === 4) {
+          props.sources.length === 1 ? play() : playRandom()
+        }
+        else {
+          state.playing = false
+        }
         emit('ended')
       }
       else if (event.type === 'error') {
@@ -1536,6 +1551,101 @@ export default createComponent({
       // ])
     }
 
+    function __renderPlayNextButton () {
+      if (props.sources.length < 2) return
+
+      const properties = {
+        icon: 'play-next',
+        size: '1.5rem',
+        disable: !state.playReady || (state.pIndex === props.sources.length - 1 && state.playMode < 3),
+        flat: true,
+        padding: '4px'
+      }
+
+      const events = {
+        onClick: playNext
+      }
+
+      return h(QBtn, {
+        class: 'q-media__controls--button play-button',
+        ...properties,
+        ...events
+      })
+    }
+
+    function __renderPlayPrevButton () {
+      if (props.sources.length < 2) return
+
+      const properties = {
+        icon: 'play-prev',
+        size: '1.5rem',
+        disable: !state.playReady || (state.pIndex === 0 && state.playMode < 3),
+        flat: true,
+        padding: '4px'
+      }
+
+      const events = {
+        onClick: playPrev
+      }
+
+      return h(QBtn, {
+        class: 'q-media__controls--button play-button',
+        ...properties,
+        ...events
+      })
+    }
+
+    function playPrev () {
+      if (state.pIndex > 0) {
+        state.pIndex--
+      }
+    }
+
+    function playNext () {
+      if (state.pIndex < props.sources.length - 1) {
+        state.pIndex++
+      }
+    }
+
+    function playRound () {
+      if (state.pIndex === props.sources.length - 1) {
+        state.pIndex = (state.pIndex === props.sources.length - 1 ? 0 : state.pIndex++)
+      }
+    }
+
+    function playRandom () {
+      const i = props.sources.length
+      const r = Math.floor(Math.random() * i / 2)
+      let p = state.pIndex
+      p += (r > 0 ? r : 1)
+      state.pIndex = p > i - 1 ? p - i : p
+    }
+
+    function __renderPlayModeButton () {
+      const properties = {
+        icon: [ 'danqu', 'xunhuan1', 'liebiao1', 'xunhuan', 'suiji' ][ state.playMode ],
+        size: '1.5rem',
+        disable: !state.playReady,
+        flat: true,
+        padding: '4px'
+      }
+
+      const events = {
+        onClick: togglePlayMode
+      }
+
+      return h(QBtn, {
+        class: 'q-media__controls--button play-button',
+        ...properties,
+        ...events
+      }, () => h(QTooltip, () => [ '单曲播放', '单曲循环播放', '列表顺序播放', '列表循环播放', '随机播放' ][ state.playMode ])
+      )
+    }
+
+    function togglePlayMode () {
+      state.playMode < 4 ? state.playMode++ : state.playMode = 0
+    }
+
     function __renderVideoControls () {
       const slot = slots.controls
 
@@ -1651,11 +1761,13 @@ export default createComponent({
         }, [
           h('div', [
             __renderPlayButton(),
+            __renderPlayPrevButton(),
+            __renderPlayNextButton(),
             props.showTooltips && !state.playReady && h(QTooltip, () => '等待音频中')
           ]),
           __renderVolumeButton(),
           h('div', [
-            __renderSettingsButton(), __renderListButton()
+            __renderPlayModeButton(), __renderSettingsButton(), __renderListButton()
           ])
           // __renderVolumeSlider()
         ])
@@ -1689,8 +1801,8 @@ export default createComponent({
 
     function __renderVolumeChangeMenu () {
       const properties = {
-        anchor: 'top right',
-        self: 'bottom right'
+        anchor: 'top middle',
+        self: 'bottom middle'
       }
 
       return h(QMenu, {
@@ -1786,8 +1898,8 @@ export default createComponent({
 
     function __renderSettingsMenu () {
       const properties = {
-        anchor: 'top right',
-        self: 'bottom right'
+        anchor: 'top middle',
+        self: 'bottom middle'
       }
 
       // const events = {
@@ -1843,7 +1955,7 @@ export default createComponent({
 
     function __renderListButton () {
       const properties = {
-        icon: 'menu',
+        icon: 'playlist',
         size: '1.5rem',
         disable: !state.playReady,
         flat: true,
@@ -1860,8 +1972,8 @@ export default createComponent({
 
     function __renderListMenu () {
       const properties = {
-        anchor: 'top right',
-        self: 'bottom right'
+        anchor: 'top middle',
+        self: 'bottom middle'
       }
 
       // const events = {

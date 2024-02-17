@@ -1665,10 +1665,17 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@quasar/extras@^1.16.4", "@quasar/extras@^1.16.6":
+"@quasar/extras@^1.13.0", "@quasar/extras@^1.16.4", "@quasar/extras@^1.16.6":
   version "1.16.9"
   resolved "https://registry.yarnpkg.com/@quasar/extras/-/extras-1.16.9.tgz#6cdf9d34862e6f58009443a2d1e34b84a5e73ad0"
   integrity sha512-SlOhwzXyPQHWgQIS2ncyDdYdksCJvUYNtgsDQqzAKEG3r3d/ejOxvThle79HTK3Q6HB+gQWFG21Ux00Osr5XSw==
+
+"@quasar/quasar-app-extension-qmediaplayer@^2.0.0-beta.6":
+  version "2.0.0-beta.6"
+  resolved "https://registry.npmmirror.com/@quasar/quasar-app-extension-qmediaplayer/-/quasar-app-extension-qmediaplayer-2.0.0-beta.6.tgz#527430f1c1821d2c8623a508146aad754a9dcf29"
+  integrity sha512-Mrqqny92+/Kj5TuHzXLsbHF8j4Ltjuhwdq+tkkpx99Iw0zeE5lcFDTNzmiAllN8+W7h57FzDWiidvsh8dXPnDg==
+  dependencies:
+    "@quasar/quasar-ui-qmediaplayer" "^2.0.0-beta.6"
 
 "@quasar/quasar-app-extension-testing-e2e-cypress@^5.2.0-alpha.2":
   version "5.2.0-alpha.3"
@@ -1681,6 +1688,13 @@
     nyc "^15.1.0"
     start-server-and-test "^2.0.0"
     vite-plugin-istanbul "^5.0.0"
+
+"@quasar/quasar-ui-qmediaplayer@^2.0.0-beta.6":
+  version "2.0.0-beta.6"
+  resolved "https://registry.npmmirror.com/@quasar/quasar-ui-qmediaplayer/-/quasar-ui-qmediaplayer-2.0.0-beta.6.tgz#9b29e0b68ffe4575df682abd13e50392bc8a2361"
+  integrity sha512-j0Y6NCMkup/fjwpOT2kWPG+w3X1yVxmRaSHxQRtWLsWHjiSheaJLWKqZDJ9UarEKL8rtS/CUtadD+ENvcBEHHQ==
+  dependencies:
+    "@quasar/extras" "^1.13.0"
 
 "@rollup/plugin-babel@^5.2.0":
   version "5.3.1"
