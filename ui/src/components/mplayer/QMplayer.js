@@ -171,7 +171,7 @@ export default createComponent({
     'waiting'
   ],
 
-  setup (props, { slots, emit }) {
+  setup (props, { slots, emit, expose }) {
     const
       vm = getCurrentInstance(),
       $q = useQuasar() || vm.proxy.$q || vm.ctx.$q,
@@ -1646,134 +1646,6 @@ export default createComponent({
       state.playMode < 4 ? state.playMode++ : state.playMode = 0
     }
 
-    function __renderVideoControls () {
-      const slot = slots.controls
-
-      const events = {
-        onClick: __stopAndPrevent,
-        onMouseenter: __mouseEnterControls,
-        onMouseleave: __mouseLeaveControls
-      }
-
-      if (slot) {
-        // we need to know the controls height for fullscreen, stop propagation to video component
-        return h('div', {
-          ref: controls,
-          class: {
-            'q-media__controls': true,
-            'q-media__controls--overlay': __isVideo.value === true && state.bottomControls !== true,
-            ...__videoControlsClasses.value
-          },
-          ...events
-        },
-        slot()
-        )
-      }
-
-      return h('div', {
-        ref: controls,
-        class: {
-          'q-media__controls': true,
-          'q-media__controls--overlay': __isVideo.value === true && state.bottomControls !== true,
-          ...__videoControlsClasses.value
-        },
-        ...events
-      }, [
-        // dense
-        props.dense && h('div', {
-          class: 'q-media__controls--row row col content-start items-center'
-        }, [
-          h('div', [
-            __renderPlayButton(),
-            props.showTooltips && !state.playReady && h(QTooltip, () => '等待视频中')
-          ]),
-          __renderVolumeButton(),
-          // __renderVolumeSlider(),
-          __renderDisplayTime(),
-          __renderCurrentTimeSlider(),
-          __renderDurationTime(),
-          __renderSettingsButton(),
-          $q.fullscreen !== void 0 && props.hideFullscreenBtn !== true && __renderFullscreenButton()
-        ]),
-        // sparse
-        !props.dense && h('div', {
-          class: 'q-media__controls--row row col items-center justify-between'
-        }, [
-          __renderDisplayTime(),
-          __renderCurrentTimeSlider(),
-          __renderDurationTime()
-        ]),
-        !props.dense && h('div', {
-          class: 'q-media__controls--row row col content-start items-center'
-        }, [
-          h('div', {
-            class: 'row col'
-          }, [
-            h('div', [
-              __renderPlayButton(),
-              props.showTooltips && !state.playReady && h(QTooltip, () => '等待视频中')
-            ]),
-            __renderVolumeButton()
-            // __renderVolumeSlider()
-          ]),
-          h('div', [
-            __renderSettingsButton(),
-            $q.fullscreen !== void 0 && props.hideFullscreenBtn !== true && __renderFullscreenButton()
-          ])
-        ])
-      ])
-    }
-
-    function __renderAudioControls () {
-      const slot = slots.controls
-
-      return (slot && slot()) || h('div', {
-        ref: controls,
-        class: {
-          'q-media__controls': true,
-          ...__audioControlsClasses.value
-        }
-      }, [
-        // props.dense && h('div', {
-        //   class: 'q-media__controls--row row col content-start items-center'
-        // }, [
-        //   // dense
-        //   h('div', [
-        //     __renderPlayButton(),
-        //     props.showTooltips && !state.playReady && h(QTooltip, () => '等待音频中')
-        //   ]),
-        //   __renderVolumeButton(),
-        //   // __renderVolumeSlider(),
-        //   __renderDisplayTime(),
-        //   __renderCurrentTimeSlider(),
-        //   __renderDurationTime()
-        // ]),
-        // sparse
-        !props.dense && h('div', {
-          class: 'q-media__controls--row row col items-center justify-between'
-        }, [
-          __renderDisplayTime(),
-          __renderCurrentTimeSlider(),
-          __renderDurationTime()
-        ]),
-        !props.dense && h('div', {
-          class: 'q-media__controls--row row col content-start items-center'
-        }, [
-          h('div', [
-            __renderPlayButton(),
-            __renderPlayPrevButton(),
-            __renderPlayNextButton(),
-            props.showTooltips && !state.playReady && h(QTooltip, () => '等待音频中')
-          ]),
-          __renderVolumeButton(),
-          h('div', [
-            __renderPlayModeButton(), __renderSettingsButton(), __renderListButton()
-          ])
-          // __renderVolumeSlider()
-        ])
-      ])
-    }
-
     function __renderVolumeButton () {
       if (props.hideVolumeBtn === true) {
         return
@@ -1871,7 +1743,7 @@ export default createComponent({
       })
     }
 
-    function __renderSettingsButton () {
+    function __renderRatesButton () {
       // if (props.hideSettingsBtn === true) {
       //   return
       // }
@@ -1892,11 +1764,11 @@ export default createComponent({
         // props.showTooltips === true && !settingsMenuVisible.value
         //   ? h(QTooltip, () => '设置')
         //   : undefined,
-        __renderSettingsMenu()
+        __renderRatesMenu()
       ]))
     }
 
-    function __renderSettingsMenu () {
+    function __renderRatesMenu () {
       const properties = {
         anchor: 'top middle',
         self: 'bottom middle'
@@ -2021,7 +1893,7 @@ export default createComponent({
       ])
     }
 
-    function __renderRateButton () {
+    function __renderSettingsButton () {
       if (props.hideSettingsBtn === true) {
         return
       }
@@ -2187,7 +2059,7 @@ export default createComponent({
       ])
     }
 
-    function __renderRateMenu () {
+    function __renderSettingsMenu () {
       const slot = slots.settingsMenu
 
       const properties = {
@@ -2304,6 +2176,138 @@ export default createComponent({
       ])
     }
 
+    function __renderVideoControls () {
+      const slot = slots.controls
+
+      const events = {
+        onClick: __stopAndPrevent,
+        onMouseenter: __mouseEnterControls,
+        onMouseleave: __mouseLeaveControls
+      }
+
+      if (slot) {
+        // we need to know the controls height for fullscreen, stop propagation to video component
+        return h('div', {
+          ref: controls,
+          class: {
+            'q-media__controls': true,
+            'q-media__controls--overlay': __isVideo.value === true && state.bottomControls !== true,
+            ...__videoControlsClasses.value
+          },
+          ...events
+        },
+        slot()
+        )
+      }
+
+      return h('div', {
+        ref: controls,
+        class: {
+          'q-media__controls': true,
+          'q-media__controls--overlay': __isVideo.value === true && state.bottomControls !== true,
+          ...__videoControlsClasses.value
+        },
+        ...events
+      }, [
+        // dense
+        props.dense && h('div', {
+          class: 'q-media__controls--row row col content-start items-center'
+        }, [
+          h('div', [
+            __renderPlayButton(),
+            __renderPlayPrevButton(),
+            __renderPlayNextButton(),
+            props.showTooltips && !state.playReady && h(QTooltip, () => '等待视频中')
+          ]),
+          // __renderVolumeSlider(),
+          __renderDisplayTime(),
+          __renderCurrentTimeSlider(),
+          __renderDurationTime(),
+          __renderPlayModeButton(), __renderRatesButton(), __renderVolumeButton(), __renderListButton(),
+          $q.fullscreen !== void 0 && props.hideFullscreenBtn !== true && __renderFullscreenButton()
+        ]),
+        // sparse
+        !props.dense && h('div', {
+          class: 'q-media__controls--row row col items-center justify-between'
+        }, [
+          __renderDisplayTime(),
+          __renderCurrentTimeSlider(),
+          __renderDurationTime()
+        ]),
+        !props.dense && h('div', {
+          class: 'q-media__controls--row row col content-start items-center'
+        }, [
+          h('div', {
+            class: 'row col'
+          }, [
+            h('div', [
+              __renderPlayButton(),
+              __renderPlayPrevButton(),
+              __renderPlayNextButton(),
+              props.showTooltips && !state.playReady && h(QTooltip, () => '等待视频中')
+            ])
+            // __renderVolumeSlider()
+          ]),
+          h('div', [
+            __renderPlayModeButton(), __renderRatesButton(), __renderVolumeButton(), __renderListButton(),
+            $q.fullscreen !== void 0 && props.hideFullscreenBtn !== true && __renderFullscreenButton()
+          ])
+        ])
+      ])
+    }
+
+    function __renderAudioControls () {
+      const slot = slots.controls
+
+      return (slot && slot()) || h('div', {
+        ref: controls,
+        class: {
+          'q-media__controls': true,
+          ...__audioControlsClasses.value
+        }
+      }, [
+        // props.dense && h('div', {
+        //   class: 'q-media__controls--row row col content-start items-center'
+        // }, [
+        //   // dense
+        //   h('div', [
+        //     __renderPlayButton(),
+        //     props.showTooltips && !state.playReady && h(QTooltip, () => '等待音频中')
+        //   ]),
+        //   __renderVolumeButton(),
+        //   // __renderVolumeSlider(),
+        //   __renderDisplayTime(),
+        //   __renderCurrentTimeSlider(),
+        //   __renderDurationTime()
+        // ]),
+        // sparse
+        h('div', {
+          class: 'text-left q-pl-sm'
+        }, props.sources[ state.pIndex ].title),
+        h('div', {
+          class: 'row col items-center justify-between'
+        }, [
+          __renderDisplayTime(),
+          __renderCurrentTimeSlider(),
+          __renderDurationTime()
+        ]),
+        h('div', {
+          class: 'row col content-start items-center'
+        }, [
+          h('div', [
+            __renderPlayButton(),
+            __renderPlayPrevButton(),
+            __renderPlayNextButton(),
+            props.showTooltips && !state.playReady && h(QTooltip, () => '等待音频中')
+          ]),
+          h('div', [
+            __renderPlayModeButton(), __renderRatesButton(), __renderVolumeButton(), __renderListButton()
+          ])
+          // __renderVolumeSlider()
+        ])
+      ])
+    }
+
     function __rendermPlayer () {
       const events = {
         onMousemove: __mouseMoveAction,
@@ -2319,7 +2323,8 @@ export default createComponent({
         },
         style: {
           borderRadius: !state.inFullscreen ? props.radius : 0,
-          height: __isVideo.value ? 'auto' : props.dense ? '40px' : '80px'
+          margin: '6px auto'
+          // height: __isVideo.value ? 'auto' : props.dense ? '40px' : '80px'
         },
         ...events
       }, canRender.value === true
@@ -2337,25 +2342,25 @@ export default createComponent({
     }
 
     // expose public methods
-    // expose({
-    //   loadFileBlob,
-    //   showControls,
-    //   hideControls,
-    //   toggleControls,
-    //   play,
-    //   pause,
-    //   mute,
-    //   unmute,
-    //   togglePlay,
-    //   toggleMuted,
-    //   toggleFullscreen,
-    //   setFullscreen,
-    //   exitFullscreen,
-    //   currentTime,
-    //   setCurrentTime,
-    //   setVolume,
-    //   $media
-    // })
+    expose({
+      loadFileBlob,
+      showControls,
+      hideControls,
+      toggleControls,
+      play,
+      pause,
+      mute,
+      unmute,
+      togglePlay,
+      toggleMuted,
+      toggleFullscreen,
+      setFullscreen,
+      exitFullscreen,
+      currentTime,
+      setCurrentTime,
+      setVolume,
+      $media
+    })
 
     return () => __rendermPlayer()
   }
