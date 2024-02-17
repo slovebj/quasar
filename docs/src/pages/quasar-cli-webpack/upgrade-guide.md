@@ -1,6 +1,6 @@
 ---
 title: Upgrade Guide for Quasar CLI with Vite
-desc: (@quasar/app-webpack) How to upgrade Quasar CLI with Vite from older versions to the latest one.
+desc: (@quasar/app-webpack) How to upgrade Quasar CLI with Webpack from older versions to the latest one.
 scope:
   oldBexTree:
     l: src-bex
@@ -216,6 +216,14 @@ Preparations:
   + <!-- quasar:entry-point -->
   </body>
   ```
+  <br>
+
+* (Optional, but recommended) For future-proofing some tools config files, rename the following files (in the root project folder):
+  | Old name | New name |
+  | -------- | -------- |
+  | postcss.config.js | postcss.config.cjs |
+  | .eslintrc.js | .eslintrc.cjs |
+  | babel.config.js | babel.config.cjs |
 
 ### SPA / Capacitor / Cordova modes changes
 * No need to change anything in the `/src`, `/src-capacitor` or `/src-cordova` folders.
