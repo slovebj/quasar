@@ -33,7 +33,6 @@ export const useSliderProps = {
     type: Number,
     default: 100
   },
-  inner: Number,
   innerMin: Number,
   innerMax: Number,
 
@@ -229,7 +228,7 @@ export default function ({ updateValue, updatePosition, getDragging, formAttrs }
     + (props.innerTrackColor !== void 0 ? ` bg-${ props.innerTrackColor }` : '')
   )
   const innerBarStyle = computed(() => {
-    const innerDiff = isNaN(props.inner) === true ? innerMaxRatio.value : convertModelToRatio(props.inner) - innerMinRatio.value
+    const innerDiff = innerMaxRatio.value - innerMinRatio.value
     const acc = {
       [ positionProp.value ]: `${ 100 * innerMinRatio.value }%`,
       [ sizeProp.value ]: innerDiff === 0

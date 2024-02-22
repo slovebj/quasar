@@ -13,6 +13,7 @@ import {
 
 import QIcon from '../icon/QIcon.js'
 import QBtn from '../btn/QBtn.js'
+import QInput from '../input/QInput.js'
 import QItem from '../item/QItem.js'
 import QItemSection from '../item/QItemSection.js'
 import QList from '../item/QList.js'
@@ -185,6 +186,7 @@ export default createComponent({
       $media = ref(null), // $ref - the actual video/audio player
       controls = ref(null), // $ref
       menu = ref(null), // $ref
+      blob = ref(null), // $ref
       // media = ref(null), // $ref
       timer = reactive({
         // timer used to hide control during mouse inactivity
@@ -204,6 +206,7 @@ export default createComponent({
         durationTime: '00:00',
         remainingTime: '00:00',
         displayTime: '00:00',
+        loadedTime: 0,
         inFullscreen: false,
         loading: true,
         playReady: false,
@@ -363,14 +366,23 @@ export default createComponent({
       __updatePoster()
     })
 
-    watch(() => props.sources, () => {
-      __updateSources()
-    },
-    { deep: true }
-    )
+    // watch(() => props.sources, () => {
+    //   __updateSources()
+    // },
+    // { deep: true }
+    // )
 
     watch(() => props.source, () => {
-      __updateSources()
+      if (props.source && props.source.length > 0) {
+        props.sources.unshift({ title: '(*^__^*)', src: props.source })
+        state.pIndex = 0
+      }
+    })
+
+    watch(() => props.sources, () => {
+      if (props.sources && props.sources.length > 0) {
+        state.pIndex === 0 ? __updateSources() : state.pIndex = 0
+      }
     })
 
     watch(() => props.pIndex, () => {
@@ -530,18 +542,22 @@ export default createComponent({
         if (Object.prototype.toString.call(fileList) === '[object FileList]') {
           const reader = new FileReader()
           reader.onload = (event) => {
-            $media.value.src = event.target.result
-            __reset()
-            // __addSourceEventListeners()
-            $media.value.load()
-            state.loading = false
+            props.sources.unshift({
+              title: fileList[ 0 ].name,
+              src: event.target.result
+            })
+            // $media.value.src = event.target.result
+            // __reset()
+            // // __addSourceEventListeners()
+            // $media.value.load()
+            // state.loading = false
           }
           reader.readAsDataURL(fileList[ 0 ])
-          return true
+          // return true
         }
         else {
           /* eslint-disable-next-line no-console */
-          console.error('[QmPlayer]: loadFileBlob method requires a FileList')
+          console.error('[QMplayer]: loadFileBlob method requires a FileList')
         }
       }
       return false
@@ -1074,7 +1090,12 @@ export default createComponent({
         emit('playing')
       }
       else if (event.type === 'progress') {
-        //
+        if ($media.value.buffered.length) {
+          state.loadedTime = $media.value.buffered.end($media.value.buffered.length - 1)
+        }
+        else {
+          state.loadedTime = 0
+        }
       }
       else if (event.type === 'ratechange') {
         //
@@ -1309,32 +1330,29 @@ export default createComponent({
       // function __addSources () {
       if (__isMediaAvailable.value === true) {
         // let loaded = false
-        if (props.source && props.source.length > 0) {
-          $media.value.src = props.source
-          // loaded = true
-        }
-        else {
-        //   if (props.sources.length > 0) {
-        //     props.sources.forEach((source) => {
-        //       const s = document.createElement('SOURCE')
-        //       s.src = source.src ? source.src : ''
-        //       s.type = source.type ? source.type : ''
-        //       $media.value.appendChild(s)
-        //       if (!loaded && source.src) {
-        //         $media.value.src = source.src
-        //         loaded = true
-        //       }
-        //     })
-        //   }
+
+        //   else {
+        //   //   if (props.sources.length > 0) {
+        //   //     props.sources.forEach((source) => {
+        //   //       const s = document.createElement('SOURCE')
+        //   //       s.src = source.src ? source.src : ''
+        //   //       s.type = source.type ? source.type : ''
+        //   //       $media.value.appendChild(s)
+        //   //       if (!loaded && source.src) {
+        //   //         $media.value.src = source.src
+        //   //         loaded = true
+        //   //       }
+        //   //     })
+        //   //   }
+        //   // }
+
         // }
 
-          if (props.sources.length > 0) {
-            $media.value.src = props.sources[ state.pIndex ].src
-            $media.value.type = props.sources[ state.pIndex ].type
-            // loaded = true
-          }
+        if (props.sources.length > 0) {
+          $media.value.src = props.sources[ state.pIndex ].src
+          // $media.value.type = props.sources[ state.pIndex ].type
+          // loaded = true
         }
-
         __reset()
         // __addSourceEventListeners()
         $media.value.load()
@@ -1870,6 +1888,13 @@ export default createComponent({
             separator: true,
             highlight: true
           }, () => [
+            h(QInput, {
+              type: 'file',
+              outlined: true,
+              color: 'green',
+              modelValue: blob.value,
+              'onUpdate:modelValue': (val) => { blob.value = val; loadFileBlob(val) }
+            }),
             props.sources.map((source, index, sources) => {
               return h(QItem, {
                 // attrs
@@ -1885,7 +1910,7 @@ export default createComponent({
                 }
               }, () => [
                 h(QItemSection, { side: true }, () => index + 1),
-                h(QItemSection, () => source.title)
+                h(QItemSection, () => source.title || '(*^__^*)')
               ])
             })
           ])
@@ -1998,6 +2023,9 @@ export default createComponent({
         dark: props.dark,
         min: 0,
         max: state.duration ? state.duration : 1,
+        inner: state.loadedTime,
+        trackSize: '2px',
+        innerTrackColor: 'red',
         disable: !state.playReady || props.disabledSeek
       }
 
@@ -2283,7 +2311,7 @@ export default createComponent({
         // sparse
         h('div', {
           class: 'text-left q-pl-sm'
-        }, props.sources[ state.pIndex ].title),
+        }, props.sources[ state.pIndex ].title || '(*^__^*)'),
         h('div', {
           class: 'row col items-center justify-between'
         }, [
