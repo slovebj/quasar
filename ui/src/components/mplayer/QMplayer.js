@@ -59,7 +59,7 @@ export default createComponent({
       validator: v => [ 'video', 'audio' ].includes(v)
     },
     mobileMode: Boolean,
-    source: String,
+    src: String,
     sources: {
       type: Array,
       default: () => []
@@ -197,7 +197,6 @@ export default createComponent({
         controls: false,
         showControls: true,
         inControls: false,
-        pIndex: 0,
         playMode: 2,
         volume: 100,
         muted: false,
@@ -372,24 +371,24 @@ export default createComponent({
     // { deep: true }
     // )
 
-    watch(() => props.source, () => {
-      if (props.source && props.source.length > 0) {
-        props.sources.unshift({ title: '(*^__^*)', src: props.source })
-        state.pIndex = 0
+    watch(() => props.src, () => {
+      if (props.src && props.src.length > 0) {
+        props.sources.push({ title: '(*^__^*)', src: props.src })
+        props.pIndex = props.sources.length - 1
       }
     })
 
-    watch(() => props.sources, () => {
-      if (props.sources && props.sources.length > 0) {
-        state.pIndex === 0 ? __updateSources() : state.pIndex = 0
-      }
-    })
+    // watch(() => props.sources, () => {
+    //   if (props.sources && props.sources.length > 0) {
+    //     props.pIndex === 0 ? __updateSources() : props.pIndex = 0
+    //   }
+    // })
+
+    // watch(() => props.pIndex, () => {
+    //   state.pIndex = props.pIndex
+    // })
 
     watch(() => props.pIndex, () => {
-      state.pIndex = props.pIndex
-    })
-
-    watch(() => state.pIndex, () => {
       __updateSources()
       state.autoPlay = true
     })
@@ -542,10 +541,11 @@ export default createComponent({
         if (Object.prototype.toString.call(fileList) === '[object FileList]') {
           const reader = new FileReader()
           reader.onload = (event) => {
-            props.sources.unshift({
+            props.sources.push({
               title: fileList[ 0 ].name,
               src: event.target.result
             })
+            props.pIndex = props.sources.length - 1
             // $media.value.src = event.target.result
             // __reset()
             // // __addSourceEventListeners()
@@ -1349,8 +1349,8 @@ export default createComponent({
         // }
 
         if (props.sources.length > 0) {
-          $media.value.src = props.sources[ state.pIndex ].src
-          // $media.value.type = props.sources[ state.pIndex ].type
+          $media.value.src = props.sources[ props.pIndex ].src
+          // $media.value.type = props.sources[ props.pIndex ].type
           // loaded = true
         }
         __reset()
@@ -1575,7 +1575,7 @@ export default createComponent({
       const properties = {
         icon: 'play-next',
         size: '1.5rem',
-        disable: !state.playReady || (state.pIndex === props.sources.length - 1 && state.playMode < 3),
+        disable: !state.playReady || (props.pIndex === props.sources.length - 1 && state.playMode < 3),
         flat: true,
         padding: '4px'
       }
@@ -1597,7 +1597,7 @@ export default createComponent({
       const properties = {
         icon: 'play-prev',
         size: '1.5rem',
-        disable: !state.playReady || (state.pIndex === 0 && state.playMode < 3),
+        disable: !state.playReady || (props.pIndex === 0 && state.playMode < 3),
         flat: true,
         padding: '4px'
       }
@@ -1614,29 +1614,29 @@ export default createComponent({
     }
 
     function playPrev () {
-      if (state.pIndex > 0) {
-        state.pIndex--
+      if (props.pIndex > 0) {
+        props.pIndex--
       }
     }
 
     function playNext () {
-      if (state.pIndex < props.sources.length - 1) {
-        state.pIndex++
+      if (props.pIndex < props.sources.length - 1) {
+        props.pIndex++
       }
     }
 
     function playRound () {
-      if (state.pIndex === props.sources.length - 1) {
-        state.pIndex = (state.pIndex === props.sources.length - 1 ? 0 : state.pIndex++)
+      if (props.pIndex === props.sources.length - 1) {
+        props.pIndex = (props.pIndex === props.sources.length - 1 ? 0 : props.pIndex++)
       }
     }
 
     function playRandom () {
       const i = props.sources.length
       const r = Math.floor(Math.random() * i / 2)
-      let p = state.pIndex
+      let p = props.pIndex
       p += (r > 0 ? r : 1)
-      state.pIndex = p > i - 1 ? p - i : p
+      props.pIndex = p > i - 1 ? p - i : p
     }
 
     function __renderPlayModeButton () {
@@ -1899,13 +1899,13 @@ export default createComponent({
               return h(QItem, {
                 // attrs
                 // props
-                active: index === state.pIndex,
+                active: index === props.pIndex,
                 clickable: true,
 
                 // events
                 onClick: (e) => {
                   __stopAndPrevent(e)
-                  state.pIndex = index
+                  props.pIndex = index
                   // __playbackRateChanged(source.value)
                 }
               }, () => [
@@ -2311,7 +2311,7 @@ export default createComponent({
         // sparse
         h('div', {
           class: 'text-left q-pl-sm'
-        }, props.sources[ state.pIndex ].title || '(*^__^*)'),
+        }, props.sources[ props.pIndex ].title || '(*^__^*)'),
         h('div', {
           class: 'row col items-center justify-between'
         }, [

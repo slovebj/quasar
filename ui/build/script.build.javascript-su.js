@@ -298,7 +298,7 @@ const runBuild = {
 
     // const data = await require('./build.api').generate()
 
-    require('./build.transforms').generate()
+    //require('./build.transforms').generate()
     // require('./build.vetur').generate(data)
     // await require('./build.types').generate(data)
     // require('./build.web-types').generate(data)
@@ -341,10 +341,10 @@ const runBuild = {
     require('./build.web-types').generate(data)
   },
 
-  async transforms () {
-    await prepareDiff('dist/transforms')
-    require('./build.transforms').generate()
-  }
+  // async transforms () {
+  //   await prepareDiff('dist/transforms')
+  //   require('./build.transforms').generate()
+  // }
 }
 
 module.exports = function (subtype) {

@@ -1,0 +1,931 @@
+.button {
+    cursor: pointer;
+    width: var(--width);
+    height: var(--height);
+    margin: var(--margin) var(--margin) 50px;
+    text-align: center;
+    font-size: 14px;
+    border: var(--border_color) var(--border_size) solid;
+    border-radius: var(--radius);
+    background-color: var(--bg-color);
+    color: var(--color);
+    box-shadow: 0 5px 5px 3px var(--box_shadow_color);
+    position: relative;
+    letter-spacing: var(--letter_spacing);
+}
+
+:root {
+    --letter_spacing: 5px;
+    --delay: 0s;
+    --height: 40px;
+    --width: 160px;
+    --radius: 10px;
+    --margin: 10px;
+    --transition_speed: 0.5s;
+    --bg-color: #4e5b69;
+    --color: #fff;
+    --border_color: #3eeed0;
+    --border_size: 0;
+    --box_shadow_color: rgba(60, 62, 75, 0.2);
+    --streamer_light_color: linear-gradient(to right, #03a9f4, #f441a5, #ffeb3b, #09a8f4);
+    --streamer_inSize: 5px;
+    --streamer_border_color: #c7f8ac;
+    --streamer_speed: 2s;
+    --slideSize: 50;
+    --slide_end_place: 60%;
+    --slide_color: linear-gradient(to right, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.8));
+    --slide_border_color: rgba(255, 255, 255, 0.8);
+    --fontCover_size: 60px;
+    --fontCover_speed: 4s;
+    --fontCover_inset: 0;
+    --fontCover_color: #8cea7d;
+    --fontCover_bg_color: #4e5b69;
+    --pulse_color1: #fff;
+    --pulse_color2: #f0f;
+    --pulse_color3: #0ff;
+    --pulse_speed: 8s;
+    --pulse_box_size: 100px;
+    --pulse_cat_color1: #4e5b69;
+    --pulse_cat_weight: 20px;
+    --pulse_cat_height: 35px;
+}
+
+.delay_1 {
+    --delay: 1s;
+}
+
+.delay_2 {
+    --delay: 2s;
+}
+
+.delay_3 {
+    --delay: 3s;
+}
+
+.delay_5 {
+    --delay: 5s;
+}
+
+.inverted {
+    -webkit-box-reflect: below 0 linear-gradient(transparent, rgba(0, 0, 0, 0.2));
+}
+
+.determine {
+    --pulse_cat_color1: #55e0cb;
+    --fontCover_color: #1ebea5;
+    --border_size: 1px;
+    --border_color: #1ebea5;
+    --bg-color: #55c7e0;
+    --fontCover_bg_color: #55c7e0;
+    --streamer_border_color: #6ffc9c;
+    --streamer_light_color: linear-gradient(to right, #03a9f4, #c1f441, #3bff4b, #09a8f4);
+    transition: all var(--transition_speed);
+    --pulse_color1: #fff;
+    --pulse_color2: #0f0;
+    --pulse_color3: #00f;
+    --slide_color: linear-gradient(to right, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.8));
+    --slide_border_color: rgba(255, 255, 255, 0.8);
+}
+
+.determine:hover {
+    --bg-color: #2d9dc7;
+    --fontCover_bg_color: #2d9dc7;
+    transition: all var(--transition_speed);
+}
+
+.determine:active {
+    --bg-color: #4179c2;
+    --fontCover_bg_color: #4179c2;
+    transition: all var(--transition_speed);
+}
+
+.cancel {
+    --pulse_cat_color1: #4cf6df;
+    --fontCover_color: #c0c0c0;
+    --slide_color: linear-gradient(to right, rgba(208, 255, 211, 0.1), rgba(208, 255, 221, 0.8));
+    --slide_border_color: rgba(208, 255, 221, 0.8);
+    --streamer_border_color: #4cf6df;
+    --streamer_light_color: linear-gradient(to right, #d4e4ee, #eeeeb2, #cffad3, #bcdbec);
+    --bg-color: #fcfcfc;
+    --fontCover_bg_color: #fcfcfc;
+    --color: #a3a3a3;
+    --border_size: 1px;
+    transition: all var(--transition_speed);
+
+}
+
+.cancel:hover {
+    --color: #3eeed0;
+    transition: all var(--transition_speed);
+}
+
+.cancel:active {
+    --bg-color: #c7fff3;
+    --fontCover_bg_color: #c7fff3;
+    --color: #fff;
+    --border_color: #c4fff4;
+    transition: all var(--transition_speed);
+}
+
+.error {
+    --pulse_cat_color1: #ffc9c9;
+    --fontCover_color: #fcfcfc;
+    --border_size: 1px;
+    --border_color: #f87563;
+    --streamer_border_color: #ffc9c9;
+    --streamer_light_color: linear-gradient(to right, #f16443, #eeba45, #ef6297, #ec3636);
+    --bg-color: #ffa59a;
+    --fontCover_bg_color: #ffa59a;
+    transition: all var(--transition_speed);
+    --pulse_color1: #fff;
+    --pulse_color2: #f00;
+    --pulse_color3: #ff0;
+
+    --slide_color: linear-gradient(to right, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.8));
+    --slide_border_color: rgba(255, 255, 255, 0.8);
+}
+
+.error:hover {
+    --bg-color: #ff6f58;
+    --fontCover_bg_color: #ff6f58;
+    transition: all var(--transition_speed);
+}
+
+.error:active {
+    --bg-color: #c25241;
+    --fontCover_bg_color: #c25241;
+    transition: all var(--transition_speed);
+}
+
+button-span {
+    display: inline;
+    position: relative;
+    z-index: 2;
+}
+
+.streamerLight, .streamerLightBorder {
+    position: relative;
+    background: var(--streamer_light_color);
+    background-size: 400%;
+    border-radius: var(--radius);
+    color: var(--color);
+}
+
+.streamerLight:hover, .streamerLightBorder:hover {
+    animation: steamer 8s linear infinite;
+}
+
+.streamerLight::before, .streamerLightBorder::before {
+    content: "";
+    position: absolute;
+    inset: calc(var(--streamer_inSize) * -1);
+    background: var(--streamer_light_color);
+    background-size: 400%;
+    border-radius: var(--radius);
+    filter: blur(10px);
+}
+
+.streamerLight:hover::before, .streamerLightBorder:hover::before {
+    animation: steamer 8s infinite;
+}
+
+.streamerLightBorder::after {
+    content: "";
+    position: absolute;
+    inset: calc(var(--streamer_inSize));
+    background: var(--bg-color);
+    background-size: 400%;
+    border-radius: var(--radius);
+    filter: blur(10px);
+}
+
+.streamerLightBorder:active::after {
+    background: var(--streamer_light_color);
+    background-size: 400%;
+}
+
+@keyframes steamer {
+    100% {
+        background-position: -400% 0;
+    }
+}
+
+.streamerBorder, .streamerBorderAlone, .streamerBorderMove,
+.streamerBorderSideLine, .streamerBorderSideLineTop, .streamerBorderSideLineBottom, .streamerBorderSideLineOut,
+.staticStreamerBorder, .staticStreamerBorderAlone, .staticStreamerBorderMove,
+.staticStreamerBorderSideLine, .staticStreamerBorderSideLineTop, .staticStreamerBorderSideLineBottom, .staticStreamerBorderSideLineOut {
+    position: relative;
+    display: inline-flex;
+    border-radius: var(--radius);
+    color: var(--color);
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+    overflow: hidden;
+    transition: all var(--transition_speed);
+}
+
+.streamerBorder:hover, .streamerBorderAlone:hover, .streamerBorderMove:hover,
+.streamerBorderSideLine:hover, .streamerBorderSideLineTop:hover, .streamerBorderSideLineBottom:hover, .streamerBorderSideLineOut:hover,
+.staticStreamerBorder:active, .staticStreamerBorderAlone:active, .staticStreamerBorderMove:active,
+.staticStreamerBorderSideLine:active, .staticStreamerBorderSideLineTop:hover, .staticStreamerBorderSideLineBottom:hover, .staticStreamerBorderSideLineOut:hover {
+    background: var(--streamer_border_color);
+    transition: all var(--transition_speed);
+    box-shadow: 0 0 7px 7px var(--streamer_border_color);
+}
+
+.streamerBorderSideLineTop:hover, .streamerBorderSideLineBottom:hover, .streamerBorderSideLineOut:hover, .staticStreamerBorderSideLineTop:hover, .staticStreamerBorderSideLineBottom:hover, .staticStreamerBorderSideLineOut:hover {
+    background: var(--bg-color);
+    transition: all var(--transition_speed);
+}
+
+.streamerBorderSideLineTop:active, .streamerBorderSideLineBottom:active, .streamerBorderSideLineOut:active {
+    background: var(--streamer_border_color);
+    transition: all var(--transition_speed);
+}
+
+.streamerBorder::before, .staticStreamerBorder::before {
+    content: "";
+    position: absolute;
+    width: calc(var(--height) / 4);
+    height: var(--width);
+    background: var(--streamer_border_color);
+    animation: streamerBorder var(--streamer_speed) linear infinite;
+    animation-delay: var(--delay);
+    filter: blur(1px);
+}
+
+.staticStreamerBorder::before {
+    animation: none;
+    transform: rotate(0deg) scale(2)
+}
+
+.staticStreamerBorder:hover::before {
+    animation: streamerBorder var(--streamer_speed) linear infinite;
+}
+
+.streamerBorderAlone::before, .staticStreamerBorderAlone::before {
+    content: "";
+    position: absolute;
+    width: var(--width);
+    height: calc(var(--height) / 4);
+    top: 25%;
+    left: 0;
+    background: var(--streamer_border_color);
+    animation: streamerBorderAlone var(--streamer_speed) linear infinite;
+    animation-delay: var(--delay);
+    filter: blur(2px);
+}
+
+.staticStreamerBorderAlone::before {
+    animation: none;
+    transform: rotate(90deg) translate(-50%, -50%);
+}
+
+.staticStreamerBorderAlone:hover::before {
+    animation: streamerBorderAlone var(--streamer_speed) linear infinite;
+    animation-delay: var(--delay);
+}
+
+.streamerBorderMove::before, .staticStreamerBorderMove::before {
+    content: "";
+    position: absolute;
+    width: calc(var(--width) / 5);
+    top: 0;
+    left: 0;
+    height: calc(var(--height) / 5);
+    background: var(--streamer_border_color);
+    animation: streamerBorderMove var(--streamer_speed) linear infinite;
+    animation-delay: var(--delay);
+    filter: blur(1px);
+}
+
+.staticStreamerBorderMove::before {
+    animation: none;
+    left: 0;
+    top: unset;
+}
+
+.staticStreamerBorderMove:hover::before {
+    animation: streamerBorderMove var(--streamer_speed) linear infinite;
+    animation-delay: var(--delay);
+}
+
+.streamerBorderSideLine::before, .streamerBorderSideLineTop::before, .streamerBorderSideLineBottom::before,
+.streamerBorderSideLineOut::before, .streamerBorderSideLineOut::after,
+.staticStreamerBorderSideLine::before, .staticStreamerBorderSideLineTop::before, .staticStreamerBorderSideLineBottom::before,
+.staticStreamerBorderSideLineOut::before, .staticStreamerBorderSideLineOut::after {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 0;
+    box-shadow: 0 0 var(--streamer_inSize) var(--streamer_inSize) var(--streamer_border_color);
+    background: var(--streamer_border_color);
+    animation: streamerBorderSideLine var(--streamer_speed) linear infinite;
+    filter: blur(3px);
+    transition: all var(--streamer_speed);
+}
+
+.staticStreamerBorderSideLine::before, .staticStreamerBorderSideLineTop::before, .staticStreamerBorderSideLineBottom::before,
+.staticStreamerBorderSideLineOut::before, .staticStreamerBorderSideLineOut::after {
+    animation: staticStreamerBorderSideLine var(--streamer_speed) linear infinite;
+}
+
+.staticStreamerBorderSideLine:hover::before, .staticStreamerBorderSideLineTop:hover::before, .staticStreamerBorderSideLineBottom:hover::before,
+.staticStreamerBorderSideLineOut:hover::before, .staticStreamerBorderSideLineOut:hover::after {
+    animation: streamerBorderSideLine var(--streamer_speed) linear infinite;
+}
+
+.streamerBorderSideLineTop::before, .streamerBorderSideLineOut::before,
+.staticStreamerBorderSideLineTop::before, .staticStreamerBorderSideLineOut::before {
+    top: -100%;
+    border-radius: 50%;
+}
+
+.streamerBorderSideLineBottom::before, .streamerBorderSideLineOut::after,
+.staticStreamerBorderSideLineBottom::before, .staticStreamerBorderSideLineOut::after {
+    bottom: -100%;
+    border-radius: 50%;
+}
+
+.streamerBorder::after, .streamerBorderAlone::after, .streamerBorderMove::after,
+.streamerBorderSideLine::after, .staticStreamerBorderSideLine::after,
+.staticStreamerBorder::after, .staticStreamerBorderAlone::after, .staticStreamerBorderMove::after {
+    content: "";
+    position: absolute;
+    border-radius: var(--radius);
+    background-color: var(--bg-color);
+    inset: var(--streamer_inSize);
+    transition: all var(--transition_speed);
+}
+
+.streamerBorder:hover::after, .streamerBorderAlone:hover::after, .streamerBorderMove:hover::after,
+.streamerBorderSideLine:hover::after, .staticStreamerBorderSideLine:hover::after,
+.staticStreamerBorder:active::after, .staticStreamerBorderAlone:active::after, .staticStreamerBorderMove:active::after {
+    inset: 0;
+    transition: all var(--transition_speed);
+}
+
+.streamerBorder:active::after, .streamerBorderAlone:active::after, .streamerBorderMove:active::after,
+.streamerBorderSideLine:active::after, .staticStreamerBorderSideLine:active:after {
+    background-color: var(--streamer_border_color);
+    inset: 0;
+    transition: all var(--transition_speed);
+}
+
+.staticStreamerBorderSideLineTop:active::before, .staticStreamerBorderSideLineOut:active::before {
+    animation: none;
+    top: -100%;
+    border-radius: 50%;
+    height: 100%;
+    width: 100%;
+    transition: all var(--streamer_speed);
+}
+
+.staticStreamerBorderSideLineBottom:active::before, .staticStreamerBorderSideLineOut:active::after {
+    bottom: -100%;
+    border-radius: 50%;
+    animation: none;
+    height: 100%;
+    width: 100%;
+    transition: all var(--streamer_speed);
+}
+
+@keyframes streamerBorder {
+    0% {
+        transform: rotate(0deg) scale(2);
+    }
+    100% {
+        transform: rotate(360deg) scale(2);
+    }
+}
+
+@keyframes streamerBorderAlone {
+    0% {
+        transform: rotate(90deg) translate(-50%, -50%);
+    }
+    100% {
+        transform: rotate(450deg) translate(-50%, -50%);
+    }
+}
+
+@keyframes streamerBorderMove {
+    0% {
+        left: 0;
+        top: 0;
+    }
+    25% {
+        left: calc(var(--width) - var(--streamer_inSize));
+        top: 0;
+    }
+    50% {
+        left: calc(var(--width) - var(--streamer_inSize));
+        top: calc(var(--height) - var(--streamer_inSize));
+    }
+    75% {
+        left: calc(var(--streamer_inSize) - var(--width) / 5);
+        top: calc(var(--height) - var(--streamer_inSize));
+    }
+    100% {
+        left: calc(var(--streamer_inSize) - var(--width) / 5);
+        top: 0;
+    }
+}
+
+@keyframes streamerBorderSideLine {
+    0% {
+        height: 0;
+        width: 0;
+    }
+    25% {
+        height: 100%;
+        width: 10%;
+    }
+    50% {
+        height: 100%;
+        width: 100%;
+    }
+    75% {
+        height: 100%;
+        width: 10%;
+    }
+    100% {
+        height: 0;
+        width: 0;
+    }
+}
+
+@keyframes staticStreamerBorderSideLine {
+    0% {
+        height: 90%;
+        width: 100%;
+    }
+    25% {
+        height: 95%;
+        width: 100%;
+    }
+    50% {
+        height: 98%;
+        width: 100%;
+    }
+    75% {
+        height: 95%;
+        width: 100%;
+    }
+    100% {
+        height: 90%;
+        width: 100%;
+    }
+}
+
+.slide, .slideArrow, .slideMiddle {
+    position: relative;
+    border-radius: var(--radius);
+    color: var(--color);
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+    overflow: hidden;
+    transition: all var(--transition_speed);
+}
+
+.slide::before {
+    content: "";
+    position: absolute;
+    width: calc(var(--width) / 10);
+    height: calc(var(--width) + var(--height));
+    background: var(--slide_color);
+    transform: rotate(30deg);
+    left: 0;
+    transition: all var(--transition_speed) ease-in-out;
+}
+
+.slide:hover::before {
+    left: var(--slide_end_place);
+    transition: all var(--transition_speed) ease-in-out;
+}
+
+.slide:active::before {
+    transform: scale(var(--slideSize));
+    transition: all var(--transition_speed) ease-in-out;
+}
+
+.slideArrow::before {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 0;
+    border: rgba(255, 255, 255, 0) var(--height) solid;
+    border-left: var(--slide_border_color) var(--height) solid;
+    left: calc(var(--height) / 2 * -1);
+    transition: all var(--transition_speed) ease-in-out;
+}
+
+.slideArrow::after {
+    content: "";
+    position: absolute;
+    width: 0;
+    left: calc(var(--height) / 2 * -1);
+    height: var(--height);
+    background: var(--slide_color);
+    transition: all var(--transition_speed) ease-in-out;
+}
+
+.slideArrow:hover::before {
+    left: var(--slide_end_place);
+    transition: all var(--transition_speed) ease-in-out;
+}
+
+.slideArrow:hover::after {
+    width: calc(var(--slide_end_place) + var(--height) / 2);
+    transition: all var(--transition_speed) ease-in-out;
+}
+
+.slideArrow:active::before {
+    left: 100%;
+    transition: all var(--transition_speed) ease-in-out;
+}
+
+.slideArrow:active::after {
+    width: calc(100% + var(--height) / 2);
+    transition: all var(--transition_speed) ease-in-out;
+}
+
+.slideMiddle::before {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: var(--height);
+    background: var(--slide_color);
+    transition: all var(--transition_speed) ease-in-out;
+}
+
+.slideMiddle:hover::before {
+    width: var(--width);
+    transition: all var(--transition_speed) ease-in-out;
+}
+
+.slideMiddle:active::before {
+    width: calc(var(--width) * 2);
+    transition: all var(--transition_speed) ease-in-out;
+}
+
+.fontCover, .fontCoverVertical {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+    overflow: hidden;
+    transition: all var(--transition_speed);
+}
+
+.fontCover::after, .fontCoverVertical::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    width: calc(var(--fontCover_size) * -1);;
+    left: 0;
+    height: var(--height);
+    background: var(--fontCover_bg_color);
+    border-radius: var(--radius);
+    z-index: 2;
+    animation: fontCover1 var(--fontCover_speed) linear infinite;
+    opacity: 0.7;
+}
+
+.fontCover::before, .fontCoverVertical::before {
+    content: "";
+    position: absolute;
+    right: 0;
+    height: var(--height);
+    width: 100%;
+    background: var(--fontCover_bg_color);
+    border-radius: var(--radius);
+    z-index: 3;
+    animation: fontCover2 var(--fontCover_speed) linear infinite;
+    transition: all var(--transition_speed);
+    opacity: 0.7;
+}
+
+.fontCover:hover::before, .fontCover:hover::after, .fontCoverVertical:hover::before, .fontCoverVertical:hover:after {
+    opacity: 0.3;
+    transition: all var(--transition_speed);
+}
+
+.fontCover:active, .fontCoverVertical:active {
+    color: var(--fontCover_color);
+    text-shadow: 0 0 3px var(--fontCover_color);
+    transition: all var(--transition_speed);
+}
+
+.fontCoverVertical::after {
+    height: calc(var(--fontCover_size) * -1);
+    width: var(--width);
+    animation: fontCoverVertical1 var(--fontCover_speed) linear infinite;
+}
+
+.fontCoverVertical::before {
+    bottom: 0;
+    height: 100%;
+    animation: fontCoverVertical2 var(--fontCover_speed) linear infinite;
+}
+
+@keyframes fontCover1 {
+    0% {
+        width: calc(var(--fontCover_size) * -1);
+    }
+    100% {
+        width: 100%;
+    }
+}
+
+@keyframes fontCover2 {
+    0% {
+        width: 100%;
+    }
+    100% {
+        width: calc(var(--fontCover_size) * -1);
+    }
+}
+
+@keyframes fontCoverVertical1 {
+    0% {
+        height: calc(var(--fontCover_size) * -1);
+    }
+    100% {
+        height: 100%;
+    }
+}
+
+@keyframes fontCoverVertical2 {
+    0% {
+        height: 100%;
+    }
+    100% {
+        height: calc(var(--fontCover_size) * -1);
+    }
+}
+
+.pulse, .pulseStart, .pulseCat, .pulseBear{
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+    transition: all var(--transition_speed);
+
+}
+
+.pulse::before {
+    content: "";
+    position: absolute;
+    inset: 3px 10px;
+    border: var(--border_color) 5px solid;
+    border-radius: var(--radius);
+    transform: scale(1, 1);
+    animation: pulse var(--pulse_speed) linear infinite;
+    animation-delay: var(--transition_speed);
+    transition: all var(--transition_speed);
+}
+
+.pulse:hover::before {
+    animation: pulseHover var(--transition_speed) linear;
+    transform: scale(2.5, 2.5);
+    border-width: 2px;
+    opacity: 0.1;
+    transition: all var(--transition_speed);
+}
+
+.pulse::after {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    background: var(--bg-color);
+    transition: all var(--transition_speed);
+}
+
+.pulse:active::before {
+    transform: scale(2, 2);
+    border-width: 3px;
+    opacity: 0.6;
+    transition: all var(--transition_speed);
+}
+
+.pulseCat::before, .pulseCat::after, .pulseBear::before, .pulseBear::after {
+    content: "";
+    position: absolute;
+    width: var(--pulse_cat_weight);
+    height: var(--pulse_cat_height);
+    top: calc(var(--pulse_cat_height) * -1);
+    left: 100%;
+    background: conic-gradient(from 90deg at 50% 0, transparent 74deg, var(--pulse_cat_color1) 74deg, var(--bg-color) 82deg, var(--bg-color) 98deg, var(--pulse_cat_color1) 104deg, transparent 104deg);
+    animation: pulseCat calc(var(--pulse_speed) / 2) linear infinite;
+    transform-origin: 50% 100%;
+    transition: all var(--transition_speed);
+}
+
+.pulseBear::before, .pulseBear::after {
+    box-sizing: border-box;
+    background: var(--bg-color);
+    border-radius: 50%;
+    box-shadow: 0 0 5px var(--pulse_cat_color1),
+    inset 0 0 10px var(--bg-color),
+    inset 7px 15px 5px var(--pulse_cat_color1);
+
+}
+
+.pulseCat::after, .pulseBear::after {
+    top: calc(var(--pulse_cat_height) * -1);
+    left: calc(var(--pulse_cat_weight) * -1);
+    animation: pulseCatLeft calc(var(--pulse_speed) / 2) linear infinite;
+}
+
+.pulseCat:hover::before, .pulseBear:hover::before {
+    top: calc(var(--pulse_cat_height) * 0.85 * -1);
+    left: calc(100% - var(--pulse_cat_weight) / 2);
+    transition: all var(--transition_speed);
+}
+
+.pulseCat:hover::after, .pulseBear:hover::after {
+    top: calc(var(--pulse_cat_height) * 0.85 * -1);
+    left: calc( var(--pulse_cat_weight) / 2 * -1);
+    animation: pulseCatLeft calc(var(--pulse_speed) / 2) linear infinite;
+
+}
+
+.pulseCat:active::before, .pulseCat:active::after, .pulseBear:active::before, .pulseBear:active::after {
+    width: calc(var(--pulse_cat_weight) * 0.65);
+    height: calc(var(--pulse_cat_height) * 0.65);
+    top: calc(var(--pulse_cat_height) * 0.85 * -1);
+    left: calc(100% - (var(--pulse_cat_weight) * 0.65) / 2);
+    transition: all var(--transition_speed);
+}
+
+.pulseCat:active::after, .pulseBear:active::after {
+    top:calc(var(--pulse_cat_height) * 0.85 * -1);
+    left:calc( (var(--pulse_cat_weight) * 0.65)/ 2 * -1);
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.75, 0.75);
+    }
+    50% {
+        transform: scale(1, 1);
+    }
+    100% {
+        transform: scale(0.75, 0.75);
+    }
+}
+
+@keyframes pulseHover {
+    0% {
+        transform: scale(1, 1);
+    }
+    100% {
+        transform: scale(2.5, 2.5);
+    }
+
+}
+
+@keyframes pulseCat {
+    0% {
+        transform: rotate(20deg) scale(0.80, 0.80) rotateY(180deg);
+    }
+    25% {
+        transform: rotate(30deg) scale(0.80, 0.80) rotateY(180deg);
+    }
+    50% {
+        transform: rotate(40deg) scale(0.80, 0.80) rotateY(180deg);
+    }
+    75% {
+        transform: rotate(30deg) scale(0.80, 0.80) rotateY(180deg);
+    }
+    100% {
+        transform: rotate(20deg) scale(0.80, 0.80) rotateY(180deg);
+    }
+}
+
+@keyframes pulseCatLeft {
+    0% {
+        transform: rotate(-20deg) scale(0.80, 0.80);
+    }
+    25% {
+        transform: rotate(-30deg) scale(0.80, 0.80);
+    }
+    50% {
+        transform: rotate(-40deg) scale(0.80, 0.80);
+    }
+    75% {
+        transform: rotate(-30deg) scale(0.80, 0.80);
+    }
+    100% {
+        transform: rotate(-20deg) scale(0.80, 0.80);
+    }
+}
+
+.pulseStart {
+    box-shadow: 0 0 calc(var(--pulse_box_size) / 10) var(--pulse_color1);
+}
+
+.pulseStart:hover {
+    box-shadow: 0 0 calc(var(--pulse_box_size) / 10) var(--pulse_color1),
+    calc(var(--pulse_box_size) / 10) 0 calc(var(--pulse_box_size) / 10 * 4) calc(var(--pulse_box_size) / 20) var(--pulse_color2), calc(var(--pulse_box_size) / 10 * -1) 0 calc(var(--pulse_box_size) / 10 * 4) calc(var(--pulse_box_size) / 20) var(--pulse_color3),
+    inset 0 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color1),
+    inset calc(var(--pulse_box_size) / 2) 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color2), inset calc(var(--pulse_box_size) / 2 * -1) 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color3),
+    inset calc(var(--pulse_box_size) / 2) 0 var(--pulse_box_size) var(--pulse_color2), inset calc(var(--pulse_box_size) / 2 * -1) 0 var(--pulse_box_size) var(--pulse_color3);
+    animation: pulseStart var(--pulse_speed) linear infinite;
+    animation-delay: var(--transition_speed);
+    transition: all var(--transition_speed);
+
+}
+
+.pulseStart:active {
+    box-shadow: 0 0 calc(var(--pulse_box_size) / 10) calc(var(--pulse_box_size) / 10) var(--pulse_color1),
+    calc(var(--pulse_box_size) / 10) 0 calc(var(--pulse_box_size) / 10 * 4) calc(var(--pulse_box_size) / 20) var(--pulse_color2), calc(var(--pulse_box_size) / 10 * -1) 0 calc(var(--pulse_box_size) / 10 * 4) calc(var(--pulse_box_size) / 20) var(--pulse_color3),
+    inset 0 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color1),
+    inset calc(var(--pulse_box_size) / 2) 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color2), inset calc(var(--pulse_box_size) / 2 * -1) 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color3),
+    inset calc(var(--pulse_box_size) / 2) 0 var(--pulse_box_size) var(--pulse_color2), inset calc(var(--pulse_box_size) / 2 * -1) 0 var(--pulse_box_size) var(--pulse_color3);
+    transition: all var(--transition_speed);
+    animation: pulseStartActive var(--pulse_speed) linear infinite;
+    animation-delay: var(--transition_speed);
+}
+
+@keyframes pulseStart {
+    0% {
+        box-shadow: 0 0 calc(var(--pulse_box_size) / 10) var(--pulse_color1),
+        calc(var(--pulse_box_size) / 10) 0 calc(var(--pulse_box_size) / 10 * 4) calc(var(--pulse_box_size) / 20) var(--pulse_color2), calc(var(--pulse_box_size) / 10 * -1) 0 calc(var(--pulse_box_size) / 10 * 4) calc(var(--pulse_box_size) / 20) var(--pulse_color3),
+        inset 0 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color1),
+        inset calc(var(--pulse_box_size) / 2) 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color2), inset calc(var(--pulse_box_size) / 2 * -1) 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color3),
+        inset calc(var(--pulse_box_size) / 2) 0 var(--pulse_box_size) var(--pulse_color2), inset calc(var(--pulse_box_size) / 2 * -1) 0 var(--pulse_box_size) var(--pulse_color3);
+
+    }
+    25% {
+        box-shadow: 0 0 calc(var(--pulse_box_size) / 10) var(--pulse_color1),
+        0 calc(var(--pulse_box_size) / 10 * -1) calc(var(--pulse_box_size) / 10 * 4) calc(var(--pulse_box_size) / 10) var(--pulse_color2), 0 calc(var(--pulse_box_size) / 10) calc(var(--pulse_box_size) / 10 * 4) calc(var(--pulse_box_size) / 10) var(--pulse_color3),
+        inset 0 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color1),
+        inset var(--pulse_box_size) 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color2), inset 0 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color3),
+        inset var(--pulse_box_size) 0 var(--pulse_box_size) var(--pulse_color2), inset 0 0 var(--pulse_box_size) var(--pulse_color3);
+    }
+    50% {
+        box-shadow: 0 0 calc(var(--pulse_box_size) / 10) var(--pulse_color1),
+        calc(var(--pulse_box_size) / 10 * -1) 0 calc(var(--pulse_box_size) / 10 * 4) calc(var(--pulse_box_size) / 20) var(--pulse_color2), calc(var(--pulse_box_size) / 10) 0 calc(var(--pulse_box_size) / 10 * 4) calc(var(--pulse_box_size) / 20) var(--pulse_color3),
+        inset 0 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color1),
+        inset calc(var(--pulse_box_size) / 2 * -1) 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color2), inset calc(var(--pulse_box_size) / 2) 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color3),
+        inset calc(var(--pulse_box_size) / 2 * -1) 0 var(--pulse_box_size) var(--pulse_color2), inset calc(var(--pulse_box_size) / 2) 0 var(--pulse_box_size) var(--pulse_color3);
+    }
+    75% {
+        box-shadow: 0 0 calc(var(--pulse_box_size) / 10) var(--pulse_color1),
+        0 calc(var(--pulse_box_size) / 10) calc(var(--pulse_box_size) / 10 * 4) calc(var(--pulse_box_size) / 10) var(--pulse_color2), 0 calc(var(--pulse_box_size) / 10 * -1) calc(var(--pulse_box_size) / 10 * 4) calc(var(--pulse_box_size) / 10) var(--pulse_color3),
+        inset 0 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color1),
+        inset 0 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color2), inset var(--pulse_box_size) 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color3),
+        inset 0 0 var(--pulse_box_size) var(--pulse_color2), inset var(--pulse_box_size) 0 var(--pulse_box_size) var(--pulse_color3);
+    }
+    100% {
+        box-shadow: 0 0 calc(var(--pulse_box_size) / 10) var(--pulse_color1),
+        calc(var(--pulse_box_size) / 10) 0 calc(var(--pulse_box_size) / 10 * 4) calc(var(--pulse_box_size) / 20) var(--pulse_color2), calc(var(--pulse_box_size) / 10 * -1) 0 calc(var(--pulse_box_size) / 10 * 4) calc(var(--pulse_box_size) / 20) var(--pulse_color3),
+        inset 0 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color1),
+        inset calc(var(--pulse_box_size) / 2) 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color2), inset calc(var(--pulse_box_size) / 2 * -1) 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color3),
+        inset calc(var(--pulse_box_size) / 2) 0 var(--pulse_box_size) var(--pulse_color2), inset calc(var(--pulse_box_size) / 2 * -1) 0 var(--width) var(--pulse_color3);
+    }
+}
+
+@keyframes pulseStartActive {
+    0% {
+        box-shadow: 0 0 calc(var(--pulse_box_size) / 10) calc(var(--pulse_box_size) / 10) var(--pulse_color1),
+        calc(var(--pulse_box_size) / 10) 0 calc(var(--pulse_box_size) / 10 * 4) calc(var(--pulse_box_size) / 20) var(--pulse_color2), calc(var(--pulse_box_size) / 10 * -1) 0 calc(var(--pulse_box_size) / 10 * 4) calc(var(--pulse_box_size) / 20) var(--pulse_color3),
+        inset 0 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color1),
+        inset calc(var(--pulse_box_size) / 2) 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color2), inset calc(var(--pulse_box_size) / 2 * -1) 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color3),
+        inset calc(var(--pulse_box_size) / 2) 0 var(--pulse_box_size) var(--pulse_color2), inset calc(var(--pulse_box_size) / 2 * -1) 0 var(--pulse_box_size) var(--pulse_color3);
+
+    }
+    25% {
+        box-shadow: 0 0 calc(var(--pulse_box_size) / 10) var(--pulse_color1),
+        0 calc(var(--pulse_box_size) / 10 * -1) calc(var(--pulse_box_size) / 10 * 4) calc(var(--pulse_box_size) / 10) var(--pulse_color2), 0 calc(var(--pulse_box_size) / 10) calc(var(--pulse_box_size) / 10 * 4) calc(var(--pulse_box_size) / 10) var(--pulse_color3),
+        inset 0 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color1),
+        inset var(--pulse_box_size) 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color2), inset 0 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color3),
+        inset var(--pulse_box_size) 0 var(--pulse_box_size) var(--pulse_color2), inset 0 0 var(--pulse_box_size) var(--pulse_color3);
+    }
+    50% {
+        box-shadow: 0 0 calc(var(--pulse_box_size) / 10) calc(var(--pulse_box_size) / 10) var(--pulse_color1),
+        calc(var(--pulse_box_size) / 10 * -1) 0 calc(var(--pulse_box_size) / 10 * 4) calc(var(--pulse_box_size) / 20) var(--pulse_color2), calc(var(--pulse_box_size) / 10) 0 calc(var(--pulse_box_size) / 10 * 4) calc(var(--pulse_box_size) / 20) var(--pulse_color3),
+        inset 0 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color1),
+        inset calc(var(--pulse_box_size) / 2 * -1) 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color2), inset calc(var(--pulse_box_size) / 2) 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color3),
+        inset calc(var(--pulse_box_size) / 2 * -1) 0 var(--pulse_box_size) var(--pulse_color2), inset calc(var(--pulse_box_size) / 2) 0 var(--pulse_box_size) var(--pulse_color3);
+    }
+    75% {
+        box-shadow: 0 0 calc(var(--pulse_box_size) / 10) var(--pulse_color1),
+        0 calc(var(--pulse_box_size) / 10) calc(var(--pulse_box_size) / 10 * 4) calc(var(--pulse_box_size) / 10) var(--pulse_color2), 0 calc(var(--pulse_box_size) / 10 * -1) calc(var(--pulse_box_size) / 10 * 4) calc(var(--pulse_box_size) / 10) var(--pulse_color3),
+        inset 0 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color1),
+        inset 0 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color2), inset var(--pulse_box_size) 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color3),
+        inset 0 0 var(--pulse_box_size) var(--pulse_color2), inset var(--pulse_box_size) 0 var(--pulse_box_size) var(--pulse_color3);
+    }
+    100% {
+        box-shadow: 0 0 calc(var(--pulse_box_size) / 10) calc(var(--pulse_box_size) / 10) var(--pulse_color1),
+        calc(var(--pulse_box_size) / 10) 0 calc(var(--pulse_box_size) / 10 * 4) calc(var(--pulse_box_size) / 20) var(--pulse_color2), calc(var(--pulse_box_size) / 10 * -1) 0 calc(var(--pulse_box_size) / 10 * 4) calc(var(--pulse_box_size) / 20) var(--pulse_color3),
+        inset 0 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color1),
+        inset calc(var(--pulse_box_size) / 2) 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color2), inset calc(var(--pulse_box_size) / 2 * -1) 0 calc(var(--pulse_box_size) / 10 * 4) var(--pulse_color3),
+        inset calc(var(--pulse_box_size) / 2) 0 var(--pulse_box_size) var(--pulse_color2), inset calc(var(--pulse_box_size) / 2 * -1) 0 var(--width) var(--pulse_color3);
+    }
+}
+
