@@ -5,7 +5,7 @@ $max-z-index : 5900
 .q-media
   position: relative
   min-width: 280px !important
-  min-height: 95px !important
+  min-height: 90px !important
   overflow: hidden !important
   display: flex
   flex-direction: column
@@ -18,13 +18,13 @@ $max-z-index : 5900
     vertical-align: bottom
     align-self: flex-end
 
-    &--bottom-controls--standard
+    &--bottom-controls
       height: calc(100vh - 80px)
 
-    &--bottom-controls--dense
-      height: calc(100vh - 40px)
+    // &--bottom-controls--dense
+    //   height: calc(100vh - 40px)
 
-  &__audio--standard
+  &__audio
     width: 100%
     // height: 80px !important
     vertical-align: bottom
@@ -35,6 +35,26 @@ $max-z-index : 5900
   //   height: 40px !important
   //   vertical-align: bottom
   //   align-self: flex-end
+
+  &__title
+    position: absolute
+    left: 0
+    top: 0
+    right: 0
+    display: flex
+    height: 24px
+    font-size: 1rem
+    text-align: left
+    margin: 2px 6px
+    color: var(--mplayer-color)
+    overflow: hidden
+      // &--standard
+      //   transition: height 250ms ease-in
+      //   z-index: 2
+
+      // &--hidden
+      //   height: 0 !important
+      //   transition: height 250ms ease-out
 
   &__error-window
     position: absolute
@@ -70,7 +90,7 @@ $max-z-index : 5900
       position: absolute
       left: 50%
       margin-left: -1.5rem
-      top: 50%
+      top: 5%
       margin-bottom: -1.5rem
       width: 3rem
       height: 3rem
@@ -81,7 +101,7 @@ $max-z-index : 5900
       position: absolute
       left: 50%
       margin-left: -0.5rem
-      top: 50%
+      top: 5%
       margin-bottom: -0.5rem
       width: 1.5rem
       height: 1.5rem
@@ -102,9 +122,9 @@ $max-z-index : 5900
     cursor: pointer
     border-radius: 1.5rem
     opacity: 1.0
-    font-size: 3rem
+    font-size: 2rem
     z-index: 1000 // not to cover drawer from sides
-    background: var(--big-play-button-background)
+    // background: var(--big-play-button-background)
     color: var(--big-play-button-color)
     border: var(--big-play-button-border)
     transition: all 200ms ease-in
@@ -145,10 +165,10 @@ $max-z-index : 5900
       transition: height 250ms ease-in
       z-index: 2
 
-    &--dense
-      height: 40px !important
-      transition: height 250ms ease-in
-      z-index: 2
+    // &--dense
+    //   height: 40px !important
+    //   transition: height 250ms ease-in
+    //   z-index: 2
 
     &--hidden
       height: 0 !important
@@ -160,9 +180,9 @@ $max-z-index : 5900
       max-height: 40px !important
       min-height: 40px !important
 
-    &--volume-box
-      max-height: 40px !important
-      min-height: 40px !important
+    // &--volume-box
+    //   max-height: 40px !important
+    //   min-height: 40px !important
 
     &--video-time-text
       min-width: 50px

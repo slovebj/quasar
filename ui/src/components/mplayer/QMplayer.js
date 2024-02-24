@@ -2,7 +2,7 @@ import {
   computed,
   getCurrentInstance,
   h,
-  nextTick,
+  // nextTick,
   // onBeforeMount,
   onBeforeUnmount,
   reactive,
@@ -21,9 +21,9 @@ import QMenu from '../menu/QMenu.js'
 import QSlider from '../slider/QSlider.js'
 import QSpinner from '../spinner/QSpinner.js'
 import QTooltip from '../tooltip/QTooltip.js'
-import QExpansionItem from '../expansion-item/QExpansionItem.js'
+// import QExpansionItem from '../expansion-item/QExpansionItem.js'
 import ClosePopup from '../../directives/ClosePopup.js'
-import Ripple from '../../directives/Ripple.js'
+// import Ripple from '../../directives/Ripple.js'
 import { createComponent } from '../../utils/private/create.js'
 import useQuasar from '../../composables/use-quasar.js'
 import { hSlot } from '../../utils/private/render.js'
@@ -47,8 +47,8 @@ export default createComponent({
   name: 'QMplayer',
 
   directives: {
-    ClosePopup,
-    Ripple
+    ClosePopup
+    // Ripple
   },
 
   props: {
@@ -58,7 +58,7 @@ export default createComponent({
       default: 'video',
       validator: v => [ 'video', 'audio' ].includes(v)
     },
-    mobileMode: Boolean,
+    // mobileMode: Boolean,
     src: String,
     sources: {
       type: Array,
@@ -76,7 +76,7 @@ export default createComponent({
     //   type: Array,
     //   default: () => []
     // },
-    dense: Boolean,
+    // dense: Boolean,
     autoplay: Boolean,
     crossOrigin: {
       type: [ String ],
@@ -88,18 +88,18 @@ export default createComponent({
       default: 100,
       validator: v => v >= 0 && v <= 100
     },
-    hideVolumeSlider: Boolean,
-    hideVolumeBtn: Boolean,
-    hidePlayBtn: Boolean,
-    hideSettingsBtn: Boolean,
-    hideFullscreenBtn: Boolean,
+    // hideVolumeSlider: Boolean,
+    // hideVolumeBtn: Boolean,
+    // hidePlayBtn: Boolean,
+    // hideSettingsBtn: Boolean,
+    // hideFullscreenBtn: Boolean,
     disabledSeek: Boolean,
     preload: {
       type: String,
       default: 'auto',
       validator: v => [ 'none', 'metadata', 'auto' ].includes(v)
     },
-    noVideo: Boolean,
+    // noVideo: Boolean,
     muted: Boolean,
     playsinline: Boolean,
     loop: Boolean,
@@ -118,7 +118,7 @@ export default createComponent({
     },
     spinnerSize: String,
     noControls: Boolean,
-    nativeControls: Boolean,
+    // nativeControls: Boolean,
     bottomControls: {
       type: Boolean,
       default: false
@@ -263,15 +263,15 @@ export default createComponent({
     const __renderVideoClasses = computed(() => {
       return {
         'q-media--player': true,
-        'q-media--player--bottom-controls--standard': !props.dense && state.bottomControls && state.inFullscreen,
-        'q-media--player--bottom-controls--dense': props.dense && state.bottomControls && state.inFullscreen
+        'q-media--player--bottom-controls': state.bottomControls && state.inFullscreen // !props.dense &&
+        // 'q-media--player--bottom-controls--dense': props.dense && state.bottomControls && state.inFullscreen
       }
     })
 
     const __videoControlsClasses = computed(() => {
       return {
-        'q-media__controls--dense': !slots.controls && ((state.showControls || props.mobileMode) && props.dense),
-        'q-media__controls--standard': !slots.controls && ((state.showControls || props.mobileMode) && !props.dense),
+        // 'q-media__controls--dense': !slots.controls && ((state.showControls || props.mobileMode) && props.dense),
+        'q-media__controls--standard': !slots.controls && state.showControls, // || props.mobileMode && !props.dense)
         'q-media__controls--hidden': !state.showControls,
         'q-media__controls--bottom-controls': state.bottomControls
       }
@@ -279,9 +279,9 @@ export default createComponent({
 
     const __audioControlsClasses = computed(() => {
       return {
-        'q-media__controls--dense': props.dense,
-        'q-media__controls--standard': !props.dense,
-        'q-media__controls--bottom-controls': state.bottomControls
+        // 'q-media__controls--dense': props.dense,
+        'q-media__controls--standard': true
+        // 'q-media__controls--bottom-controls': state.bottomControls
       }
     })
 
@@ -296,6 +296,7 @@ export default createComponent({
         if (style.height === void 0) {
           style.height = '100%'
         }
+        style.minWidth = '320px'
       }
       return style
     })
@@ -337,21 +338,21 @@ export default createComponent({
       return props.type === 'video'
     })
 
-    const __settingsPlaybackCaption = computed(() => {
-      let caption = ''
-      state.playbackRates.forEach((rate) => {
-        if (rate.value === state.playbackRate) {
-          caption = rate.label
-        }
-      })
-      return caption
-    })
+    // const __settingsPlaybackCaption = computed(() => {
+    //   let caption = ''
+    //   state.playbackRates.forEach((rate) => {
+    //     if (rate.value === state.playbackRate) {
+    //       caption = rate.label
+    //     }
+    //   })
+    //   return caption
+    // })
 
     const __controlsHeight = computed(() => {
       if (controls.value) {
         return controls.value.clientHeight
       }
-      return props.dense ? 40 : 80
+      return 80 // props.dense ? 40 : 80
     })
 
     // Watches
@@ -497,12 +498,12 @@ export default createComponent({
       }
     })
 
-    watch(() => props.noControls, val => {
-      state.noControls = val
-      if (props.nativeControls === true) {
-        state.noControls = true
-      }
-    })
+    // watch(() => props.noControls, val => {
+    //   state.noControls = val
+    //   if (props.nativeControls === true) {
+    //     state.noControls = true
+    //   }
+    // })
 
     // watch(() => state.inControls, (val) => {
     //   console.log('inControls:', val)
@@ -584,7 +585,7 @@ export default createComponent({
       // check if hide cursor (fullscreen)
       __checkCursor()
       // set the timer
-      if (props.controlsDisplayTime !== -1 && !props.mobileMode && __isVideo.value) {
+      if (props.controlsDisplayTime !== -1 && __isVideo.value) { // && !props.mobileMode
         timer.hideControlsTimer = setTimeout(() => {
           // hide controls, but not if menu is showing
           if (state.inControls !== true) { //! __showingMenu() &&
@@ -738,7 +739,7 @@ export default createComponent({
     }
 
     function setFullscreen () {
-      if (props.hideFullscreenBtn === true || !__isVideo.value || state.inFullscreen) {
+      if (!__isVideo.value || state.inFullscreen) {
         return
       }
       if ($q.fullscreen !== void 0) {
@@ -752,7 +753,7 @@ export default createComponent({
     }
 
     function exitFullscreen () {
-      if (props.hideFullscreenBtn === true || !__isVideo.value || !state.inFullscreen) {
+      if (!__isVideo.value || !state.inFullscreen) {
         return
       }
       if ($q.fullscreen !== void 0) {
@@ -930,9 +931,9 @@ export default createComponent({
     function __init () {
       state.bottomControls = props.bottomControls
       state.noControls = props.noControls
-      if (props.nativeControls === true) {
-        state.noControls = true
-      }
+      // if (props.nativeControls === true) {
+      //   state.noControls = true
+      // }
       // set default track language
       // __updateTrackLanguage()
       __updateSources()
@@ -991,15 +992,15 @@ export default createComponent({
     //   }
     // }
 
-    function __sourceEventHandler (event) {
-      const NETWORK_NO_SOURCE = 3
-      if (__isMediaAvailable.value === true && $media.value.networkState === NETWORK_NO_SOURCE) {
-        state.errorText = __isVideo.value ? '无法加载视频' : '无法加载音频'
-        state.loading = false
-      }
-      // eslint-disable-next-line vue/custom-event-name-casing
-      emit('networkState', event)
-    }
+    // function __sourceEventHandler (event) {
+    //   const NETWORK_NO_SOURCE = 3
+    //   if (__isMediaAvailable.value === true && $media.value.networkState === NETWORK_NO_SOURCE) {
+    //     state.errorText = __isVideo.value ? '无法加载视频' : '无法加载音频'
+    //     state.loading = false
+    //   }
+    //   // eslint-disable-next-line vue/custom-event-name-casing
+    //   emit('networkState', event)
+    // }
 
     function __mediaEventHandler (event) {
       if (event.type === 'abort') {
@@ -1161,27 +1162,27 @@ export default createComponent({
       }
     }
 
-    function __adjustMenu () {
-      const qmenu = menu.value
-      if (qmenu) {
-        setTimeout(() => {
-          qmenu.updatePosition()
-        }, 350)
-      }
-    }
+    // function __adjustMenu () {
+    //   const qmenu = menu.value
+    //   if (qmenu) {
+    //     setTimeout(() => {
+    //       qmenu.updatePosition()
+    //     }, 350)
+    //   }
+    // }
 
     function __videoClick (e) {
       __stopAndPrevent(e)
-      if (props.mobileMode !== true && __isVideo.value) {
+      if (__isVideo.value) { // props.mobileMode !== true &&
         togglePlay()
       }
     }
 
     function __bigButtonClick (e) {
       __stopAndPrevent(e)
-      if (props.mobileMode) {
-        hideControls()
-      }
+      // if (props.mobileMode) {
+      //   hideControls()
+      // }
       togglePlay()
     }
 
@@ -1191,14 +1192,14 @@ export default createComponent({
 
     function __mouseLeaveVideo (e) {
       if (e.relatedTarget && e.relatedTarget.className === 'q-pa-md') {
-        if (!props.bottomControls && !props.mobileMode && !__isAudio.value && state.inControls !== true) {
+        if (!props.bottomControls && !__isAudio.value && state.inControls !== true) { // && !props.mobileMode
           hideControls()
         }
       }
     }
 
     function __mouseMoveAction (e) {
-      if (!props.bottomControls && !props.mobileMode && !__isAudio.value) {
+      if (!props.bottomControls && !__isAudio.value) { // && !props.mobileMode
         __showControlsIfValid(e)
       }
     }
@@ -1433,11 +1434,11 @@ export default createComponent({
         height: props.contentHeight || undefined
       }
 
-      nextTick(() => {
-        if (__isMediaAvailable.value && props.nativeControls === true) {
-          $media.value.controls = true
-        }
-      }).catch(e => console.error(e))
+      // nextTick(() => {
+      //   if (__isMediaAvailable.value && props.nativeControls === true) {
+      //     $media.value.controls = true
+      //   }
+      // }).catch(e => console.error(e))
 
       return h('video', {
         ref: $media,
@@ -1466,11 +1467,11 @@ export default createComponent({
         // height: props.contentHeight || undefined
       }
 
-      nextTick(() => {
-        if (__isMediaAvailable.value && props.nativeControls === true) {
-          $media.value.controls = true
-        }
-      }).catch(e => console.error(e))
+      // nextTick(() => {
+      //   if (__isMediaAvailable.value && props.nativeControls === true) {
+      //     $media.value.controls = true
+      //   }
+      // }).catch(e => console.error(e))
 
       // This is on purpose (not using audio tag).
       // The video tag can also play audio and works better if dynamically
@@ -1541,10 +1542,20 @@ export default createComponent({
       }, hSlot(slot, h('span', [ state.errorText, errorWindowCloseButton() ])))
     }
 
-    function __renderPlayButton () {
-      if (props.hidePlayBtn === true) return
+    function __renderTitle () {
+      return h('div', {
+        class: {
+          'q-media__title': true,
+          'q-media__controls--standard': !slots.controls && state.showControls, // || props.mobileMode && !props.dense)
+          'q-media__controls--hidden': !state.showControls
+        }
+      }, props.sources[ props.pIndex ].title || '(*^__^*)')
+    }
 
-      const slot = slots.play
+    function __renderPlayButton () {
+      // if (props.hidePlayBtn === true) return
+
+      // const slot = slots.play
 
       const properties = {
         icon: state.playing ? 'pause' : 'play',
@@ -1558,7 +1569,7 @@ export default createComponent({
         onClick: togglePlay
       }
 
-      return (slot && slot()) || h(QBtn, {
+      return h(QBtn, {
         class: 'q-media__controls--button play-button',
         ...properties,
         ...events
@@ -1668,7 +1679,6 @@ export default createComponent({
       if (props.hideVolumeBtn === true) {
         return
       }
-      const slot = slots.volchange
 
       const properties = {
         icon: __volumeIcon.value,
@@ -1678,8 +1688,8 @@ export default createComponent({
         padding: '4px'
       }
 
-      return (slot && slot()) || h(QBtn, {
-        class: 'q-media__controls--button volume-button',
+      return h(QBtn, {
+        class: 'q-media__controls--button',
         ...properties
       }, () => [
         // props.showTooltips === true && !settingsMenuVisible.value
@@ -1698,7 +1708,7 @@ export default createComponent({
       return h(QMenu, {
         ref: menu,
         style: 'width:200px;height:50px;',
-        class: 'column justify-center',
+        class: 'column justify-center bg-blue-10',
         ...properties
       }, () => [ h(QItem, {}
         , () => [
@@ -1709,13 +1719,12 @@ export default createComponent({
     }
 
     function __renderVolumeChangeButton () {
-      const slot = slots.volume
       const properties = {
         icon: __volumeIcon.value,
         size: '1.5rem',
         padding: '4px',
         flat: true,
-        color: props.dark === true || $q.dark.isActive ? 'var(--mplayer-color-dark)' : 'var(--mplayer-color)',
+        color: 'white',
         round: true
       }
 
@@ -1723,7 +1732,7 @@ export default createComponent({
         onClick: toggleMuted
       }
 
-      return (slot && slot()) || h(QBtn, {
+      return h(QBtn, {
         ...properties,
         ...events
       })
@@ -1737,25 +1746,25 @@ export default createComponent({
     }
 
     function __renderVolumeSlider () {
-      if (props.hideVolumeSlider === true || props.hideVolumeBtn === true) {
-        return
-      }
-      const slot = slots.volumeSlider
+      // if (props.hideVolumeSlider === true || props.hideVolumeBtn === true) {
+      //   return
+      // }
 
       const properties = {
         modelValue: state.volume,
         dark: props.dark,
         min: 0,
         max: 100,
-        disable: !state.playReady || state.muted,
-        color: props.dark === true || $q.dark.isActive ? 'var(--mplayer-color-dark)' : 'var(--mplayer-color)'
+        trackColor: 'white',
+        disable: !state.playReady || state.muted
+        // color: 'white'
       }
 
       const events = {
         onChange: __volumePercentChanged
       }
 
-      return (slot && slot()) || h(QSlider, {
+      return h(QSlider, {
         ...properties,
         ...events
       })
@@ -1803,6 +1812,7 @@ export default createComponent({
 
       return h(QMenu, {
         ref: menu,
+        class: 'bg-blue-10 text-white',
         ...properties
         // ...events
       }, () => [
@@ -1877,7 +1887,8 @@ export default createComponent({
 
       return h(QMenu, {
         ref: menu,
-        style: 'width:200px',
+        style: 'width:200px;padding-bottom: 20px;',
+        class: 'bg-blue-10 text-white',
         ...properties
         // ...events
       }, () => [
@@ -1918,35 +1929,7 @@ export default createComponent({
       ])
     }
 
-    function __renderSettingsButton () {
-      if (props.hideSettingsBtn === true) {
-        return
-      }
-
-      const slot = slots.settings
-
-      const properties = {
-        icon: 'setting',
-        size: '1.5rem',
-        disable: !state.playReady,
-        flat: true,
-        padding: '4px'
-      }
-
-      return (slot && slot()) || h(QBtn, {
-        class: 'q-media__controls--button settings-button',
-        ...properties
-      }, () => [
-        // props.showTooltips === true && !settingsMenuVisible.value
-        //   ? h(QTooltip, () => '设置')
-        //   : undefined,
-        __renderSettingsMenu()
-      ])
-    }
-
     function __renderFullscreenButton () {
-      const slot = slots.fullscreen
-
       const properties = {
         icon: state.inFullscreen ? 'fullscreen-exit' : 'fullscreen',
         size: '1.5rem',
@@ -1959,7 +1942,7 @@ export default createComponent({
         onClick: toggleFullscreen
       }
 
-      return (slot && slot()) || h(QBtn, {
+      return h(QBtn, {
         class: 'q-media__controls--button fullscreen-button',
         ...properties,
         ...events
@@ -1980,9 +1963,9 @@ export default createComponent({
         state.spinnerSize = props.spinnerSize
       }
 
-      const slot = slots.spinner
+      // const slot = slots.spinner
 
-      return (slot && slot()) || h('div', {
+      return h('div', {
         class: __isVideo.value ? 'q-media__loading--video' : 'q-media__loading--audio'
       }, [
         h(QSpinner, {
@@ -1992,13 +1975,13 @@ export default createComponent({
     }
 
     function __renderBigPlayButton () {
-      const slot = slots.bigPlayButton
+      // const slot = slots.bigPlayButton
 
       const events = {
         onClick: __bigButtonClick
       }
 
-      return (slot && slot()) || h('div', {
+      return h('div', {
         class: {
           'q-media--big-button q-media--big-button-bottom-controls': state.bottomControls === true,
           'q-media--big-button': state.bottomControls !== true
@@ -2016,8 +1999,6 @@ export default createComponent({
     }
 
     function __renderCurrentTimeSlider () {
-      const slot = slots.positionSlider
-
       const properties = {
         modelValue: state.currentTime,
         dark: props.dark,
@@ -2033,10 +2014,10 @@ export default createComponent({
         onChange: __videoCurrentTimeChanged
       }
 
-      return (slot && slot()) || h(QSlider, {
+      return h(QSlider, {
         class: 'col',
         style: {
-          margin: '0 0.5rem',
+          margin: '3px 0',
           color: props.dark === true || $q.dark.isActive ? 'var(--mplayer-color-dark)' : 'var(--mplayer-color)'
         },
         ...properties,
@@ -2045,9 +2026,9 @@ export default createComponent({
     }
 
     function __renderDisplayTime () {
-      const slot = slots.displayTime
+      // const slot = slots.displayTime
 
-      return (slot && slot()) || h('span', {
+      return h('span', {
         class: 'q-media__controls--video-time-text text-left',
         style: {
           color: props.dark === true || $q.dark.isActive ? 'var(--mplayer-color-dark)' : 'var(--mplayer-color)'
@@ -2058,10 +2039,10 @@ export default createComponent({
     function __renderDurationTime () {
       if (__isMediaAvailable.value !== true) return
 
-      const slot = slots.durationTime
+      // const slot = slots.durationTime
       const isInfinity = !isFinite($media.value.duration)
 
-      return (slot && slot()) || h('span', {
+      return h('span', {
         class: 'q-media__controls--video-time-text text-right',
         style: {
           width: isInfinity ? '30px' : 'auto',
@@ -2087,122 +2068,122 @@ export default createComponent({
       ])
     }
 
-    function __renderSettingsMenu () {
-      const slot = slots.settingsMenu
+    // function __renderSettingsMenu () {
+    //   const slot = slots.settingsMenu
 
-      const properties = {
-        anchor: 'top right',
-        self: 'bottom right'
-      }
+    //   const properties = {
+    //     anchor: 'top right',
+    //     self: 'bottom right'
+    //   }
 
-      // const events = {
-      //   onShow: () => {
-      //     __settingsMenuShowing(true)
-      //   },
-      //   onHide: () => {
-      //     __settingsMenuShowing(false)
-      //   }
-      // }
+    //   // const events = {
+    //   //   onShow: () => {
+    //   //     __settingsMenuShowing(true)
+    //   //   },
+    //   //   onHide: () => {
+    //   //     __settingsMenuShowing(false)
+    //   //   }
+    //   // }
 
-      return h(QMenu, {
-        ref: menu,
-        ...properties
-        // ...events
-      }, () => [
-        (slot && slot()) || h('div', [
-          state.playbackRates.length > 0 && h(QExpansionItem, {
-            // props
-            group: 'settings-menu',
-            expandSeparator: true,
-            icon: 'speed',
-            label: '播放速率',
-            caption: __settingsPlaybackCaption.value,
-            // events
-            onShow: __adjustMenu,
-            onHide: __adjustMenu
-          }, () => [
-            h(QList, {
-              // props
-              highlight: true
-            }, () => [
-              state.playbackRates.map(rate => {
-                return withDirectives(h(QItem, {
-                  // attrs
-                  key: rate.value,
-                  // props
-                  clickable: true,
-                  dense: true,
-                  // events
-                  onClick: (e) => {
-                    __stopAndPrevent(e)
-                    __playbackRateChanged(rate.value)
-                  }
-                }, () => [
-                  h(QItemSection, {
-                    // props
-                    avatar: true
-                  }, () => [
-                    rate.value === state.playbackRate && h(QIcon, {
-                      // props
-                      name: 'selected'
-                    })
-                  ]),
-                  h(QItemSection, () => rate.label)
-                ]), [ [
-                  ClosePopup
-                ] ])
-              })
-            ])
-          ])
-          // first item is 'Off' and doesn't count unless more are added
-          // __selectTracksLanguageList.value.length > 1 && h(QExpansionItem, {
-          //   // props
-          //   group: 'settings-menu',
-          //   expandSeparator: true,
-          //   icon: 'language',
-          //   label: '语言',
-          //   caption: state.trackLanguage,
-          //   // events
-          //   onShow: __adjustMenu,
-          //   onHide: __adjustMenu
-          // }, () => [
-          //   h(QList, {
-          //     // props
-          //     highlight: true
-          //   }, () => [
-          //     __selectTracksLanguageList.value.map(language => {
-          //       return withDirectives(h(QItem, {
-          //         // attrs
-          //         key: language.value,
-          //         // props
-          //         clickable: true,
-          //         dense: true,
-          //         // events
-          //         onClick: (e) => {
-          //           __stopAndPrevent(e)
-          //           __trackLanguageChanged(language.value)
-          //         }
-          //       }, () => [
-          //         h(QItemSection, {
-          //           // props
-          //           avatar: true
-          //         }, () => [
-          //           language.value === state.trackLanguage
-          //           && h(QIcon, {
-          //             // props
-          //             name: 'selected'
-          //           })
-          //         ]),
-          //         h(QItemSection, () => language.label)
-          //       ]), [ [
-          //         ClosePopup
-          //       ] ])
-          //     })
-          //   ])
-          // ])
-        ])
-      ])
-    }
+    //   return h(QMenu, {
+    //     ref: menu,
+    //     ...properties
+    //     // ...events
+    //   }, () => [
+    //     (slot && slot()) || h('div', [
+    //       state.playbackRates.length > 0 && h(QExpansionItem, {
+    //         // props
+    //         group: 'settings-menu',
+    //         expandSeparator: true,
+    //         icon: 'speed',
+    //         label: '播放速率',
+    //         caption: __settingsPlaybackCaption.value,
+    //         // events
+    //         onShow: __adjustMenu,
+    //         onHide: __adjustMenu
+    //       }, () => [
+    //         h(QList, {
+    //           // props
+    //           highlight: true
+    //         }, () => [
+    //           state.playbackRates.map(rate => {
+    //             return withDirectives(h(QItem, {
+    //               // attrs
+    //               key: rate.value,
+    //               // props
+    //               clickable: true,
+    //               dense: true,
+    //               // events
+    //               onClick: (e) => {
+    //                 __stopAndPrevent(e)
+    //                 __playbackRateChanged(rate.value)
+    //               }
+    //             }, () => [
+    //               h(QItemSection, {
+    //                 // props
+    //                 avatar: true
+    //               }, () => [
+    //                 rate.value === state.playbackRate && h(QIcon, {
+    //                   // props
+    //                   name: 'selected'
+    //                 })
+    //               ]),
+    //               h(QItemSection, () => rate.label)
+    //             ]), [ [
+    //               ClosePopup
+    //             ] ])
+    //           })
+    //         ])
+    //       ])
+    //       // first item is 'Off' and doesn't count unless more are added
+    //       // __selectTracksLanguageList.value.length > 1 && h(QExpansionItem, {
+    //       //   // props
+    //       //   group: 'settings-menu',
+    //       //   expandSeparator: true,
+    //       //   icon: 'language',
+    //       //   label: '语言',
+    //       //   caption: state.trackLanguage,
+    //       //   // events
+    //       //   onShow: __adjustMenu,
+    //       //   onHide: __adjustMenu
+    //       // }, () => [
+    //       //   h(QList, {
+    //       //     // props
+    //       //     highlight: true
+    //       //   }, () => [
+    //       //     __selectTracksLanguageList.value.map(language => {
+    //       //       return withDirectives(h(QItem, {
+    //       //         // attrs
+    //       //         key: language.value,
+    //       //         // props
+    //       //         clickable: true,
+    //       //         dense: true,
+    //       //         // events
+    //       //         onClick: (e) => {
+    //       //           __stopAndPrevent(e)
+    //       //           __trackLanguageChanged(language.value)
+    //       //         }
+    //       //       }, () => [
+    //       //         h(QItemSection, {
+    //       //           // props
+    //       //           avatar: true
+    //       //         }, () => [
+    //       //           language.value === state.trackLanguage
+    //       //           && h(QIcon, {
+    //       //             // props
+    //       //             name: 'selected'
+    //       //           })
+    //       //         ]),
+    //       //         h(QItemSection, () => language.label)
+    //       //       ]), [ [
+    //       //         ClosePopup
+    //       //       ] ])
+    //       //     })
+    //       //   ])
+    //       // ])
+    //     ])
+    //   ])
+    // }
 
     function __renderVideoControls () {
       const slot = slots.controls
@@ -2238,31 +2219,33 @@ export default createComponent({
         ...events
       }, [
         // dense
-        props.dense && h('div', {
-          class: 'q-media__controls--row row col content-start items-center'
-        }, [
-          h('div', [
-            __renderPlayButton(),
-            __renderPlayPrevButton(),
-            __renderPlayNextButton(),
-            props.showTooltips && !state.playReady && h(QTooltip, () => '等待视频中')
-          ]),
-          // __renderVolumeSlider(),
-          __renderDisplayTime(),
-          __renderCurrentTimeSlider(),
-          __renderDurationTime(),
-          __renderPlayModeButton(), __renderRatesButton(), __renderVolumeButton(), __renderListButton(),
-          $q.fullscreen !== void 0 && props.hideFullscreenBtn !== true && __renderFullscreenButton()
-        ]),
+        // props.dense && h('div', {
+        //   class: 'q-media__controls--row row col content-start items-center'
+        // }, [
+        //   h('div', [
+        //     __renderPlayButton(),
+        //     __renderPlayPrevButton(),
+        //     __renderPlayNextButton(),
+        //     props.showTooltips && !state.playReady && h(QTooltip, () => '等待视频中')
+        //   ]),
+        //   // __renderVolumeSlider(),
+        //   __renderDisplayTime(),
+        //   __renderCurrentTimeSlider(),
+        //   __renderDurationTime(),
+        //   __renderPlayModeButton(), __renderRatesButton(), __renderVolumeButton(), __renderListButton(),
+        //   $q.fullscreen !== void 0 && props.hideFullscreenBtn !== true && __renderFullscreenButton()
+        // ]),
         // sparse
-        !props.dense && h('div', {
+        // !props.dense &&
+        h('div', {
           class: 'q-media__controls--row row col items-center justify-between'
         }, [
           __renderDisplayTime(),
           __renderCurrentTimeSlider(),
           __renderDurationTime()
         ]),
-        !props.dense && h('div', {
+        // !props.dense &&
+        h('div', {
           class: 'q-media__controls--row row col content-start items-center'
         }, [
           h('div', {
@@ -2278,7 +2261,7 @@ export default createComponent({
           ]),
           h('div', [
             __renderPlayModeButton(), __renderRatesButton(), __renderVolumeButton(), __renderListButton(),
-            $q.fullscreen !== void 0 && props.hideFullscreenBtn !== true && __renderFullscreenButton()
+            $q.fullscreen !== void 0 && __renderFullscreenButton()
           ])
         ])
       ])
@@ -2309,9 +2292,6 @@ export default createComponent({
         //   __renderDurationTime()
         // ]),
         // sparse
-        h('div', {
-          class: 'text-left q-pl-sm'
-        }, props.sources[ props.pIndex ].title || '(*^__^*)'),
         h('div', {
           class: 'row col items-center justify-between'
         }, [
@@ -2360,6 +2340,7 @@ export default createComponent({
             __isVideo.value && __renderVideo(),
             __isAudio.value && __renderAudio(),
             __renderOverlayWindow(),
+            __renderTitle(),
             state.errorText && __renderErrorWindow(),
             __isVideo.value && !state.noControls && !state.errorText && __renderVideoControls(),
             __isAudio.value && !state.noControls && !state.errorText && __renderAudioControls(),
