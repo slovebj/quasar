@@ -1,5 +1,4 @@
 import { QuasarAnimations, QuasarFonts, QuasarIconSets } from "quasar";
-import { QuasarEslintConfiguration } from "./eslint";
 import { QuasarBootConfiguration } from "./boot";
 import { QuasarBuildConfiguration } from "./build";
 import { QuasarCapacitorConfiguration } from "./capacitor-conf";
@@ -51,9 +50,6 @@ interface QuasarSourceFilesConfiguration {
 }
 
 interface BaseQuasarConfiguration {
-  /** Options with which Quasar CLI will use ESLint */
-  eslint?: QuasarEslintConfiguration;
-
   /** Boot files to load. Order is important. */
   boot?: QuasarBootConfiguration;
   /**
@@ -68,15 +64,20 @@ interface BaseQuasarConfiguration {
    * @example ['material-icons', 'roboto-font', 'ionicons-v4']
    */
   extras?: (QuasarIconSets | QuasarFonts)[];
-  /** Add variables that you can use in index.template.html. */
+  /**
+   * Add variables that you can use in index.html
+   *
+   * @see https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#htmlvariables
+   */
   htmlVariables?: Record<string, any>;
   /**
    * What Quasar language pack to use, what Quasar icon
-   * set to use for Quasar components.
+   * set to use for Quasar components, etc.
    */
   framework?: QuasarFrameworkConfiguration;
   /**
    * What [CSS animations](/options/animations) to import.
+   *
    * @example: [ 'bounceInLeft', 'bounceOutRight' ]
    */
   animations?: QuasarAnimationsConfiguration | 'all';

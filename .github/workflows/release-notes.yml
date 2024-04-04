@@ -17,13 +17,16 @@ jobs:
         with:
           ref: dev
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'yarn'
+          cache: 'pnpm'
 
-      - run: yarn install
-        working-directory: docs
+      - name: Install dependencies
+        run: pnpm i
 
       - name: Generate Release Notes
         uses: actions/github-script@v7
@@ -143,7 +146,7 @@ jobs:
             const writeJsonFile = (name, data) =>
               writeFile(
                 join(directory, `${name}.json`),
-                JSON.stringify(data, null, 2),
+                JSON.stringify(data),
                 'utf8'
               );
             await Promise.all(
@@ -179,6 +182,6 @@ jobs:
         with:
           commit_message: |
             Generated release notes for Quasar packages
-            Triggered after "${{ github.event.release.name }}" got released
+            Triggered by: ${{ github.event.release.name || 'manual execution' }}
 
             ${{ github.event.release.html_url }}

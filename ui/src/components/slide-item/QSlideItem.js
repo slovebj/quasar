@@ -1,9 +1,9 @@
 import { h, ref, computed, withDirectives, onBeforeUnmount, onBeforeUpdate, getCurrentInstance } from 'vue'
 
-import TouchPan from '../../directives/TouchPan.js'
+import TouchPan from '../../directives/touch-pan/TouchPan.js'
 
 import useDark, { useDarkProps } from '../../composables/private/use-dark.js'
-import useCache from '../../composables/private/use-cache.js'
+import useRenderCache from '../../composables/use-render-cache.js'
 
 import { createComponent } from '../../utils/private/create.js'
 import { hSlot } from '../../utils/private/render.js'
@@ -36,7 +36,7 @@ export default createComponent({
     const { $q } = proxy
 
     const isDark = useDark(props, $q)
-    const { getCacheWithFn } = useCache()
+    const { getCache } = useRenderCache()
 
     const contentRef = ref(null)
 
@@ -209,7 +209,7 @@ export default createComponent({
       }
       else {
         content.push(
-          withDirectives(node, getCacheWithFn('dir#' + dirs.join(''), () => {
+          withDirectives(node, getCache('dir#' + dirs.join(''), () => {
             const modifiers = {
               prevent: true,
               stop: true,

@@ -226,11 +226,101 @@ Preparations:
   | .eslintrc.js | .eslintrc.cjs |
   | babel.config.js | babel.config.cjs |
 
+  <br>
+
+* You might want to add the following to your `/.gitignore` file. These kind of files are left for inspection purposes when something fails with your `/quasar.config` file (and can be removed by the `quasar clean` command):
+
+  ```bash [highlight=8,11] /.gitignore
+  .DS_Store
+  .thumbs.db
+  node_modules
+
+  # Quasar core related directories
+  .quasar
+  /dist
+  /quasar.config.*.temporary.compiled*
+
+  # local .env files
+  .env.local*
+
+  # Cordova related directories and files
+  /src-cordova/node_modules
+  /src-cordova/platforms
+  /src-cordova/plugins
+  /src-cordova/www
+
+  # Capacitor related directories and files
+  /src-capacitor/www
+  /src-capacitor/node_modules
+
+  # Log files
+  npm-debug.log*
+  yarn-debug.log*
+  yarn-error.log*
+
+  # Editor directories and files
+  .idea
+  *.suo
+  *.ntvs*
+  *.njsproj
+  *.sln
+  ```
+
+  <br>
+
+* If you have linting, please review your `/.eslintignore` file as well:
+
+  ```bash [highlight=6-8] /.eslintignore
+  /dist
+  /src-capacitor
+  /src-cordova
+  /.quasar
+  /node_modules
+  .eslintrc.cjs
+  babel.config.cjs
+  /quasar.config.*.temporary.compiled*
+  ```
+
+  <br>
+
+* If using Typescript, then ensure that your `/tsconfig.json` file looks like this:
+
+  ```json [highlight=6-13]
+  {
+    "extends": "@quasar/app-vite/tsconfig-preset",
+    "compilerOptions": {
+      "baseUrl": "."
+    },
+    "exclude": [
+      "./dist",
+      "./.quasar",
+      "./node_modules",
+      "./src-capacitor",
+      "./src-cordova",
+      "./quasar.config.*.temporary.compiled*"
+    ]
+  }
+  ```
+
 ### SPA / Capacitor / Cordova modes changes
 * No need to change anything in the `/src`, `/src-capacitor` or `/src-cordova` folders.
 
 ### PWA mode changes
-Editing your `/src-pwa/custom-service-worker.js` file:
+
+The `register-service-worker` dependency is no longer supplied by the CLI. You will have to install it yourself in your project folder.
+
+```tabs
+<<| bash Yarn |>>
+$ yarn add register-service-worker@^1.0.0
+<<| bash NPM |>>
+$ npm install --save register-service-worker@^1.0.0
+<<| bash PNPM |>>
+$ pnpm add register-service-worker@^1.0.0
+<<| bash Bun |>>
+$ bun add register-service-worker@^1.0.0
+```
+
+Edit your `/src-pwa/custom-service-worker.js` file:
 
 ```diff /src-pwa/custom-service-worker.js
 - import { precacheAndRoute } from 'workbox-precaching'
@@ -256,7 +346,7 @@ Editing your `/src-pwa/custom-service-worker.js` file:
 +  registerRoute(
 +    new NavigationRoute(
 +      createHandlerBoundToURL(process.env.PWA_FALLBACK_HTML),
-+      { denylist: [new RegExp(process.env.PWA_SERVICE_WORKER_REGEX), /workbox-(.)*\\.js$/] }
++      { denylist: [new RegExp(process.env.PWA_SERVICE_WORKER_REGEX), /workbox-(.)*\.js$/] }
 +    )
 +  )
 + }
@@ -1094,7 +1184,7 @@ build: {
    * Esbuild is used to build contents of /src-pwa, /src-ssr, /src-electron, /src-bex
    * @example
    *    {
-   *      browser: ['es2019', 'edge88', 'firefox78', 'chrome87', 'safari13.1'],
+   *      browser: ['es2022', 'firefox115', 'chrome115', 'safari14'],
    *      node: 'node20'
    *    }
    */
@@ -1128,7 +1218,7 @@ build: {
 
 interface EsbuildTargetOptions {
   /**
-   * @default ['es2019', 'edge88', 'firefox78', 'chrome87', 'safari13.1']
+   * @default ['es2022', 'firefox115', 'chrome115', 'safari14']
    */
   browser?: string[];
   /**
