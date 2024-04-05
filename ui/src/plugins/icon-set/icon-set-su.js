@@ -1,7 +1,7 @@
-import defineReactivePlugin from './utils/private/define-reactive-plugin.js'
-import { injectProp } from './utils/private/inject-obj-prop.js'
+import defineReactivePlugin from '../../utils/private/define-reactive-plugin.js'
+import { injectProp } from '../../utils/private/inject-obj-prop.js'
 // no extension on purpose for next one:
-import iconFont from '../icon-set/icon-font'
+import iconFont from '../../../icon-set/icon-font'
 
 const Plugin = defineReactivePlugin({
   iconMapFn: null,
@@ -16,11 +16,10 @@ const Plugin = defineReactivePlugin({
   install ({ $q, iconSet, ssrContext }) {
     if ($q.config.iconMapFn !== void 0) {
       this.iconMapFn = $q.config.iconMapFn
+      injectProp($q, 'iconMapFn', () => this.iconMapFn, val => { this.iconMapFn = val })
     }
 
     $q.iconSet = this.__icons
-
-    injectProp($q, 'iconMapFn', () => this.iconMapFn, val => { this.iconMapFn = val })
 
     if (this.__installed === true) {
       iconSet !== void 0 && this.set(iconSet)

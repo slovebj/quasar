@@ -1,6 +1,6 @@
-import defineReactivePlugin from './utils/private/define-reactive-plugin.js'
+import defineReactivePlugin from '../../utils/private/define-reactive-plugin.js'
 // no extension on purpose for next one:
-import defaultLang from '../lang/zh-CN'
+import defaultLang from '../../../lang/zh-CN'
 
 function getLocale () {
   const val = Array.isArray(navigator.languages) === true && navigator.languages.length !== 0

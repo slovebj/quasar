@@ -3,8 +3,8 @@
  */
 
 import installQuasar from './install-quasar-su.js'
-import lang from './lang-su.js'
-import iconSet from './icon-set-su.js'
+import lang from './plugins/lang/lang-su.js'
+import iconSet from './plugins/icon-set/icon-set-su.js'
 
 import * as components from './components.js'
 import * as directives from './directives.js'

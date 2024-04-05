@@ -16,7 +16,7 @@
   ],
   "scripts": {
     "clean": "node build/script.clean.js",
-    "build": "node build/script.build.js",
+    "build": "node build/script.build-su.js",
     "dev": "cd ./playground && quasar dev && cd ..",
     "dev:ssr": "cd ./playground && quasar dev -m ssr && cd ..",
     "dev:build": "cd ./playground && quasar build && cd ..",
