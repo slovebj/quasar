@@ -18,16 +18,6 @@
   },
 
   "props": {
-    "isoName": {
-      "type": "String",
-      "desc": "The ISO name of the Quasar language pack",
-      "examples": [ "'en-US'" ]
-    },
-    "nativeName": {
-      "type": "String",
-      "desc": "The native name of the Quasar language pack",
-      "examples": [ "'English (US)'" ]
-    },
     "props": {
       "type": "Object",
       "desc": "Quasar language pack",
@@ -172,7 +162,7 @@
             "monthsShort": {
               "type": "Array",
               "desc": "Label",
-              "examples": [ "['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ]" ]
+              "examples": [ "[ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ]" ]
             },
             "firstDayOfWeek": {
               "type": "Number",
@@ -688,7 +678,7 @@
                   "type": "Array",
                   "desc": "Label",
                   "required": true,
-                  "examples": [ "['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ]" ]
+                  "examples": [ "[ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ]" ]
                 },
                 "firstDayOfWeek": {
                   "type": "Number",
@@ -1093,11 +1083,13 @@
           "desc": "Required for SSR only",
           "__exemption": [ "examples" ]
         }
-      }
+      },
+      "returns": null
     },
 
     "getLocale": {
       "desc": "Get the browser locale ISO name; Returns undefined when it cannot determine current browser locale or when running on server in SSR mode",
+      "params": null,
       "returns": {
         "type": [ "String", "undefined" ],
         "desc": "Browser locale ISO name",

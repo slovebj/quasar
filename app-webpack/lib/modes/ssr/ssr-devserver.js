@@ -5,6 +5,7 @@ const webpack = require('webpack')
 const webpackDevMiddleware = require('webpack-dev-middleware')
 const webpackHotMiddleware = require('webpack-hot-middleware')
 const { createDevRenderer } = require('@quasar/ssr-helpers/create-renderer.js')
+const { green } = require('kolorist')
 
 const { getSsrHtmlTemplateFn } = require('../../utils/html-template.js')
 const { getClientManifest } = require('./plugin.webpack.client-side.js')
@@ -21,7 +22,7 @@ const doubleSlashRE = /\/\//g
 
 function logServerMessage (title, msg, additional) {
   log()
-  info(`${ msg }${ additional !== void 0 ? ` ${ dot } ${ additional }` : '' }`, title)
+  info(`${ msg }${ additional !== void 0 ? ` ${ green(dot) } ${ additional }` : '' }`, title)
 }
 
 let renderSSRError
@@ -275,15 +276,16 @@ module.exports.QuasarModeDevserver = class QuasarModeDevserver extends AppDevser
 
     const templatePath = appPaths.resolve.app(quasarConf.sourceFiles.indexHtmlTemplate)
 
-    function updateTemplate () {
+    async function updateTemplate () {
       renderer.updateRenderTemplate(
-        getSsrHtmlTemplateFn(readFileSync(templatePath, 'utf-8'), quasarConf)
+        await getSsrHtmlTemplateFn(readFileSync(templatePath, 'utf-8'), quasarConf)
       )
     }
 
     const htmlWatcher = chokidar.watch(templatePath).on('change', () => {
-      updateTemplate()
-      logServerMessage('Updated', 'index.html')
+      updateTemplate().then(() => {
+        logServerMessage('Updated', 'index.html')
+      })
     })
 
     this.#webpackWatcherList.push(() => htmlWatcher.close())

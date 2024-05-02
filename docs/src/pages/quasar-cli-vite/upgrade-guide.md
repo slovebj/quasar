@@ -131,15 +131,8 @@ Preparations:
   }
   ```
   <br>
-  Rename some tools config files (in the root project folder):
+  Remember to convert to ESM the `postcss.config.js` file should you use it. Also, rename `.eslintrc.js` to `.eslintrc.cjs` (with no change to its content).
   <br><br>
-
-  | Old name | New name |
-  | -------- | -------- |
-  | postcss.config.js | postcss.config.cjs |
-  | .eslintrc.js | .eslintrc.cjs |
-
-  <br>
 
 * You might want to add the following to your `/.gitignore` file. The `/quasar.config.*.temporary.compiled*` entry refers to files that are left for inspection purposes when something fails with your `/quasar.config` file (and can be removed by the `quasar clean` command):
 
@@ -209,13 +202,13 @@ We dropped support for our internal linting (quasar.config file > eslint) in fav
 
 ```tabs
 <<| bash Yarn |>>
-$ yarn add --dev vite-plugin-checker vue-tsc@^1.0.0 typescript@~5.3.0
+$ yarn add --dev vite-plugin-checker vue-tsc@^1.8.22 typescript@~5.3.0
 <<| bash NPM |>>
-$ npm install --save-dev vite-plugin-checker vue-tsc@^1.0.0 typescript@~5.3.0
+$ npm install --save-dev vite-plugin-checker vue-tsc@^1.8.22 typescript@~5.3.0
 <<| bash PNPM |>>
-$ pnpm add -D vite-plugin-checker vue-tsc@^1.0.0 typescript@~5.3.0
+$ pnpm add -D vite-plugin-checker vue-tsc@^1.8.22 typescript@~5.3.0
 <<| bash Bun |>>
-$ bun add --dev vite-plugin-checker vue-tsc@^1.0.0 typescript@~5.3.0
+$ bun add --dev vite-plugin-checker vue-tsc@^1.8.22 typescript@~5.3.0
 ```
 
 ::: warning

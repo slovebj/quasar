@@ -1,5 +1,5 @@
 {
-  "mixins": [ "composables/private/use-field", "composables/private/use-file", "composables/private/use-form" ],
+  "mixins": [ "composables/private.use-field/use-field", "composables/private.use-file/use-file", "composables/use-form/private.use-form" ],
 
   "meta": {
     "docsUrl": "https://v2.quasar.dev/vue-components/file"
@@ -91,6 +91,10 @@
         "{ backgroundColor: '#ff0000' }"
       ],
       "category": "style"
+    },
+
+    "name": {
+      "desc": "Used to specify the name of the control; Useful if dealing with forms; If not specified, it takes the value of 'for' prop, if it exists"
     }
   },
 
@@ -148,7 +152,8 @@
           "desc": "Index at which to remove selection",
           "required": true
         }
-      }
+      },
+      "returns": null
     },
 
     "removeFile": {
@@ -159,11 +164,13 @@
           "desc": "File to remove (instance of File)",
           "required": true
         }
-      }
+      },
+      "returns": null
     },
 
     "getNativeElement": {
       "desc": "DEPRECATED; Access 'nativeEl' directly; Gets the native input DOM Element",
+      "params": null,
       "returns": {
         "type": "Element",
         "tsType": "QFileNativeElement",

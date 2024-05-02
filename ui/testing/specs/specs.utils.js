@@ -1,7 +1,9 @@
 export const testIndent = '        '
+
 const pascalRegex = /((-|\.)\w)/g
 const kebabRegex = /[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g
 const ignoreKeyRE = /\.\.\./
+const newlineRE = /\n/g
 
 export function pascalCase (str) {
   return str.replace(
@@ -21,282 +23,560 @@ export function plural (num) {
   return num === 1 ? '' : 's'
 }
 
-function filterSpreadKey (key) {
-  // example -> "...": { desc: "Any other props..." }
-  return ignoreKeyRE.test(key) === false
+export function capitalize (str) {
+  return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
-const defTypeMap = {
+const typeMap = {
   Number: {
     valueRegex: /^-?\d/,
-    createValue: () => () => '10',
-    expectType: () => ref => `expect(${ ref }).toBeTypeOf('number')`,
-    runtimeValueTest: runtimeValue => (typeof runtimeValue === 'number')
+    createValue: () => '10',
+    createExpectCall: ({ ref }) => `expect(${ ref }).toBeTypeOf('number')`,
+    expectMatcher: 'expect.any(Number)'
   },
 
   String: {
     valueRegex: /^'[^']+'$/,
-    createValue: () => () => '\'some-string\'',
-    expectType: () => ref => `expect(${ ref }).toBeTypeOf('string')`,
-    runtimeValueTest: runtimeValue => (typeof runtimeValue === 'string')
+    createValue: () => '\'some-string\'',
+    createExpectCall: ({ ref }) => `expect(${ ref }).toBeTypeOf('string')`,
+    expectMatcher: 'expect.any(String)'
   },
 
   Array: {
     valueRegex: /^\[.*\]$/,
-    createValue: def => {
-      if (def.definition === void 0) return () => '[]'
+    createValue: ({ jsonEntry, indent }) => {
+      if (jsonEntry.definition === void 0) return '[]'
 
-      return (indentation = testIndent) => {
-        const keyIndent = indentation + '  '
-        const list = Object.keys(def.definition)
-          .filter(filterSpreadKey)
-          .map(key => {
-            const { createValue } = getDefTesting(def.definition[ key ])
-            return `\n${ keyIndent }${ key }: ${ createValue(keyIndent) }`
-          })
+      const list = joinObject({
+        keyList: Object.keys(jsonEntry.definition),
+        getValue: (key, innerIndent) => getTestValue({
+          jsonEntry: jsonEntry.definition[ key ],
+          indent: innerIndent
+        }),
+        indent
+      })
 
-        return `[{${ list.join(',') }\n${ indentation }}]`
-      }
+      return `[ ${ list } ]`
     },
-    expectType: def => (
-      def.definition === void 0
-        ? ref => `expect(Array.isArray(${ ref })).toBe(true)`
-        : ref => `expect(${ ref }).toContainEqual(${ getObjectEqualDef(def.definition, '') })`
-    ),
-    runtimeValueTest: runtimeValue => Array.isArray(runtimeValue)
+    createExpectCall: ({ jsonEntry, ref, indent }) => {
+      if (jsonEntry.definition === void 0) {
+        return `expect(Array.isArray(${ ref })).toBe(true)`
+      }
+
+      const value = getExpectMatcher({
+        jsonEntry,
+        indent
+      })
+
+      return `expect(${ ref }).$arrayValues(${ value })`
+    },
+    expectMatcher: 'expect.any(Array)'
   },
 
   Object: {
     valueRegex: /^{.*}$/,
-    createValue: def => {
-      if (def.definition === void 0) return () => '{}'
+    createValue: ({ jsonEntry, indent }) => {
+      if (jsonEntry.definition === void 0) return '{}'
 
-      return (indentation = testIndent) => {
-        const keyIndent = indentation + '  '
-        const list = Object.keys(def.definition)
-          .filter(filterSpreadKey)
-          .map(key => {
-            const { createValue } = getDefTesting(def.definition[ key ])
-            return `\n${ keyIndent }${ key }: ${ createValue(keyIndent) }`
+      return joinObject({
+        keyList: Object.keys(jsonEntry.definition),
+        getValue: (key, innerIndent) => getTestValue({
+          jsonEntry: jsonEntry.definition[ key ],
+          indent: innerIndent
+        }),
+        indent
+      })
+    },
+    createExpectCall: ({ jsonEntry, ref, indent }) => {
+      if (jsonEntry.definition === void 0) {
+        return `expect(${ ref }).toBeTypeOf('object')`
+      }
+
+      const keyList = Object.keys(jsonEntry.definition)
+      if (keyList.length === 1) {
+        const [ localKey ] = keyList
+
+        if (localKey === '...self') {
+          // could be anything, not only Object
+          return getTypeTest({
+            jsonEntry: jsonEntry.definition[ localKey ],
+            ref,
+            indent
+          })
+        }
+
+        if (localKey === '...key') {
+          const values = getExpectMatcher({
+            jsonEntry: jsonEntry.definition[ localKey ],
+            indent
           })
 
-        return `{${ list.join(',') }\n${ indentation }}`
+          return `expect(${ ref }).$objectValues(${ values })`
+        }
       }
+
+      const value = getExpectMatcher({
+        jsonEntry,
+        indent
+      })
+
+      return `expect(${ ref }).toStrictEqual(${ value })`
     },
-    expectType: def => (
-      def.definition === void 0
-        ? ref => `expect(${ ref }).toBeTypeOf('object')`
-        : ref => `expect(${ ref }).toEqual(${ getObjectEqualDef(def.definition, '') })`
-    ),
-    runtimeValueTest: runtimeValue => (typeof runtimeValue === 'object')
+    expectMatcher: 'expect.any(Object)'
   },
 
   Boolean: {
     valueRegex: /^(true|false)$/,
-    createValue: () => () => 'true',
-    expectType: () => ref => `expect(${ ref }).toBeTypeOf('boolean')`,
-    runtimeValueTest: runtimeValue => (typeof runtimeValue === 'boolean')
+    createValue: () => 'true',
+    createExpectCall: ({ ref }) => `expect(${ ref }).toBeTypeOf('boolean')`,
+    expectMatcher: 'expect.any(Boolean)'
   },
 
   Function: {
     valueRegex: / => /, // example: "(file) => file.name"
-    createValue: def => getFunctionValue(def),
-    expectType: def => (ref, opts = {}) => (
-      `expect(${ ref }).toBeTypeOf('function')`
-      + (
-        opts.withCall === true
-          ? getFunctionCallTest(def, ref, testIndent)
-          : ''
-      )
-    ),
-    runtimeValueTest: runtimeValue => (typeof runtimeValue === 'function')
+    createValue: ({ jsonEntry, indent }) => {
+      const callParams = Object.keys(jsonEntry.params || [])
+        .map(paramName => `_${ paramName }`)
+        .join(', ')
+
+      if (jsonEntry.returns !== void 0) {
+        const val = getTestValue({
+          jsonEntry: jsonEntry.returns,
+          indent
+        })
+
+        return `(${ callParams }) => ${ val }`
+      }
+
+      return `(${ callParams }) => {}`
+    },
+    createExpectCall: ({ ref }) => `expect(${ ref }).toBeTypeOf('function')`,
+    expectMatcher: 'expect.any(Function)'
   },
 
   RegExp: {
     valueRegex: /^\/.*\/[gimuy]*$/,
-    createValue: () => () => '/.*/',
-    expectType: () => ref => `expect(${ ref }).toBeInstanceOf(RegExp)`,
-    runtimeValueTest: runtimeValue => (runtimeValue instanceof RegExp)
+    createValue: () => '/.*/',
+    createExpectCall: ({ ref }) => `expect(${ ref }).toBeInstanceOf(RegExp)`,
+    expectMatcher: 'expect.any(RegExp)'
+  },
+
+  Date: {
+    createValue: () => 'new Date()',
+    createExpectCall: ({ ref }) => `expect(${ ref }).$any([ expect.any(Date), expect.any(String), expect.any(Number) ])`,
+    expectMatcher: 'expect.$any([ expect.any(Date), expect.any(String), expect.any(Number) ])'
   },
 
   Element: {
     valueRegex: /^document\./,
-    createValue: () => () => 'document.createElement(\'div\')',
-    expectType: () => ref => `expect(${ ref }).toBeInstanceOf(Element)`,
-    runtimeValueTest: runtimeValue => (runtimeValue instanceof Element)
+    createValue: () => 'document.createElement(\'div\')',
+    createExpectCall: ({ ref }) => `expect(${ ref }).toBeInstanceOf(Element)`,
+    expectMatcher: 'expect.any(Element)'
   },
 
   Any: {
-    createValue: () => () => '\'any-value\'',
-    expectType: () => ref => `expect(${ ref }).not.toBeUndefined()`,
-    runtimeValueTest: runtimeValue => (runtimeValue !== void 0)
+    createValue: () => '\'any-value\'',
+    createExpectCall: ({ ref }) => `expect(${ ref }).toBeDefined()`,
+    expectMatcher: 'expect.anything()'
   },
 
   Event: {
-    createValue: () => () => '{}',
-    expectType: () => ref => `expect(${ ref }).toBeTypeOf('object')`,
-    runtimeValueTest: runtimeValue => (typeof runtimeValue === 'object')
+    createValue: () => 'new Event(\'click\')',
+    createExpectCall: ({ ref }) => `expect(${ ref }).toBeInstanceOf(Event)`,
+    expectMatcher: 'expect.any(Event)'
+  },
+
+  SubmitEvent: {
+    createValue: () => 'new SubmitEvent(\'submit\')',
+    createExpectCall: ({ ref }) => `expect(${ ref }).toBeInstanceOf(SubmitEvent)`,
+    expectMatcher: 'expect.any(SubmitEvent)'
   },
 
   File: {
-    createValue: () => () => 'new File([], \'file.txt\')',
-    expectType: () => ref => `expect(${ ref }).toBeInstanceOf(File)`,
-    runtimeValueTest: runtimeValue => (runtimeValue instanceof File)
+    createValue: () => 'new File([], \'file.txt\')',
+    createExpectCall: ({ ref }) => `expect(${ ref }).toBeInstanceOf(File)`,
+    expectMatcher: 'expect.any(File)'
   },
 
   'Promise<any>': {
-    createValue: () => () => 'new Promise((_resolve, _reject) => {})',
-    expectType: () => ref => `expect(${ ref }).toBeInstanceOf(Promise)`,
-    runtimeValueTest: runtimeValue => (runtimeValue instanceof Promise)
+    createValue: () => 'new Promise((_resolve, _reject) => {})',
+    createExpectCall: ({ ref }) => `expect(${ ref }).toBeInstanceOf(Promise)`,
+    expectMatcher: 'expect.any(Promise)'
   },
   'Promise<void>': {
-    createValue: () => () => 'new Promise((_resolve, _reject) => {})',
-    expectType: () => ref => `expect(${ ref }).toBeInstanceOf(Promise)`,
-    runtimeValueTest: runtimeValue => (runtimeValue instanceof Promise)
+    createValue: () => 'new Promise((_resolve, _reject) => {})',
+    createExpectCall: ({ ref }) => `expect(${ ref }).toBeInstanceOf(Promise)`,
+    expectMatcher: 'expect.any(Promise)'
   },
   'Promise<boolean>': {
-    createValue: () => () => 'new Promise((_resolve, _reject) => {})',
-    expectType: () => ref => `expect(${ ref }).toBeInstanceOf(Promise)`,
-    runtimeValueTest: runtimeValue => (runtimeValue instanceof Promise)
+    createValue: () => 'new Promise((_resolve, _reject) => {})',
+    createExpectCall: ({ ref }) => `expect(${ ref }).toBeInstanceOf(Promise)`,
+    expectMatcher: 'expect.any(Promise)'
   },
   'Promise<number>': {
-    createValue: () => () => 'new Promise((_resolve, _reject) => {})',
-    expectType: () => ref => `expect(${ ref }).toBeInstanceOf(Promise)`,
-    runtimeValueTest: runtimeValue => (runtimeValue instanceof Promise)
+    createValue: () => 'new Promise((_resolve, _reject) => {})',
+    createExpectCall: ({ ref }) => `expect(${ ref }).toBeInstanceOf(Promise)`,
+    expectMatcher: 'expect.any(Promise)'
   },
   'Promise<string>': {
-    createValue: () => () => 'new Promise((_resolve, _reject) => {})',
-    expectType: () => ref => `expect(${ ref }).toBeInstanceOf(Promise)`,
-    runtimeValueTest: runtimeValue => (runtimeValue instanceof Promise)
+    createValue: () => 'new Promise((_resolve, _reject) => {})',
+    createExpectCall: ({ ref }) => `expect(${ ref }).toBeInstanceOf(Promise)`,
+    expectMatcher: 'expect.any(Promise)'
   },
   'Promise<object>': {
-    createValue: () => () => 'new Promise((_resolve, _reject) => {})',
-    expectType: () => ref => `expect(${ ref }).toBeInstanceOf(Promise)`,
-    runtimeValueTest: runtimeValue => (runtimeValue instanceof Promise)
+    createValue: () => 'new Promise((_resolve, _reject) => {})',
+    createExpectCall: ({ ref }) => `expect(${ ref }).toBeInstanceOf(Promise)`,
+    expectMatcher: 'expect.any(Promise)'
   },
 
   Error: {
-    createValue: () => () => 'new Error()',
-    expectType: () => ref => `expect(${ ref }).toBeInstanceOf(Error)`,
-    runtimeValueTest: runtimeValue => (runtimeValue instanceof Error)
+    createValue: () => 'new Error()',
+    createExpectCall: ({ ref }) => `expect(${ ref }).toBeInstanceOf(Error)`,
+    expectMatcher: 'expect.any(Error)'
   },
 
   Component: {
-    createValue: () => () => '{ template: \'<div></div>\', props: {}, setup () {} }',
-    expectType: () => ref => `expect(${ ref }).toBeTypeOf('object')`,
-    runtimeValueTest: runtimeValue => (typeof runtimeValue === 'object')
+    createValue: () => '{ template: \'<div></div>\', props: {}, setup () {} }',
+    createExpectCall: ({ ref }) => `expect(${ ref }).toBeTypeOf('object')`,
+    expectMatcher: 'expect.any(Object)'
   },
 
   null: {
     valueRegex: /^null$/,
-    createValue: () => () => 'null',
-    expectType: () => ref => `expect(${ ref }).toBeNull()`,
-    runtimeValueTest: runtimeValue => (runtimeValue === null)
+    createValue: () => 'null',
+    createExpectCall: ({ ref }) => `expect(${ ref }).toBeNull()`,
+    expectMatcher: 'null'
   },
 
   undefined: {
     valueRegex: /^undefined$/,
-    createValue: () => () => 'undefined',
-    expectType: () => ref => `expect(${ ref }).toBeUndefined()`,
-    runtimeValueTest: runtimeValue => (runtimeValue === void 0)
+    createValue: () => 'undefined',
+    createExpectCall: ({ ref }) => `expect(${ ref }).toBeUndefined()`,
+    expectMatcher: 'undefined'
   }
 }
 
-const defTypeTestableValueKeyList = Object.keys(defTypeMap)
-  .filter(key => defTypeMap[ key ].valueRegex !== void 0)
+function joinObject ({
+  keyList,
+  getValue,
+  indent
+}) {
+  const codeLines = []
+  const commentLines = []
+  const innerIndent = indent + '  '
 
-function getFunctionValue (def) {
-  return (indentation = testIndent) => {
-    const callParams = Object.keys(def.params || [])
-      .map(paramName => `_${ paramName }`)
-      .join(', ')
-
-    if (def.returns !== void 0) {
-      const { createValue } = getDefTesting(def.returns)
-      return `(${ callParams }) => ${ createValue(indentation) }`
+  keyList.forEach(key => {
+    if (ignoreKeyRE.test(key) === true) {
+      commentLines.push(`// ${ key }`)
     }
-
-    return `(${ callParams }) => {}`
-  }
-}
-
-function getFunctionCallTest (def, ref, indent) {
-  const paramIndent = indent + '  '
-  let callParams = Object.keys(def.params || [])
-    .map(paramName => {
-      const { createValue } = getDefTesting(def.params[ paramName ])
-      return `\n${ paramIndent }${ createValue(paramIndent) }`
-    })
-    .join(',')
-
-  if (callParams.length !== 0) {
-    callParams += `\n${ indent }`
-  }
-
-  if (def.returns !== void 0) {
-    const { expectType } = getDefTesting(def.returns)
-    return `\n${ indent }${ expectType(`${ ref }(${ callParams })`) }`
-  }
-
-  return `\n${ indent }expect(${ ref }(${ callParams })).toBeUndefined()`
-}
-
-const objectEqualDefTypeExceptions = [ 'Any', 'Component', 'FileList' ]
-
-function getObjectEqualDefValueTest (type, target, indent) {
-  if (objectEqualDefTypeExceptions.includes(type) === true) {
-    return 'expect.anything()'
-  }
-
-  if (type === 'Object') {
-    const definition = target.definition || target.scope
-    if (definition !== void 0) {
-      return Object.keys(definition).includes('...key') === true
-        ? `expect.$objectWithEachKeyContaining(${ getObjectEqualDef(definition[ '...key' ].definition, indent) })`
-        : `expect.objectContaining(${ getObjectEqualDef(definition, indent) })`
+    else {
+      codeLines.push(`${ key }: ${ getValue(key, innerIndent) }`)
     }
+  })
+
+  const separator = `,\n${ indent }  `
+  const listSeparator = codeLines.length !== 0 && commentLines.length !== 0
+    ? `\n${ indent }  `
+    : ''
+
+  return (
+    `{\n${ indent }  `
+    + codeLines.join(separator)
+    + listSeparator
+    + commentLines.join(separator)
+    + `\n${ indent }}`
+  )
+}
+
+function joinList ({
+  keyList,
+  getValue,
+  indent,
+  prefix = '[',
+  suffix = ']'
+}) {
+  const innerIndent = keyList.length === 1
+    ? indent
+    : indent + '  '
+
+  const lines = keyList.map(key => getValue(key, innerIndent))
+
+  const str = lines.join(', ')
+
+  if (str.length + indent.length > 80) {
+    return keyList.length === 1
+      ? `${ prefix ? prefix + ' ' : '' }${ lines[ 0 ] }${ suffix ? ' ' + suffix : '' }`
+      : `${ prefix }\n${ indent }  ${ lines.join(`,\n${ indent }  `) }\n${ indent }${ suffix }`
   }
 
-  return `expect.any(${ type })`
+  return `${ prefix ? prefix + ' ' : '' }${ str }${ suffix ? ' ' + suffix : '' }`
 }
-
-function getObjectEqualDef (definition, localIndent) {
-  const list = Object.keys(definition)
-    .filter(filterSpreadKey)
-    .map(key => {
-      const target = definition[ key ]
-
-      const type = Array.isArray(target.type) === true
-        ? target.type[ 0 ]
-        : target.type
-
-      const valueTest = getObjectEqualDefValueTest(type, target, localIndent + '  ')
-
-      return `\n${ testIndent }${ localIndent }  ${ key }: ${ valueTest }`
-    })
-
-  return `{${ list.join(',') }\n${ testIndent }${ localIndent }}`
-}
-
-const defTypeExceptionList = [
-  'FileList'
-]
 
 export function filterDefExceptionTypes (type) {
   if (Array.isArray(type) === true) {
-    const list = type.filter(type => defTypeExceptionList.includes(type) === false)
+    const list = type.filter(type => type !== 'FileList')
     return list.length === 1
       ? list[ 0 ]
       : list
   }
 
-  if (defTypeExceptionList.includes(type) === false) {
-    return type
-  }
+  if (type !== 'FileList') return type
 }
 
-export function getDefTesting (def) {
-  const { type, default: defaultVal, values, examples } = def
+export function getComponentPropAssignment ({
+  pascalName,
+  jsonEntry,
+  indent
+}) {
+  const keyList = [ `${ pascalName }: propVal` ]
+
+  if (jsonEntry.sync === true) {
+    keyList.push(
+      `'onUpdate:${ pascalName }': val => { wrapper.setProps({ ${ pascalName }: val }) }`
+    )
+  }
+
+  const props = joinList({
+    keyList,
+    getValue: key => key,
+    indent,
+    prefix: '{',
+    suffix: '}'
+  })
+
+  return (
+    `await wrapper.setProps(${ props })`
+    + `\n${ indent }await flushPromises()`
+  )
+}
+
+export function getComponentMount ({
+  ctx,
+  json,
+  prop = null,
+  slot = null,
+  indent
+}) {
+  const target = {}
+  const innerIndent = `${ indent }    `
+  const props = Object.keys(json.props || [])
+    .filter(propName => prop === propName || json.props[ propName ].required === true)
+
+  if (props.length !== 0) {
+    target.props = props.reduce((acc, propName) => {
+      const jsonEntry = json.props[ propName ]
+      const pascalName = pascalCase(propName)
+
+      acc[ pascalName ] = prop === propName
+        ? 'propVal'
+        : getTestValue({
+          jsonEntry,
+          indent: innerIndent
+        })
+
+      if (jsonEntry.sync === true) {
+        acc[ `'onUpdate:${ pascalName }'` ] = (
+          `val => { wrapper.setProps({ ${ pascalName }: val }) }`
+        )
+      }
+
+      return acc
+    }, {})
+  }
+
+  if (slot !== null) {
+    const { name, slotFn } = slot
+    const nameAsObjKey = name.indexOf('-') === -1
+      ? name
+      : `'${ name }'` // example: 'navigation-icon'
+
+    target.slots = {
+      [ nameAsObjKey ]: slotFn.replace(
+        newlineRE,
+        `\n${ innerIndent }`
+      )
+    }
+  }
+
+  const keyList = Object.keys(target)
+
+  if (keyList.length === 0) {
+    return `const wrapper = mount(${ ctx.pascalName })`
+  }
+
+  const mountOpts = joinObject({
+    keyList,
+    getValue: (key, innerIndent) => {
+      const acc = target[ key ]
+      return joinObject({
+        keyList: Object.keys(acc),
+        getValue: innerKey => acc[ innerKey ],
+        indent: innerIndent
+      })
+    },
+    indent
+  })
+
+  return `const wrapper = mount(${ ctx.pascalName }, ${ mountOpts })`
+}
+
+function getExpectMatcher ({ jsonEntry, indent }) {
+  if (jsonEntry.values !== void 0) {
+    const list = joinList({
+      keyList: jsonEntry.values,
+      getValue: key => key,
+      indent
+    })
+
+    return `expect.$any(${ list })`
+  }
+
+  if (Array.isArray(jsonEntry.type) === false) {
+    if (jsonEntry.type === 'Object') {
+      if (jsonEntry.definition !== void 0) {
+        const keyList = Object.keys(jsonEntry.definition)
+
+        if (keyList.length === 1) {
+          const [ localKey ] = keyList
+
+          if (localKey === '...self') {
+            // could be anything, not only Object
+            return getExpectMatcher({
+              jsonEntry: jsonEntry.definition[ localKey ],
+              indent
+            })
+          }
+
+          if (localKey === '...key') {
+            const target = jsonEntry.definition[ localKey ].definition
+
+            // example: QUploader > slots > header
+            if (target === void 0) {
+              return getExpectMatcher({
+                jsonEntry: jsonEntry.definition[ localKey ],
+                indent
+              })
+            }
+
+            const list = joinObject({
+              keyList: Object.keys(target),
+              getValue: (key, innerIndent) => getExpectMatcher({
+                jsonEntry: target[ key ],
+                indent: innerIndent
+              }),
+              indent
+            })
+
+            return `expect.$objectValues(${ list })`
+          }
+        }
+
+        return joinObject({
+          keyList,
+          getValue: (key, innerIndent) => getExpectMatcher({
+            jsonEntry: jsonEntry.definition[ key ],
+            indent: innerIndent
+          }),
+          indent
+        })
+      }
+    }
+    else if (jsonEntry.type === 'Array') {
+      if (jsonEntry.definition !== void 0) {
+        const { definition } = jsonEntry
+        const keyList = Object.keys(definition)
+
+        const list = joinObject({
+          keyList,
+          getValue: (key, innerIndent) => getExpectMatcher({
+            jsonEntry: definition[ key ],
+            indent: innerIndent
+          }),
+          indent
+        })
+
+        return `expect.$arrayValues(${ list })`
+      }
+    }
+
+    if ([ 'Any', 'FileList' ].includes(jsonEntry.type) === true) {
+      return 'expect.anything()'
+    }
+
+    const target = typeMap[ jsonEntry.type ]
+    if (target === void 0) {
+      console.error('jsonEntry:', jsonEntry)
+      throw new Error(`getExpectMatcher(): unknown type: ${ jsonEntry.type }`)
+    }
+
+    return target.expectMatcher
+  }
+
+  if (
+    jsonEntry.type.includes('Any')
+    || jsonEntry.type.includes('FileList')
+  ) {
+    return 'expect.anything()'
+  }
+
+  const list = joinList({
+    keyList: jsonEntry.type,
+    getValue: (type, innerIndent) => getExpectMatcher({
+      jsonEntry: { ...jsonEntry, type },
+      indent: innerIndent
+    }),
+    indent
+  })
+
+  return `expect.$any(${ list })`
+}
+
+export function getTypeTest ({
+  jsonEntry,
+  ref,
+  indent
+}) {
+  if (jsonEntry.values !== void 0) {
+    const list = joinList({
+      keyList: jsonEntry.values,
+      getValue: key => key,
+      indent
+    })
+
+    return `expect(${ list }).toContain(${ ref })`
+  }
+
+  if (Array.isArray(jsonEntry.type) === false) {
+    const target = typeMap[ jsonEntry.type ]
+    if (target === void 0) {
+      console.error('jsonEntry:', jsonEntry)
+      throw new Error(`getTypeTest(): unknown type: ${ jsonEntry.type }`)
+    }
+
+    return target.createExpectCall({
+      jsonEntry,
+      ref,
+      indent
+    })
+  }
+
+  const list = joinList({
+    keyList: jsonEntry.type,
+    getValue: (type, innerIndent) => getExpectMatcher({
+      jsonEntry: { ...jsonEntry, type },
+      indent: innerIndent
+    }),
+    indent
+  })
+
+  return `expect(${ ref }).$any(${ list })`
+}
+
+const defTypeTestableValueKeyList = Object.keys(typeMap)
+  .filter(key => typeMap[ key ].valueRegex !== void 0)
+
+export function getTestValue ({ jsonEntry, indent }) {
+  const { type, default: defaultVal, values, examples } = jsonEntry
 
   const valuesList = [
     ...(defaultVal !== void 0 ? [ defaultVal ] : []),
@@ -312,14 +592,10 @@ export function getDefTesting (def) {
   for (const typeBeingTested of typeList) {
     if (typeBeingTested === 'Any') {
       for (const typeWithRegex of defTypeTestableValueKeyList) {
-        const { valueRegex, expectType } = defTypeMap[ typeWithRegex ]
+        const { valueRegex } = typeMap[ typeWithRegex ]
         for (const val of valuesList) {
           if (valueRegex.test(val) === true) {
-            return {
-              type: typeWithRegex,
-              createValue: () => val,
-              expectType: expectType(def)
-            }
+            return val
           }
         }
       }
@@ -327,200 +603,67 @@ export function getDefTesting (def) {
       break
     }
 
-    const target = defTypeMap[ typeBeingTested ]
+    const target = typeMap[ typeBeingTested ]
+
     if (target?.valueRegex === void 0) continue
-    const { valueRegex, expectType } = target
+    const { valueRegex } = target
 
     for (const val of valuesList) {
       if (valueRegex.test(val) === true) {
-        return {
-          type: typeBeingTested,
-          createValue: () => val,
-          expectType: expectType(def)
-        }
+        return val
       }
     }
   }
 
   for (const fallbackType of typeList) {
-    if (defTypeExceptionList.includes(fallbackType) === true) continue
-    const fallback = defTypeMap[ fallbackType ]
+    if (fallbackType === 'FileList') continue
+    const fallback = typeMap[ fallbackType ]
 
     if (fallback === void 0) {
-      console.error('\ndef:', def)
-      console.error('specs.utils: getDefTesting() -> Unknown type:', fallbackType)
-      console.trace()
-      process.exit(1)
+      console.error('jsonEntry:', jsonEntry)
+      throw new Error(`getTestValue() -> Unknown type: ${ fallbackType }`)
     }
 
-    return {
-      type: fallbackType,
-      createValue: fallback.createValue(def),
-      expectType: fallback.expectType(def)
-    }
+    return fallback.createValue({
+      jsonEntry,
+      indent
+    })
   }
 
-  console.error('\ndef:', def)
-  console.error('specs.utils: getDefTesting() -> Cannot handle any of type(s):', typeList)
-  console.trace()
-  process.exit(1)
+  console.error('jsonEntry:', jsonEntry)
+  throw new Error(`getTestValue() -> Cannot handle any of type(s): ${ typeList }`)
 }
 
-function getMountRequiredProps (jsonProps, exceptionProp) {
-  const acc = []
-  const propIndent = `${ testIndent }    `
-
-  Object.keys(jsonProps || []).forEach(prop => {
-    if (prop === exceptionProp) return
-
-    const propDef = jsonProps[ prop ]
-
-    if (propDef.required) {
-      const pascalName = pascalCase(prop)
-      const { createValue } = getDefTesting(propDef)
-
-      acc.push([ pascalName, createValue(propIndent) ])
-
-      if (propDef.sync === true) {
-        acc.push([ `'onUpdate:${ pascalName }'`, '(_val) => {}' ])
-      }
-    }
-  })
-
-  return acc
-}
-
-function getMountSlot ({ name, slotFn }) {
-  const nameAsObjKey = name.indexOf('-') === -1
-    ? name
-    : `'${ name }'` // example: 'navigation-icon'
-
-  return `\n${ testIndent }  slots: {`
-    + `\n${ testIndent }    ${ nameAsObjKey }: ${ slotFn }`
-    + `\n${ testIndent }  }`
-}
-
-export function getComponentMount ({ ctx, json, prop = null, slot = null }) {
-  const requiredProps = getMountRequiredProps(json.props, prop)
-
-  if (prop !== null) {
-    const pascalName = pascalCase(prop)
-    requiredProps.push([ pascalName, 'propVal' ])
-    if (json.props[ prop ].sync === true) {
-      requiredProps.push([ `'onUpdate:${ pascalName }'`, 'val => { propVal = val }' ])
-    }
-  }
-
-  const propList = requiredProps.map(([ prop, testVal ]) => {
-    return `${ testIndent }    ${ prop }: ${ testVal }`
-  })
-
-  const slotList = slot !== null
-    ? getMountSlot(slot)
+export function getFunctionCallTest ({
+  jsonEntry,
+  ref,
+  indent
+}) {
+  const localIndent = indent + '  '
+  const callParams = jsonEntry.params
+    ? joinList({
+      keyList: Object.keys(jsonEntry.params),
+      getValue: (paramName, innerIndent) => getTestValue({
+        jsonEntry: jsonEntry.params[ paramName ],
+        indent: innerIndent
+      }),
+      indent: localIndent,
+      prefix: '',
+      suffix: ''
+    })
     : ''
 
-  if (propList.length === 0 && slotList === '') {
-    return `const wrapper = mount(${ ctx.pascalName })`
+  const callRef = `\n${ localIndent }${ ref }(${ callParams })\n${ indent }`
+
+  if (jsonEntry.returns) {
+    const returnTypeTest = getTypeTest({
+      jsonEntry: jsonEntry.returns,
+      ref: callRef,
+      indent
+    })
+
+    return `${ returnTypeTest }`
   }
 
-  return `const wrapper = mount(${ ctx.pascalName }, {`
-    + (
-      propList.length !== 0
-        ? (
-            `\n${ testIndent }  props: {\n`
-            + propList.join(',\n')
-            + `\n${ testIndent }  }`
-          )
-        : ''
-    )
-    + (propList.length !== 0 && slotList !== '' ? ',' : '')
-    + slotList
-    + `\n${ testIndent }})`
-}
-
-export function getExpectOneOfTypes ({ jsonEntry, ref }) {
-  if (Array.isArray(jsonEntry.type) === false) {
-    const { expectType } = getDefTesting(jsonEntry)
-    return expectType(ref)
-  }
-
-  const typeList = jsonEntry.type.map(entry => `'${ entry }'`).join(', ')
-  let acc = `expect(${ ref }).$toBeOneOfTypes([ ${ typeList } ])`
-
-  jsonEntry.type.forEach(type => {
-    if (type === 'Array') {
-      if (jsonEntry.definition === void 0) return
-      const expectStr = `expect(${ ref }).toContainEqual(${ getObjectEqualDef(jsonEntry.definition, '') })`
-      acc += `\n\n${ testIndent }Array.isArray(${ ref }) && ${ expectStr }`
-    }
-    else if (type === 'Object') {
-      if (jsonEntry.definition === void 0) return
-      const expectStr = `expect(${ ref }).toEqual(${ getObjectEqualDef(jsonEntry.definition, '') })`
-      acc += `\n\n${ testIndent }typeof ${ ref } === 'object' && ${ expectStr }`
-    }
-    else if (type === 'Function') {
-      const localIndent = testIndent + '  '
-      const expectStr = getFunctionCallTest(jsonEntry, ref, localIndent)
-      acc += `\n\n${ testIndent }if (typeof ${ ref } === 'function') {${ expectStr }\n${ testIndent }}`
-    }
-  })
-
-  return acc
-}
-
-/**
- * Expect matcher
- * @example: expect(target).$toBeOneOfTypes([ 'RegExp', 'String' ])
- */
-export function $toBeOneOfTypes (received, typeOfList) {
-  if (
-    Array.isArray(typeOfList) === false
-    || typeOfList.some(type => typeof type !== 'string')
-  ) {
-    throw new TypeError('The second argument must be an array of strings!')
-  }
-
-  const pass = typeOfList.some(type => defTypeMap[ type ]?.runtimeValueTest(received) === true)
-
-  return {
-    pass,
-    message: () =>
-      `expected ${ this.utils.printReceived(
-        received
-      ) } to${ this.isNot ? ' not' : '' } be one of types: ${ this.utils.printExpected(
-        typeOfList.join(' or ')
-      ) }`
-  }
-}
-
-/**
- * Expect matcher (mainly for asymmetric matching)
- * @example:
- *    expect(target).toEqual(
- *      expect.$objectWithEachKeyContaining({
- *        one: expect.any(Number),
- *        // ...
- *      })
- *    )
- *
- *    expect(target).$objectWithEachKeyContaining({
- *      one: expect.any(Number),
- *      // ...
- *    })
- */
-export function $objectWithEachKeyContaining (received, keyObjectMatch) {
-  const pass = (
-    typeof received === 'object'
-    && Object.keys(received).every(key => this.equals(received[ key ], keyObjectMatch))
-  )
-
-  return {
-    pass,
-    message: () =>
-      `expected ${ this.utils.printReceived(
-        received
-      ) } to${ this.isNot ? ' not' : '' } have each key-value in the form defined by ${ this.utils.printExpected(
-        keyObjectMatch
-      ) }`
-  }
+  return `expect(${ callRef }).toBeUndefined()`
 }

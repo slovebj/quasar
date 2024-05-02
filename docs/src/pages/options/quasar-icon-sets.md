@@ -116,19 +116,20 @@ import { IconSet } from 'quasar'
 
 // relative path to your node_modules/quasar/..
 // change to YOUR path
-const iconSetList = import.meta.glob('../../node_modules/quasar/icon-set/*.mjs')
+const iconSetList = import.meta.glob('../../node_modules/quasar/icon-set/*.js')
 // or just a select few (example below with only mdi-v7 and fontawesome-v6):
-// import.meta.glob('../../node_modules/quasar/icon-set/(mdi-v7|fontawesome-v6).mjs')
+// import.meta.glob('../../node_modules/quasar/icon-set/(mdi-v7|fontawesome-v6).js')
 
 export default async () => {
   const iconSetName = 'mdi-v7' // ... some logic to determine it (use Cookies Plugin?)
 
   try {
-    iconSetList[ `../../node_modules/quasar/icon-set/${ iconSetName }.mjs` ]().then(lang => {
+    iconSetList[ `../../node_modules/quasar/icon-set/${ iconSetName }.js` ]().then(lang => {
       IconSet.set(setDefinition.default)
     })
   }
   catch (err) {
+    console.error(err)
     // Requested Quasar Icon Set does not exist,
     // let's not break the app, so catching error
   }
@@ -175,20 +176,21 @@ import { IconSet } from 'quasar'
 
 // relative path to your node_modules/quasar/..
 // change to YOUR path
-const iconSetList = import.meta.glob('../../node_modules/quasar/icon-set/*.mjs')
+const iconSetList = import.meta.glob('../../node_modules/quasar/icon-set/*.js')
 // or just a select few (example below with only mdi-v7 and fontawesome-v6):
-// import.meta.glob('../../node_modules/quasar/icon-set/(mdi-v7|fontawesome-v6).mjs')
+// import.meta.glob('../../node_modules/quasar/icon-set/(mdi-v7|fontawesome-v6).js')
 
 // ! NOTICE ssrContext param:
 export default async ({ ssrContext }) => {
   const iconSetName = 'mdi-v7' // ... some logic to determine it (use Cookies Plugin?)
 
   try {
-    iconSetList[ `../../node_modules/quasar/icon-set/${ iconSetName }.mjs` ]().then(lang => {
+    iconSetList[ `../../node_modules/quasar/icon-set/${ iconSetName }.js` ]().then(lang => {
       IconSet.set(setDefinition.default, ssrContext)
     })
   }
   catch (err) {
+    console.error(err)
     // Requested Quasar Icon Set does not exist,
     // let's not break the app, so catching error
   }
@@ -209,6 +211,7 @@ export default async ({ ssrContext }) => {
     })
   }
   catch (err) {
+    console.error(err)
     // Requested Quasar Icon Set does not exist,
     // let's not break the app, so catching error
   }
@@ -217,7 +220,7 @@ export default async ({ ssrContext }) => {
 
 ## Change Quasar Icon Set at Runtime
 
-#### Changing Icon Set Dynamically
+### Changing Icon Set
 Quasar Icon Set is reactive, so all components will update properly if you change the $q.iconSet object. Here is an example:
 
 ```tabs
@@ -246,7 +249,18 @@ methods: {
 }
 ```
 
-#### Changing a Specific Icon Dynamically
+If you want to do this outside of a .vue file (and you are NOT on SSR mode) then you can
+
+```js /src/boot/some-boot-file.js
+import { IconSet } from 'quasar'
+import mdiIconSet from 'quasar/icon-set/mdi-v7.js'
+
+export default () {
+  IconSet.set(mdiIconSet)
+}
+```
+
+### Changing a Specific Icon
 If you want to change a specific icon to another, you can. Here is an example:
 
 ```tabs
@@ -267,5 +281,15 @@ methods: {
   changeQEditorHeaderIcon () {
     this.$q.iconSet.editor.header1 = 'fas fa-font'
   }
+}
+```
+
+If you want to do this outside of a .vue file (and you are NOT on SSR mode) then you can
+
+```js /src/boot/some-boot-file.js
+import { IconSet } from 'quasar'
+
+export default () {
+  IconSet.props.editor.header1 = 'fas fa-font'
 }
 ```

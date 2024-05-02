@@ -1,6 +1,6 @@
-import defineReactivePlugin from '../../utils/private/define-reactive-plugin.js'
-// no extension on purpose for next one:
-import defaultLang from '../../../lang/en-US'
+import { createReactivePlugin } from '../../utils/private.create/create.js'
+
+import defaultLang from '../../../lang/en-US.js'
 
 function getLocale () {
   if (__QUASAR_SSR_SERVER__) return
@@ -22,9 +22,12 @@ function getLocale () {
   }
 }
 
-const Plugin = defineReactivePlugin({
-  __langPack: {}
+const Plugin = createReactivePlugin({
+  __qLang: {}
 }, {
+  // props: object
+  // __langConfig: object
+
   getLocale,
 
   set (langObject = defaultLang, ssrContext) {
@@ -36,7 +39,7 @@ const Plugin = defineReactivePlugin({
 
     if (__QUASAR_SSR_SERVER__) {
       if (ssrContext === void 0) {
-        console.error('SSR ERROR: second param required: Quasar.lang.set(lang, ssrContext)')
+        console.error('SSR ERROR: second param required: Lang.set(lang, ssrContext)')
         return
       }
 
@@ -64,11 +67,7 @@ const Plugin = defineReactivePlugin({
         el.setAttribute('lang', lang.isoName)
       }
 
-      Object.assign(Plugin.__langPack, lang)
-
-      Plugin.props = lang
-      Plugin.isoName = lang.isoName
-      Plugin.nativeName = lang.nativeName
+      Object.assign(Plugin.__qLang, lang)
     }
   },
 
@@ -84,20 +83,30 @@ const Plugin = defineReactivePlugin({
       $q.lang.set(initialLang)
 
       // one-time SSR server operation
-      if (this.isoName !== initialLang.isoName) {
-        this.isoName = initialLang.isoName
-        this.nativeName = initialLang.nativeName
-        this.props = initialLang
+      if (
+        this.props === void 0
+        || this.props.isoName !== initialLang.isoName
+      ) {
+        this.props = { ...initialLang }
       }
     }
     else {
-      $q.lang = Plugin.__langPack
+      $q.lang = Plugin.__qLang
       Plugin.__langConfig = $q.config.lang
 
       if (this.__installed === true) {
         lang !== void 0 && this.set(lang)
       }
       else {
+        this.props = new Proxy(this.__qLang, {
+          get () { return Reflect.get(...arguments) },
+
+          ownKeys (target) {
+            return Reflect.ownKeys(target)
+              .filter(key => key !== 'set' && key !== 'getLocale')
+          }
+        })
+
         this.set(lang || defaultLang)
       }
     }

@@ -1,5 +1,5 @@
 {
-  "mixins": [ "composables/private/use-model-toggle", "composables/private/use-portal", "composables/private/use-transition" ],
+  "mixins": [ "composables/private.use-model-toggle/use-model-toggle", "composables/private.use-portal/use-portal", "composables/private.use-transition/use-transition" ],
 
   "meta": {
     "docsUrl": "https://v2.quasar.dev/vue-components/tooltip"
@@ -57,8 +57,8 @@
     "offset": {
       "type": "Array",
       "desc": "An array of two numbers to offset the Tooltip horizontally and vertically in pixels",
-      "default": "[14, 14]",
-      "examples": [ "[8, 8]", "[5, 10]" ],
+      "default": "[ 14, 14 ]",
+      "examples": [ "[ 8, 8 ]", "[ 5, 10 ]" ],
       "category": "position"
     },
 
@@ -109,7 +109,9 @@
 
   "methods": {
     "updatePosition": {
-      "desc": "There are some custom scenarios for which Quasar cannot automatically reposition the tooltip without significant performance drawbacks so the optimal solution is for you to call this method when you need it"
+      "desc": "There are some custom scenarios for which Quasar cannot automatically reposition the tooltip without significant performance drawbacks so the optimal solution is for you to call this method when you need it",
+      "params": null,
+      "returns": null
     }
   }
 }

@@ -1,15 +1,14 @@
 import fse from 'fs-extra'
 import { Parser } from 'acorn'
-// import { inspect } from 'node:util'
 
 import { pascalCase } from './specs.utils.js'
-import { getGenerator } from './generators/map.js'
+import { getGenerator, generic as genericGenerator } from './generators/map.js'
 
 const ignoreCommentLineMaxLen = 100
 const ignoreCommentRE = /^(\/\*.*\n\s*\*\s*Ignored specs:\s*\n.+\n\s*\*\/\s*\n?\n?)/s
 const ignoreCommentEntryRE = /(\[[^\]]+\])/g
 
-const NO_ASSOCIATED_JSON = '/* No associated JSON so we cannot generate anything */'
+const testIdRE = /\[\((?<token>[^)]+)\)(?<name>.+)\]/
 
 function getIgnoreCommentIds (ignoreComment) {
   if (ignoreComment === void 0) return []
@@ -83,19 +82,35 @@ function getTestTree (testFileContent) {
   const tree = {}
   body.forEach(astNode => extractTree(astNode, tree, 1))
 
-  // console.log(
-  //   inspect(tree, {
-  //     showHidden: true,
-  //     depth: null,
-  //     colors: true,
-  //     compact: false
-  //   })
-  // )
-  // process.exit(0)
   return tree
 }
 
-function getTestFileMisconfiguration ({ ctx, generator, testFile }) {
+function addWorkInProgress (bag, tree, name, path) {
+  if (tree.modifier === 'todo' || tree.modifier === 'skip') {
+    bag.push(
+      `Remove ".${ tree.modifier }" from: ${ path }${ tree.type }.${ tree.modifier }("${ name }")`
+    )
+  }
+
+  if (tree.children !== null) {
+    for (const childName in tree.children) {
+      addWorkInProgress(
+        bag,
+        tree.children[ childName ],
+        childName,
+        `${ path }${ tree.type }("${ name }") > `
+      )
+    }
+  }
+}
+
+function getTestFileMisconfiguration ({
+  ctx,
+  generator,
+  json,
+  testFile,
+  opts
+}) {
   const errors = []
   const warnings = []
 
@@ -104,15 +119,21 @@ function getTestFileMisconfiguration ({ ctx, generator, testFile }) {
 
   if (content === null) return { errors, warnings }
 
-  if (Object.keys(testTree).length !== 1) {
-    const msg = content === NO_ASSOCIATED_JSON
-      ? 'No associated JSON so nothing was generated'
-      : (
-          'Should only have one (and only one) root describe(),'
-          + ` which should be: describe('${ testTreeRootId }')`
-        )
+  if (Object.keys(testTree).length === 0) {
+    errors.push(
+      'Should have one root describe(),'
+      + ` which should be: describe('${ testTreeRootId }')`
+    )
 
-    errors.push(msg)
+    // early exit... this is fatal
+    return { errors, warnings }
+  }
+
+  if (Object.keys(testTree).length !== 1) {
+    errors.push(
+      'Should only have one (and only one) root describe(),'
+      + ` which should be: describe('${ testTreeRootId }')`
+    )
 
     // early exit... this is fatal
     return { errors, warnings }
@@ -160,7 +181,10 @@ function getTestFileMisconfiguration ({ ctx, generator, testFile }) {
     (acc, key) => {
       const entry = identifiers[ key ]
       if (entry.getTestId !== void 0) {
-        acc[ entry.categoryId ] = true
+        acc[ entry.categoryId ] = {
+          jsonKey: key,
+          token: entry.testIdToken
+        }
       }
       return acc
     },
@@ -172,7 +196,7 @@ function getTestFileMisconfiguration ({ ctx, generator, testFile }) {
 
     if (categoryId[ 0 ] === '[' && categoryList.includes(categoryId) === false) {
       errors.push(
-        `Invalid type('${ categoryId }')`
+        `Invalid category "${ categoryId }" found at ${ type }('${ categoryId }').`
       )
       return
     }
@@ -192,7 +216,8 @@ function getTestFileMisconfiguration ({ ctx, generator, testFile }) {
       return
     }
 
-    if (categoryTestIdMap[ categoryId ] === void 0) return
+    const idMap = categoryTestIdMap[ categoryId ]
+    if (idMap === void 0) return
 
     Object.keys(categoryTree).forEach(testId => {
       const { type } = categoryTree[ testId ]
@@ -216,8 +241,28 @@ function getTestFileMisconfiguration ({ ctx, generator, testFile }) {
           `Found empty describe('${ testId }')`
         )
       }
+
+      const matcher = testId.match(testIdRE)
+
+      if (matcher) {
+        const { groups: { token, name } } = matcher
+        if (token !== idMap.token) {
+          errors.push(
+            `Found describe('${ testId }') but it should probably be describe('[${ idMap.token }]${ name }')`
+          )
+        }
+        else if (json[ idMap.jsonKey ]?.[ name ] === void 0) {
+          errors.push(
+            `Found describe('${ testId }') but there's no associated JSON entry`
+          )
+        }
+      }
     })
   })
+
+  if (opts?.disallowWorkInProgress === true) {
+    addWorkInProgress(warnings, tree, testTreeRootId, '')
+  }
 
   return { errors, warnings }
 }
@@ -319,11 +364,9 @@ function generateTestFileSection ({ ctx, generator, json, jsonPath }) {
 }
 
 function createTestFileContent ({ ctx, json, generator }) {
-  if (json === void 0) return NO_ASSOCIATED_JSON
-
   const { identifiers, getFileHeader } = generator
 
-  let hasIdentifier = false
+  let hasContent = false
   let acc = getFileHeader({ ctx, json })
     + `\n\ndescribe('${ ctx.testTreeRootId }', () => {`
 
@@ -331,7 +374,7 @@ function createTestFileContent ({ ctx, json, generator }) {
     const categoryJson = json[ jsonKey ]
     if (categoryJson === void 0) return
 
-    hasIdentifier = true
+    hasContent = true
     const { categoryId, getTestId, createTestFn, shouldIgnoreEntry } = identifiers[ jsonKey ]
 
     if (getTestId === void 0) {
@@ -364,8 +407,8 @@ function createTestFileContent ({ ctx, json, generator }) {
     }
   })
 
-  if (hasIdentifier === false) {
-    acc += `\n  describe('[Generic]', () => {
+  if (hasContent === false) {
+    acc += generator.getGenericTest?.({ ctx }) || `\n  describe('[Generic]', () => {
     test('generic', () => {
       // TODO: write a generic test
       expect(true).toBe(true)
@@ -399,8 +442,18 @@ function getInitialState (file) {
 export function getTestFile (ctx) {
   const file = ctx.testFileAbsolute
 
-  const generator = getGenerator(ctx.targetRelative)
-  const json = generator.getJson(ctx)
+  let generator = null
+  let json = null
+
+  const init = () => {
+    generator = getGenerator(ctx.targetRelative)
+    json = generator.getJson(ctx)
+
+    if (json === void 0) {
+      generator = genericGenerator
+      json = generator.getJson(ctx)
+    }
+  }
 
   const save = content => {
     testFile.testTree = getTestTree(content)
@@ -411,19 +464,23 @@ export function getTestFile (ctx) {
     ...getInitialState(file),
 
     createContent () {
+      generator === null && init()
       return createTestFileContent({ ctx, json, generator })
     },
 
     generateSection (jsonPath) {
+      generator === null && init()
       return generateTestFileSection({ ctx, generator, json, jsonPath })
     },
 
     getMissingTests () {
+      generator === null && init()
       return getTestFileMissingTests({ ctx, generator, json, testFile: this })
     },
 
-    getMisconfiguration () {
-      return getTestFileMisconfiguration({ ctx, generator, testFile: this })
+    getMisconfiguration (opts) {
+      generator === null && init()
+      return getTestFileMisconfiguration({ ctx, generator, json, testFile: this, opts })
     },
 
     addIgnoreComments (ignoreCommentIds) {

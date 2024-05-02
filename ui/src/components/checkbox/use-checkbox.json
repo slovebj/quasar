@@ -1,11 +1,11 @@
 {
-  "mixins": [ "composables/private/use-size", "composables/private/use-form" ],
+  "mixins": [ "composables/private.use-size/use-size", "composables/use-form/private.use-form" ],
 
   "props": {
     "model-value": {
       "extends": "model-value",
       "type": [ "Any", "Array" ],
-      "examples": [ "false", "['car', 'building']" ]
+      "examples": [ "false", "[ 'car', 'building' ]" ]
     },
 
     "val": {
@@ -130,7 +130,9 @@
 
   "methods": {
     "toggle": {
-      "desc": "Toggle the state (of the model)"
+      "desc": "Toggle the state (of the model)",
+      "params": null,
+      "returns": null
     }
   },
 

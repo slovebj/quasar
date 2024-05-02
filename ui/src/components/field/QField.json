@@ -1,5 +1,5 @@
 {
-  "mixins": [ "composables/private/use-field" ],
+  "mixins": [ "composables/private.use-field/use-field" ],
 
   "meta": {
     "docsUrl": "https://v2.quasar.dev/vue-components/field"
@@ -104,11 +104,15 @@
 
   "methods": {
     "focus": {
-      "desc": "Focus field"
+      "desc": "Focus field",
+      "params": null,
+      "returns": null
     },
 
     "blur": {
-      "desc": "Blur field (lose focus)"
+      "desc": "Blur field (lose focus)",
+      "params": null,
+      "returns": null
     }
   }
 }

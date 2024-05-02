@@ -2,17 +2,17 @@ import { h, ref, computed, watch, Transition, nextTick, getCurrentInstance } fro
 
 import QBtn from '../btn/QBtn.js'
 
-import useDark, { useDarkProps } from '../../composables/private/use-dark.js'
-import useRenderCache from '../../composables/use-render-cache.js'
-import { useFormProps, useFormAttrs, useFormInject } from '../../composables/private/use-form.js'
+import useDark, { useDarkProps } from '../../composables/private.use-dark/use-dark.js'
+import useRenderCache from '../../composables/use-render-cache/use-render-cache.js'
+import { useFormProps, useFormAttrs, useFormInject } from '../../composables/use-form/private.use-form.js'
 import useDatetime, { useDatetimeProps, useDatetimeEmits, getDayHash } from './use-datetime.js'
 
-import { createComponent } from '../../utils/private/create.js'
-import { hSlot } from '../../utils/private/render.js'
-import { formatDate, __splitDate, getDateDiff } from '../../utils/date.js'
-import { pad } from '../../utils/format.js'
-import { jalaaliMonthLength, toGregorian } from '../../utils/private/date-persian.js'
-import { isObject } from '../../utils/is.js'
+import { createComponent } from '../../utils/private.create/create.js'
+import { hSlot } from '../../utils/private.render/render.js'
+import { formatDate, __splitDate, getDateDiff } from '../../utils/date/date.js'
+import { pad } from '../../utils/format/format.js'
+import { jalaaliMonthLength, toGregorian } from '../../utils/date/private.persian.js'
+import { isObject } from '../../utils/is/is.js'
 
 const yearsInterval = 20
 const views = [ 'Calendar', 'Years', 'Months' ]
@@ -112,7 +112,7 @@ export default createComponent({
 
     const view = ref(props.defaultView)
 
-    const direction = $q.lang.rtl === true ? 'right' : 'left'
+    const direction = computed(() => ($q.lang.rtl === true ? 'right' : 'left'))
     const monthDirection = ref(direction.value)
     const yearDirection = ref(direction.value)
 
@@ -931,7 +931,7 @@ export default createComponent({
       const newHash = year + '/' + pad(month) + '/01'
 
       if (newHash !== viewModel.value.dateHash) {
-        monthDirection.value = (viewModel.value.dateHash < newHash) === ($q.lang.rtl !== true) ? 'left' : 'right'
+        monthDirection.value = (viewModel.value.dateHash < newHash) === direction.value
         if (year !== viewModel.value.year) {
           yearDirection.value = monthDirection.value
         }

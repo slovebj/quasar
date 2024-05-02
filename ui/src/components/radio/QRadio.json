@@ -1,5 +1,5 @@
 {
-  "mixins": [ "composables/private/use-size", "composables/private/use-form" ],
+  "mixins": [ "composables/private.use-size/use-size", "composables/use-form/private.use-form" ],
 
   "meta": {
     "docsUrl": "https://v2.quasar.dev/vue-components/radio"
@@ -101,7 +101,9 @@
 
   "methods": {
     "set": {
-      "desc": "Sets the Radio's v-model to equal the val"
+      "desc": "Sets the Radio's v-model to equal the val",
+      "params": null,
+      "returns": null
     }
   }
 }

@@ -1,5 +1,5 @@
 {
-  "mixins": [ "composables/private/use-model-toggle", "composables/private/use-router-link" ],
+  "mixins": [ "composables/private.use-model-toggle/use-model-toggle", "composables/private.use-router-link/use-router-link" ],
 
   "meta": {
     "docsUrl": "https://v2.quasar.dev/vue-components/expansion-item"
@@ -165,7 +165,7 @@
       "desc": "Apply custom class(es) to the header",
       "examples": [
         "'my-custom-class'",
-        "{ 'my-custom-class': someCondition }"
+        "{ 'my-custom-class': true }"
       ],
       "category": "style"
     }

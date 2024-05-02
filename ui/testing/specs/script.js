@@ -4,11 +4,11 @@ function showHelp (exitCode = 0) {
     UI test files validator & generator
 
   Usage
-    $ specs [-i] [-t <target>] [-g <json.path>]
+    $ specs [--ci] [-t <target>] [-g <json.path>]
     $ specs [-t <target>] [-g <json.path>]
     $ specs [-d] [-t <target>]
 
-    $ specs -i
+    $ specs --ci
 
     $ specs -t QIcon
     $ specs -t components
@@ -22,7 +22,7 @@ function showHelp (exitCode = 0) {
                            (should not specify file extension)
     --generate, -g      Generates a targeted section of a json path
     --dry-run, -d       Dry-run test for create + validate (no output to files)
-    --interactive, -i   Interactively validate & create specs
+    --ci, -c            Validate & create specs while in CI mode
     --help, -h          Show this help message
   `)
   process.exit(exitCode)
@@ -34,11 +34,11 @@ const argv = parseArgs(process.argv.slice(2), {
   alias: {
     t: 'target',
     g: 'generate',
-    i: 'interactive',
+    c: 'ci',
     d: 'dry-run',
     h: 'help'
   },
-  boolean: [ 'h', 'i', 'd' ],
+  boolean: [ 'h', 'c', 'd' ],
   string: [ 't', 'g' ]
 })
 
@@ -52,7 +52,7 @@ import { getTestFile } from './testFile.js'
 import { cmdValidateTestFile } from './cmd.validateTestFile.js'
 import { cmdCreateTestFile } from './cmd.createTestFile.js'
 import { cmdGenerateSection } from './cmd.generateSection.js'
-import { cmdDryRun } from './cmd.dryRun.js'
+import { getDryRunCmd } from './cmd.dryRun.js'
 
 const targetList = getTargetList(argv)
 
@@ -61,16 +61,22 @@ if (targetList.length === 0) {
   process.exit(1)
 }
 
+const cmdDryRun = argv[ 'dry-run' ] === true
+  ? await getDryRunCmd()
+  : null
+
 for (const target of targetList) {
   if (ignoredTestFiles.has(target) === true) {
-    argv.interactive === true && console.log(`  📦 Ignoring "${ target }"`)
+    if (argv.ci !== true) {
+      console.log(`  📦 Ignoring "${ target }"`)
+    }
     continue
   }
 
   const ctx = createCtx(target)
   const testFile = getTestFile(ctx)
 
-  if (argv[ 'dry-run' ] === true) {
+  if (cmdDryRun !== null) {
     await cmdDryRun({ ctx, testFile })
   }
   else if (argv.generate !== void 0) {
@@ -79,7 +85,7 @@ for (const target of targetList) {
   else if (testFile.content !== null) {
     await cmdValidateTestFile({ ctx, testFile, argv })
   }
-  else if (argv.interactive === true) {
+  else if (argv.ci !== true) {
     await cmdCreateTestFile({ ctx, testFile, ignoredTestFiles })
   }
 }

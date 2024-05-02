@@ -1,8 +1,8 @@
 import readAssociatedJsonFile from '../readAssociatedJsonFile.js'
 import {
-  getDefTesting,
   testIndent,
-  kebabCase
+  kebabCase,
+  getTestValue
 } from '../specs.utils.js'
 
 const identifiers = {
@@ -18,6 +18,7 @@ const identifiers = {
 
   modifiers: {
     categoryId: '[Modifiers]',
+    testIdToken: 'modifier',
     getTestId: name => `[(modifier)${ name }]`,
     createTestFn: createModifierTest
   }
@@ -32,19 +33,21 @@ function createValueTest ({
     ? jsonEntry.type
     : [ jsonEntry.type ]
 
-  const valIndent = `${ testIndent }      `
+  const valIndent = `${ testIndent }    `
   const testList = typeList.map(type => {
-    const { createValue } = getDefTesting({ ...jsonEntry, type })
-    const value = createValue(valIndent)
-    const exists = value !== 'undefined'
+    const val = getTestValue({
+      jsonEntry: { ...jsonEntry, type },
+      indent: valIndent
+    })
+    const valExists = val !== 'undefined'
 
-    return `test('as ${ type }', () => {
+    return `test.todo('as ${ type }', () => {
       const TestComponent = defineComponent({
-        template: '<div v-${ kebabCase(ctx.pascalName) }${ exists ? '="val"' : '' }></div>',
-        directives: { ${ ctx.pascalName } }${ exists ? `,
+        template: '<div v-${ kebabCase(ctx.pascalName) }${ valExists ? '="val"' : '' } />',
+        directives: { ${ ctx.pascalName } }${ valExists ? `,
         setup () {
           return {
-            val: ${ value }
+            val: ${ val }
           }
         }` : '' }
       })
@@ -52,6 +55,7 @@ function createValueTest ({
       const wrapper = mount(TestComponent)
 
       // TODO: test the effect of the value
+      expect(wrapper).toBeDefined() // this is here for linting only
     })`
   })
 
@@ -67,15 +71,16 @@ function createArgTest ({
 }) {
   return `
   describe('${ categoryId }', () => {
-    test('has effect', () => {
+    test.todo('has effect', () => {
       const TestComponent = defineComponent({
-        template: '<div v-${ kebabCase(ctx.pascalName) }:......></div>',
+        template: '<div v-${ kebabCase(ctx.pascalName) }:...... />',
         directives: { ${ ctx.pascalName } }
       })
 
       const wrapper = mount(TestComponent)
 
       // TODO: test the effect of the arg
+      expect(wrapper).toBeDefined() // this is here for linting only
     })
   })\n`
 }
@@ -86,22 +91,23 @@ function createModifierTest ({
   jsonEntry,
   ctx
 }) {
-  const value = jsonEntry.type === 'Boolean'
+  const val = jsonEntry.type === 'Boolean'
     ? name
     // example: TouchRepeat > modifiers > [keycode]
-    : getDefTesting(jsonEntry).createValue()
+    : getTestValue({ jsonEntry, indent: testIndent })
 
   return `
     describe('${ testId }', () => {
-      test('has effect', () => {
+      test.todo('has effect', () => {
         const TestComponent = defineComponent({
-          template: '<div v-${ kebabCase(ctx.pascalName) }.${ value }></div>',
+          template: '<div v-${ kebabCase(ctx.pascalName) }.${ val } />',
           directives: { ${ ctx.pascalName } }
         })
 
         const wrapper = mount(TestComponent)
 
         // TODO: test the effect of the value
+        expect(wrapper).toBeDefined() // this is here for linting only
       })
     })\n`
 }
@@ -117,5 +123,20 @@ export default {
       '',
       `import ${ ctx.pascalName } from './${ ctx.localName }'`
     ].join('\n')
+  },
+  getGenericTest: ({ ctx }) => {
+    return `
+  describe('[Generic]', () => {
+    test('should not throw error on render', () => {
+      const TestComponent = defineComponent({
+        template: '<div v-${ kebabCase(ctx.pascalName) } />',
+        directives: { ${ ctx.pascalName } }
+      })
+
+      const wrapper = mount(TestComponent)
+
+      expect(wrapper).toBeDefined() // this is here for linting only
+    })
+  })\n`
   }
 }

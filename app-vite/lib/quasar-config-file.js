@@ -14,6 +14,7 @@ import { getPackageMajorVersion } from './utils/get-package-major-version.js'
 import { resolveExtension } from './utils/resolve-extension.js'
 import { ensureElectronArgv } from './utils/ensure-argv.js'
 import { quasarEsbuildInjectReplacementsDefine, quasarEsbuildInjectReplacementsPlugin } from './plugins/esbuild.inject-replacements.js'
+import { quasarEsbuildVueShimPlugin } from './plugins/esbuild.vue-shim.js'
 
 const urlRegex = /^http(s)?:\/\//i
 import { findClosestOpenPort, localHostList } from './utils/net.js'
@@ -250,9 +251,6 @@ export class QuasarConfigFile {
       format: appPaths.quasarConfigOutputFormat,
       bundle: true,
       packages: 'external',
-      alias: {
-        'quasar/wrappers': appPaths.quasarConfigOutputFormat === 'esm' ? 'quasar/wrappers/index.mjs' : 'quasar/wrappers/index.js'
-      },
       banner: {
         js: quasarConfigBanner
       },
@@ -260,7 +258,10 @@ export class QuasarConfigFile {
       resolveExtensions: [ appPaths.quasarConfigOutputFormat === 'esm' ? '.mjs' : '.cjs', '.js', '.mts', '.ts', '.json' ],
       entryPoints: [ appPaths.quasarConfigFilename ],
       outfile: this.#tempFile,
-      plugins: [ quasarEsbuildInjectReplacementsPlugin ]
+      plugins: [
+        quasarEsbuildInjectReplacementsPlugin,
+        quasarEsbuildVueShimPlugin
+      ]
     }
   }
 
@@ -301,7 +302,6 @@ export class QuasarConfigFile {
     let firstBuildIsDone
 
     const { appPaths } = this.#ctx
-    const { updateAppPackageJson } = this.#ctx.pkg
     const tempFile = this.#tempFile
 
     esbuildConfig.plugins.push({
@@ -313,7 +313,6 @@ export class QuasarConfigFile {
           if (isFirst === false) {
             log()
             log('The quasar.config file (or its dependencies) changed. Reading it again...')
-            updateAppPackageJson()
           }
         })
 
@@ -668,6 +667,20 @@ export class QuasarConfigFile {
     cfg.framework.directives = getUniqueArray(cfg.framework.directives)
     cfg.framework.plugins = getUniqueArray(cfg.framework.plugins)
 
+    const { lang, iconSet } = cfg.framework
+
+    if (lang !== void 0) {
+      cfg.framework.lang = lang.indexOf('/') === true
+        ? lang
+        : `quasar/lang/${ lang }.js`
+    }
+
+    if (iconSet !== void 0) {
+      cfg.framework.iconSet = iconSet.indexOf('/') === true
+        ? iconSet
+        : `quasar/icon-set/${ iconSet }.js`
+    }
+
     Object.assign(cfg.metaConf, {
       packageTypeBasedExtension: this.#ctx.pkg.appPkg.type === 'module' ? 'js' : 'mjs',
       hasLoadingBarPlugin: cfg.framework.plugins.includes('LoadingBar'),
@@ -701,7 +714,7 @@ export class QuasarConfigFile {
         collapseBooleanAttributes: true,
         removeScriptTypeAttributes: true
         // more options:
-        // https://github.com/kangax/html-minifier#options-quick-reference
+        // https://github.com/terser/html-minifier-terser?tab=readme-ov-file#options-quick-reference
       },
 
       rawDefine: {

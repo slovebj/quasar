@@ -1,5 +1,5 @@
 {
-  "mixins": [ "composables/private/use-model-toggle", "composables/private/use-portal", "composables/private/use-transition" ],
+  "mixins": [ "composables/private.use-model-toggle/use-model-toggle", "composables/private.use-portal/use-portal", "composables/private.use-transition/use-transition" ],
 
   "meta": {
     "docsUrl": "https://v2.quasar.dev/vue-components/dialog"
@@ -141,7 +141,8 @@
           "examples": [ "'[tabindex]:not([tabindex=\"-1\"])'" ],
           "addedIn": "v2.6.5"
         }
-      }
+      },
+      "returns": null
     },
 
     "shake": {
@@ -153,7 +154,8 @@
           "examples": [ "document.getElementById('example')" ],
           "addedIn": "v2.10.1"
         }
-      }
+      },
+      "returns": null
     }
   },
 

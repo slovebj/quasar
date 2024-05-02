@@ -1,6 +1,6 @@
 import { h, computed } from 'vue'
 
-import useSize, { useSizeProps } from '../../composables/private/use-size.js'
+import useSize, { useSizeProps } from '../../composables/private.use-size/use-size.js'
 
 import { createComponent } from '../../utils/private/create.js'
 import { hSlot } from '../../utils/private/render.js'
