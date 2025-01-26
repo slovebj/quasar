@@ -18,7 +18,7 @@ export function fieldValueIsFilled (val) {
     && ('' + val).length !== 0
 }
 
-export const useFieldProps = {
+export const useNonInputFieldProps = {
   ...useDarkProps,
   ...useValidateProps,
 
@@ -61,14 +61,17 @@ export const useFieldProps = {
 
   autofocus: Boolean,
 
-  for: String,
+  for: String
+}
 
+export const useFieldProps = {
+  ...useNonInputFieldProps,
   maxlength: [ Number, String ]
 }
 
-export const useFieldEmits = [ 'update:modelValue', 'clear', 'focus', 'blur', 'popupShow', 'popupHide' ]
+export const useFieldEmits = [ 'update:modelValue', 'clear', 'focus', 'blur' ]
 
-export function useFieldState ({ requiredForAttr = true, tagProp } = {}) {
+export function useFieldState ({ requiredForAttr = true, tagProp, changeEvent = false } = {}) {
   const { props, proxy } = getCurrentInstance()
 
   const isDark = useDark(props, proxy.$q)
@@ -79,6 +82,7 @@ export function useFieldState ({ requiredForAttr = true, tagProp } = {}) {
 
   return {
     requiredForAttr,
+    changeEvent,
     tag: tagProp === true
       ? computed(() => props.tag)
       : { value: 'label' },
@@ -307,9 +311,7 @@ export default function (state) {
           || state.controlRef.value === null
           || state.controlRef.value.contains(document.activeElement) !== false
         )
-      ) {
-        return
-      }
+      ) return
 
       if (state.focused.value === true) {
         state.focused.value = false
@@ -340,6 +342,7 @@ export default function (state) {
     }
 
     emit('update:modelValue', null)
+    state.changeEvent === true && emit('change', null)
     emit('clear', props.modelValue)
 
     nextTick(() => {
@@ -347,6 +350,10 @@ export default function (state) {
       resetValidation()
       isDirtyModel.value = isDirty
     })
+  }
+
+  function onClearableKeyup (evt) {
+    [ 13, 32 ].includes(evt.keyCode) && clearValue(evt)
   }
 
   function getContent () {
@@ -387,12 +394,12 @@ export default function (state) {
         getInnerAppendNode('inner-clearable-append', [
           h(QIcon, {
             class: 'q-field__focusable-action',
-            tag: 'button',
             name: props.clearIcon || $q.iconSet.field.clear,
             tabindex: 0,
-            type: 'button',
-            'aria-hidden': null,
-            role: null,
+            role: 'button',
+            'aria-hidden': 'false',
+            'aria-label': $q.lang.label.clear,
+            onKeyup: onClearableKeyup,
             onClick: clearValue
           })
         ])
@@ -493,9 +500,11 @@ export default function (state) {
 
     const hasCounter = props.counter === true || slots.counter !== void 0
 
-    if (props.hideBottomSpace === true && hasCounter === false && msg === void 0) {
-      return
-    }
+    if (
+      props.hideBottomSpace === true
+      && hasCounter === false
+      && msg === void 0
+    ) return
 
     const main = h('div', {
       key,

@@ -9,9 +9,10 @@ export async function script ({ scope, utils }) {
         utils.isValidPackageName(val) || 'Invalid package.json name'
     },
     utils.commonPrompts.productName,
-    utils.commonPrompts.description,
-    utils.commonPrompts.author
+    utils.commonPrompts.description
   ])
+
+  await utils.injectAuthor(scope)
 
   const { script } = await import(`./${ scope.scriptType }/index.js`)
   await script({ scope, utils })

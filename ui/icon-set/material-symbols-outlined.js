@@ -30,7 +30,7 @@ export default {
     right: 'sym_o_chevron_right',
     up: 'sym_o_keyboard_arrow_up',
     down: 'sym_o_keyboard_arrow_down',
-    navigationIcon: 'sym_o_lens'
+    navigationIcon: 'sym_o_circle'
   },
   chip: {
     remove: 'sym_o_cancel',
@@ -93,7 +93,7 @@ export default {
     last: 'sym_o_last_page'
   },
   rating: {
-    icon: 'sym_o_grade'
+    icon: 'sym_o_star'
   },
   stepper: {
     done: 'sym_o_check',
@@ -118,7 +118,7 @@ export default {
     icon: 'sym_o_play_arrow'
   },
   uploader: {
-    done: 'sym_o_done',
+    done: 'sym_o_check',
     clear: 'sym_o_close',
     add: 'sym_o_add_box',
     upload: 'sym_o_cloud_upload',

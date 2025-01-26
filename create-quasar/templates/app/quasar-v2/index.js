@@ -6,10 +6,10 @@ export async function script ({ scope, utils }) {
       message: 'Pick Quasar App CLI variant:',
       initial: 0,
       choices: [
-        { title: 'Quasar App CLI with Vite 2 (stable | v1)', value: 'vite-1', description: 'recommended' },
-        { title: 'Quasar App CLI with Vite 5 (BETA | next major version - v2)', value: 'vite-2' },
-        { title: 'Quasar App CLI with Webpack (stable | v3)', value: 'webpack-3' },
-        { title: 'Quasar App CLI with Webpack (BETA | next major version - v4)', value: 'webpack-4' }
+        { title: 'Quasar App CLI with Vite 6 (v2)', value: 'vite-2', description: 'recommended' },
+        { title: 'Quasar App CLI with Webpack (v4)', value: 'webpack-4' },
+        { title: '[Legacy] Quasar App CLI with Vite 2 (v1)', value: 'vite-1' },
+        { title: '[Legacy] Quasar App CLI with Webpack (v3)', value: 'webpack-3' }
       ]
     },
     {
@@ -23,8 +23,11 @@ export async function script ({ scope, utils }) {
 
     utils.commonPrompts.productName,
     utils.commonPrompts.description,
-    utils.commonPrompts.author,
+  ])
 
+  await utils.injectAuthor(scope)
+
+  await utils.prompts(scope, [
     {
       type: 'select',
       name: 'sfcStyle',

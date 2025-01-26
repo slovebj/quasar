@@ -269,7 +269,6 @@ export default function morph (_options) {
     const elTo = getElement(elements.to)
     if (cancelStatus === true || isValidElement(elTo) !== true) {
       typeof elFrom.qMorphCancel === 'function' && elFrom.qMorphCancel()
-
       return
     }
     // we clean other morphs running on this element
@@ -318,7 +317,6 @@ export default function morph (_options) {
     const animate = () => {
       if (cancelStatus === true) {
         typeof elTo.qMorphCancel === 'function' && elTo.qMorphCancel()
-
         return
       }
 
@@ -887,9 +885,10 @@ export default function morph (_options) {
         elTo.style.animation = `${ options.duration }ms ${ options.easing } ${ options.delay }ms ${ animationDirection } ${ options.fill } ${ qAnimId }`
 
         const cleanup = evt => {
-          if (evt === Object(evt) && evt.animationName !== qAnimId) {
-            return
-          }
+          if (
+            evt === Object(evt)
+            && evt.animationName !== qAnimId
+          ) return
 
           elTo.removeEventListener('animationend', cleanup)
           elTo.removeEventListener('animationcancel', cleanup)

@@ -279,9 +279,11 @@ function getPropDetails (openState, masterKey, prop, level) {
 
 function getProp (openState, masterKey, prop, propName, level, onlyChildren) {
   const configToggle = useConfigToggle(openState)
-  if (configToggle.enabled && configToggle.type === 'configFile' && prop.configFileType === null) {
-    return
-  }
+  if (
+    configToggle.enabled
+    && configToggle.type === 'configFile'
+    && prop.configFileType === null
+  ) return
 
   const rawType = configToggle.enabled
     ? configToggle.type === 'configFile'

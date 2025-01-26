@@ -118,9 +118,7 @@ export default createComponent({
       if (rootRef.value === null) return
 
       if (e !== void 0) {
-        if (e.defaultPrevented === true) {
-          return
-        }
+        if (e.defaultPrevented === true) return
 
         const el = document.activeElement
         // focus button if it came from ENTER on form
@@ -219,9 +217,11 @@ export default createComponent({
       if (rootRef.value === null) return
 
       // needed for IE (because it emits blur when focusing button from focus helper)
-      if (e !== void 0 && e.type === 'blur' && document.activeElement === rootRef.value) {
-        return
-      }
+      if (
+        e !== void 0
+        && e.type === 'blur'
+        && document.activeElement === rootRef.value
+      ) return
 
       if (e !== void 0 && e.type === 'keyup') {
         if (keyboardTarget === rootRef.value && isKeyCode(e, [ 13, 32 ]) === true) {
@@ -303,7 +303,8 @@ export default createComponent({
       props.icon !== void 0 && inner.push(
         h(QIcon, {
           name: props.icon,
-          left: props.stack !== true && hasLabel.value === true
+          left: props.stack !== true && hasLabel.value === true,
+          role: 'img'
         })
       )
 
@@ -317,7 +318,8 @@ export default createComponent({
         inner.push(
           h(QIcon, {
             name: props.iconRight,
-            right: props.stack !== true && hasLabel.value === true
+            right: props.stack !== true && hasLabel.value === true,
+            role: 'img'
           })
         )
       }

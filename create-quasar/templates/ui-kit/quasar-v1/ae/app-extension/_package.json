@@ -5,12 +5,6 @@
   "author": "<%= author %>",
   "license": "<%= license %>",
   "main": "src/index.js",
-  "repository": {
-    "type": "<%= repositoryType %>",
-    "url": "<%= repositoryURL %>"
-  },
-  "bugs": "<%= bugs %>",
-  "homepage": "<%= homepage %>",
   "dependencies": {
     "quasar-ui-<%= name %>": "latest"
   },

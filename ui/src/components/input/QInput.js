@@ -21,7 +21,10 @@ export default createComponent({
     ...useMaskProps,
     ...useFormProps,
 
-    modelValue: { required: false },
+    // override of useFieldProps > modelValue
+    modelValue: __QUASAR_SSR_SERVER__
+      ? {} // SSR does not know about FileList
+      : [ String, Number, FileList ],
 
     shadowText: String,
 
@@ -68,7 +71,7 @@ export default createComponent({
 
     const onComposition = useKeyComposition(onInput)
 
-    const state = useFieldState()
+    const state = useFieldState({ changeEvent: true })
 
     const isTextarea = computed(() =>
       props.type === 'textarea' || props.autogrow === true
@@ -146,10 +149,7 @@ export default createComponent({
       if (hasMask.value === true) {
         if (stopValueWatcher === true) {
           stopValueWatcher = false
-
-          if (String(v) === emitCachedValue) {
-            return
-          }
+          if (String(v) === emitCachedValue) return
         }
 
         updateMaskValue(v)
@@ -216,9 +216,7 @@ export default createComponent({
     }
 
     function onInput (e) {
-      if (!e || !e.target) {
-        return
-      }
+      if (!e || !e.target) return
 
       if (props.type === 'file') {
         emit('update:modelValue', e.target.files)
@@ -229,7 +227,6 @@ export default createComponent({
 
       if (e.target.qComposing === true) {
         temp.value = val
-
         return
       }
 

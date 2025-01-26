@@ -68,9 +68,7 @@ export default createComponent({
     })
 
     function set () {
-      if (props.validate(currentModel.value) === false) {
-        return
-      }
+      if (props.validate(currentModel.value) === false) return
 
       if (hasModelChanged() === true) {
         emit('save', currentModel.value, initialValue.value)

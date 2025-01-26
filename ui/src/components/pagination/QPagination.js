@@ -133,9 +133,8 @@ export default createComponent({
       get: () => props.modelValue,
       set: val => {
         val = parseInt(val, 10)
-        if (props.disable || isNaN(val)) {
-          return
-        }
+        if (props.disable || isNaN(val)) return
+
         const value = between(val, minProp.value, maxProp.value)
         if (props.modelValue !== value) {
           emit('update:modelValue', value)

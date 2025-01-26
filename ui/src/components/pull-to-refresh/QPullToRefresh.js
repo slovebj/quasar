@@ -5,7 +5,7 @@ import QSpinner from '../spinner/QSpinner.js'
 import TouchPan from '../../directives/touch-pan/TouchPan.js'
 
 import { createComponent } from '../../utils/private.create/create.js'
-import { getScrollTarget, getVerticalScrollPosition } from '../../utils/scroll/scroll.js'
+import { getScrollTarget, getVerticalScrollPosition, scrollTargetProp } from '../../utils/scroll/scroll.js'
 import { between } from '../../utils/format/format.js'
 import { prevent } from '../../utils/event/event.js'
 import { hSlot, hDir } from '../../utils/private.render/render.js'
@@ -24,9 +24,7 @@ export default createComponent({
     noMouse: Boolean,
     disable: Boolean,
 
-    scrollTarget: {
-      default: void 0
-    }
+    scrollTarget: scrollTargetProp
   },
 
   emits: [ 'refresh' ],
@@ -88,11 +86,11 @@ export default createComponent({
 
         pulling.value = true
 
-        const { top, left } = $el.getBoundingClientRect()
+        const { top, left } = proxy.$el.getBoundingClientRect()
         positionCSS.value = {
           top: top + 'px',
           left: left + 'px',
-          width: window.getComputedStyle($el).getPropertyValue('width')
+          width: window.getComputedStyle(proxy.$el).getPropertyValue('width')
         }
       }
 
@@ -137,7 +135,7 @@ export default createComponent({
       })
     }
 
-    let $el, localScrollTarget, timer = null
+    let localScrollTarget, timer = null
 
     function animateTo ({ pos, ratio }, done) {
       animating.value = true
@@ -156,15 +154,12 @@ export default createComponent({
     }
 
     function updateScrollTarget () {
-      localScrollTarget = getScrollTarget($el, props.scrollTarget)
+      localScrollTarget = getScrollTarget(proxy.$el, props.scrollTarget)
     }
 
     watch(() => props.scrollTarget, updateScrollTarget)
 
-    onMounted(() => {
-      $el = proxy.$el
-      updateScrollTarget()
-    })
+    onMounted(updateScrollTarget)
 
     onBeforeUnmount(() => {
       timer !== null && clearTimeout(timer)

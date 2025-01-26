@@ -3,18 +3,18 @@ import { fatal } from './logger.js'
 export function ensureArgv (argv, cmd) {
   if (argv.mode) {
     if (argv.mode === 'ios') {
-      argv.m = argv.mode = 'cordova'
+      argv.m = argv.mode = 'capacitor'
       argv.T = argv.target = 'ios'
 
       console.log()
-      console.log(' Converting to long form: -m cordova -T ios')
+      console.log(' Converting to long form: -m capacitor -T ios')
     }
     else if (argv.mode === 'android') {
-      argv.m = argv.mode = 'cordova'
+      argv.m = argv.mode = 'capacitor'
       argv.T = argv.target = 'android'
 
       console.log()
-      console.log(' Converting to long form: -m cordova -T android')
+      console.log(' Converting to long form: -m capacitor -T android')
     }
   }
 
@@ -22,9 +22,7 @@ export function ensureArgv (argv, cmd) {
     fatal(`Unknown mode "${ argv.mode }"`)
   }
 
-  if (cmd === 'inspect') {
-    return
-  }
+  if (cmd === 'inspect') return
 
   if (argv.mode === 'capacitor') {
     const targets = [ 'android', 'ios' ]
@@ -43,6 +41,16 @@ export function ensureArgv (argv, cmd) {
     }
     if (!targets.includes(argv.target)) {
       fatal(`Unknown target "${ argv.target }" for Cordova\n`)
+    }
+  }
+
+  if (argv.mode === 'bex') {
+    const targets = [ 'chrome', 'firefox' ]
+    if (!argv.target) {
+      fatal(`Please also specify a target (-T <${ targets.join('|') }>)`)
+    }
+    if (!targets.includes(argv.target)) {
+      fatal(`Unknown target "${ argv.target }" for BEX`)
     }
   }
 

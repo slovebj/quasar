@@ -32,6 +32,11 @@ export default createComponent({
     ...useFormProps,
     ...useDarkProps,
 
+    modelValue: {
+      required: true,
+      validator: val => (typeof val === 'string' || Array.isArray(val) === true || Object(val) === val || val === null)
+    },
+
     multiple: Boolean,
     range: Boolean,
 
@@ -39,6 +44,7 @@ export default createComponent({
     subtitle: String,
 
     mask: {
+      ...useDatetimeProps.mask,
       // this mask is forced
       // when using persian calendar
       default: 'YYYY/MM/DD'
@@ -428,9 +434,7 @@ export default createComponent({
     })
 
     const rangeView = computed(() => {
-      if (editRange.value === null) {
-        return
-      }
+      if (editRange.value === null) return
 
       const { init, initHash, final, finalHash } = editRange.value
 
@@ -441,9 +445,10 @@ export default createComponent({
       const fromHash = getMonthHash(from)
       const toHash = getMonthHash(to)
 
-      if (fromHash !== viewMonthHash.value && toHash !== viewMonthHash.value) {
-        return
-      }
+      if (
+        fromHash !== viewMonthHash.value
+        && toHash !== viewMonthHash.value
+      ) return
 
       const view = {}
 
@@ -698,7 +703,7 @@ export default createComponent({
     ))
 
     watch(() => props.modelValue, v => {
-      if (lastEmitValue === v) {
+      if (lastEmitValue === JSON.stringify(v)) {
         lastEmitValue = 0
       }
       else {
@@ -726,6 +731,10 @@ export default createComponent({
       updateValue(innerMask.value, val, 'locale')
       innerLocale.value = val
     })
+
+    function setLastValue (v) {
+      lastEmitValue = JSON.stringify(v)
+    }
 
     function setToday () {
       const { year, month, day } = today.value
@@ -931,7 +940,7 @@ export default createComponent({
       const newHash = year + '/' + pad(month) + '/01'
 
       if (newHash !== viewModel.value.dateHash) {
-        monthDirection.value = (viewModel.value.dateHash < newHash) === direction.value
+        monthDirection.value = (viewModel.value.dateHash < newHash) === ($q.lang.rtl !== true) ? 'left' : 'right'
         if (year !== viewModel.value.year) {
           yearDirection.value = monthDirection.value
         }
@@ -953,9 +962,9 @@ export default createComponent({
         ? val[ 0 ]
         : val
 
-      lastEmitValue = value
-
       const { reason, details } = getEmitParams(action, date)
+
+      setLastValue(value)
       emit('update:modelValue', value, reason, details)
     }
 
@@ -976,9 +985,9 @@ export default createComponent({
         date.day = Math.min(Math.max(1, date.day), maxDay)
 
         const value = encodeEntry(date)
-        lastEmitValue = value
-
         const { details } = getEmitParams('', date)
+
+        setLastValue(value)
         emit('update:modelValue', value, reason, details)
       })
     }
@@ -1037,9 +1046,7 @@ export default createComponent({
     }
 
     function removeFromModel (date) {
-      if (props.noUnset === true) {
-        return
-      }
+      if (props.noUnset === true) return
 
       let model = null
 
@@ -1077,7 +1084,10 @@ export default createComponent({
             : entry.dateHash !== null
         })
 
-      emit('update:modelValue', (props.multiple === true ? model : model[ 0 ]) || null, reason)
+      const value = (props.multiple === true ? model : model[ 0 ]) || null
+
+      setLastValue(value)
+      emit('update:modelValue', value, reason)
     }
 
     function getHeader () {

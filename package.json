@@ -1,11 +1,11 @@
 {
   "name": "quasar-monorepo",
   "private": true,
-  "packageManager": "pnpm@8.15.4",
+  "packageManager": "pnpm@9.15.4",
   "scripts": {
     "preinstall": "npx only-allow@1.2.1 pnpm",
     "lint:root": "eslint .eslintrc.cjs --report-unused-disable-directives --fix",
-    "lint": "pnpm lint:root && pnpm --recursive run lint",
+    "lint": "pnpm lint:root && pnpm --recursive --parallel --aggregate-output --workspace-concurrency=6 run lint",
     "test": "pnpm build && pnpm --filter quasar test:specs:ci && pnpm --filter quasar test && pnpm --filter @quasar/vite-plugin test",
     "build": "pnpm --filter @quasar/vite-plugin build && pnpm --filter quasar build",
     "vite-ecosystem-ci:build": "pnpm build",
@@ -14,7 +14,7 @@
     "vue-ecosystem-ci:test": "pnpm --filter quasar test && pnpm --filter @quasar/vite-plugin test:runtime"
   },
   "devDependencies": {
-    "eslint": "^8.57.0",
+    "eslint": "^8.57.1",
     "eslint-config-quasar": "workspace:*"
   }
 }

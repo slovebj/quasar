@@ -1,8 +1,9 @@
-import { h, ref, computed, watch, nextTick, getCurrentInstance, Transition, KeepAlive } from 'vue'
+import { h, ref, computed, watch, getCurrentInstance, Transition, KeepAlive } from 'vue'
 
 import TouchSwipe from '../../directives/touch-swipe/TouchSwipe.js'
 
 import useRenderCache from '../../composables/use-render-cache/use-render-cache.js'
+import useTimeout from '../../composables/use-timeout/use-timeout.js'
 
 import { hSlot } from '../../utils/private.render/render.js'
 import { getNormalizedVNodes } from '../../utils/private.vm/vm.js'
@@ -49,11 +50,21 @@ export const usePanelEmits = [ 'update:modelValue', 'beforeTransition', 'transit
 export default function () {
   const { props, emit, proxy } = getCurrentInstance()
   const { getCache } = useRenderCache()
+  const { registerTimeout } = useTimeout()
 
   let panels, forcedPanelTransition
 
-  const panelIndex = ref(null)
   const panelTransition = ref(null)
+
+  /*
+   * Should not be reactive because it's assigned on render
+   * and it will trigger a subsequent useless render.
+   *
+   * Should be an object though, because it is being exported.
+   * Otherwise, the current value would be exported and no subsequent
+   * updates will be reflected in the exported value.
+   */
+  const panelIndex = { value: null }
 
   function onSwipe (evt) {
     const dir = props.vertical === true ? 'up' : 'left'
@@ -117,9 +128,9 @@ export default function () {
     if (panelIndex.value !== index) {
       panelIndex.value = index
       emit('beforeTransition', newVal, oldVal)
-      nextTick(() => {
+      registerTimeout(() => {
         emit('transition', newVal, oldVal)
-      })
+      }, props.transitionDuration)
     }
   })
 
@@ -176,6 +187,7 @@ export default function () {
         setTimeout(() => {
           forcedPanelTransition = false
         })
+
         return
       }
 
@@ -225,9 +237,7 @@ export default function () {
   }
 
   function getPanelContent () {
-    if (panels.length === 0) {
-      return
-    }
+    if (panels.length === 0) return
 
     return props.animated === true
       ? [ h(Transition, { name: panelTransition.value }, getPanelContentChild) ]

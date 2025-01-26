@@ -14,9 +14,10 @@ export default createDirective(__QUASAR_SSR_SERVER__
         const { modifiers } = binding
 
         // early return, we don't need to do anything
-        if (modifiers.mouse !== true && client.has.touch !== true) {
-          return
-        }
+        if (
+          modifiers.mouse !== true
+          && client.has.touch !== true
+        ) return
 
         const ctx = {
           handler: binding.value,

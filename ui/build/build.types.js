@@ -220,7 +220,8 @@ function copyPredefinedTypes (dir, parentDir) {
 
 // Add types that should not be imported from ./api, but rather defined globally or generated in the final index.d.ts
 const extraInterfaceExclusions = [
-  'IntersectionObserverEntry'
+  'IntersectionObserverEntry',
+  'File'
 ]
 function addToExtraInterfaces (def) {
   if (def !== void 0 && def !== null && def.tsType !== void 0) {
@@ -328,7 +329,7 @@ function getIndexDts (apis, quasarLangIndex) {
     const extendsVue = (content.type === 'component' || content.type === 'mixin')
     const typeValue = `${ extendsVue ? `ComponentConstructor<${ typeName }>` : typeName }`
     // Add Type to the appropriate section of types
-    const propTypeDef = `${ typeName }?: ${ typeValue }`
+    const propTypeDef = `${ typeName }: ${ typeValue }`
 
     if (content.quasarConfOptions) {
       const confOptions = content.quasarConfOptions
@@ -620,7 +621,7 @@ function getIndexDts (apis, quasarLangIndex) {
   writeLine(contents)
 
   // Extend Vue instance with injections
-  writeLine(contents, 'declare module \'@vue/runtime-core\' {')
+  writeLine(contents, 'declare module \'vue\' {')
   writeLine(contents, 'interface ComponentCustomProperties {', 1)
 
   for (const key in injections) {
@@ -640,14 +641,23 @@ function getIndexDts (apis, quasarLangIndex) {
   writeLine(contents)
 
   // Provide `GlobalComponents`, expected to be used for Volar
-  writeLine(contents, 'declare module \'@vue/runtime-core\' {')
-  writeLine(contents, 'interface GlobalComponents {', 1)
-
+  // See: https://github.com/vuejs/language-tools/issues/4170#issuecomment-2025528945
+  writeLine(contents, 'interface _GlobalComponents {')
   for (const [ typeName, { props: propsTypeName, slots: slotsTypeName } ] of Object.entries(componentToSubTypeMap)) {
-    writeLine(contents, `${ typeName }: GlobalComponentConstructor<${ propsTypeName }, ${ slotsTypeName }>`, 2)
+    writeLine(contents, `${ typeName }: GlobalComponentConstructor<${ propsTypeName }, ${ slotsTypeName }>`, 1)
   }
-
-  writeLine(contents, '}', 1)
+  writeLine(contents, '}')
+  writeLine(contents)
+  writeLine(contents, 'declare module \'vue\' {')
+  writeLine(contents, 'interface GlobalComponents extends _GlobalComponents {}', 1)
+  writeLine(contents, '}')
+  writeLine(contents)
+  writeLine(contents, 'declare module \'@vue/runtime-dom\' {')
+  writeLine(contents, 'interface GlobalComponents extends _GlobalComponents {}', 1)
+  writeLine(contents, '}')
+  writeLine(contents)
+  writeLine(contents, 'declare module \'vue\' {')
+  writeLine(contents, 'interface GlobalComponents extends _GlobalComponents {}', 1)
   writeLine(contents, '}')
   writeLine(contents)
 
@@ -661,13 +671,18 @@ function getIndexDts (apis, quasarLangIndex) {
 
   writeLine(contents, 'declare module \'./plugin\' {')
   writeInterface(contents, 'QuasarComponents', components)
-  writeInterface(contents, 'QuasarDirectives', directives)
+  writeInterface(
+    contents,
+    'QuasarDirectives',
+    // example: `vTouchSwipe: TouchSwipe` -> `TouchSwipe: TouchSwipe`
+    directives.map(directive => directive.replace(/(\s?)(v)([A-Z]\w+:)/, '$1$3'))
+  )
   writeInterface(contents, 'QuasarPlugins', plugins)
   writeLine(contents, '}')
   writeLine(contents)
 
   writeLine(contents, 'import { QuasarPluginOptions } from \'./plugin\'')
-  writeLine(contents, 'export const Quasar: { install: (app: App, options: Partial<QuasarPluginOptions>) => any } & QSingletonGlobals')
+  writeLine(contents, 'export const Quasar: { install: (app: App, options?: QuasarPluginOptions) => any } & QSingletonGlobals')
   writeLine(contents, 'export default Quasar')
   writeLine(contents)
 

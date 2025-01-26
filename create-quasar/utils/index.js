@@ -6,7 +6,7 @@ import { spawn, execSync as exec } from 'node:child_process'
 import { emptyDirSync, ensureDirSync, ensureFileSync, copySync } from 'fs-extra/esm'
 import promptUser from 'prompts'
 import compileTemplate from 'lodash/template.js'
-import fglob from 'fast-glob'
+import { globSync } from 'tinyglobby'
 import { yellow, green } from 'kolorist'
 
 import logger from './logger.js'
@@ -43,10 +43,12 @@ function convertArrayToObject (arr) {
 
 const runningPackageManager = (() => {
   const userAgent = process.env.npm_config_user_agent
-
-  if (userAgent) {
-    return userAgent.split(' ')[ 0 ].split('/')[ 0 ]
+  if (!userAgent) {
+    return
   }
+
+  const [ name, version ] = userAgent.split(' ')[ 0 ].split('/')
+  return { name, version }
 })()
 
 function getCallerPath () {
@@ -64,7 +66,7 @@ function getCallerPath () {
 
 function renderTemplate (relativePath, scope) {
   const templateDir = join(getCallerPath(), relativePath)
-  const files = fglob.sync([ '**/*' ], { cwd: templateDir })
+  const files = globSync([ '**/*' ], { cwd: templateDir })
 
   for (const rawPath of files) {
     const targetRelativePath = rawPath.split('/').map(name => {
@@ -89,9 +91,15 @@ function renderTemplate (relativePath, scope) {
       const rawContent = readFileSync(sourcePath, 'utf-8')
       const template = compileTemplate(rawContent, { interpolate: /<%=([\s\S]+?)%>/g })
 
-      const newContent = extension === '.json'
-        ? JSON.stringify(JSON.parse(template(scope)), null, 2)
-        : template(scope)
+      let newContent = template(scope)
+      if (extension === '.json') {
+        try {
+          // try to format the JSON
+          newContent = JSON.stringify(JSON.parse(newContent), null, 2)
+        } catch {
+          // noop, the JSON might be containing comments, leave it unformatted
+        }
+      }
 
       writeFileSync(targetPath, newContent, 'utf-8')
     }
@@ -144,25 +152,25 @@ function getGitUser () {
 function printFinalMessage (scope) {
   const verPrefix = scope.quasarVersion ? scope.quasarVersion + '.' : ''
   const message = `
-To get started:
-${ yellow(`
-  cd ${ scope.projectFolderName }${ scope.skipDepsInstall !== true && scope.packageManager === false ? `
-  yarn #or: npm install
-  yarn lint --fix # or: npm run lint -- --fix` : '' }${ scope.skipDepsInstall !== true ? `
-  quasar dev # or: yarn quasar dev # or: npx quasar dev` : '' }
-`) }
-Documentation can be found at: https://${ verPrefix }quasar.dev
+ To get started:
+ ${ yellow(`
+   cd ${ scope.projectFolderName }${ scope.skipDepsInstall !== true && scope.packageManager === false ? `
+   yarn #or: npm install
+   yarn lint --fix # or: npm run lint -- --fix` : '' }${ scope.skipDepsInstall !== true ? `
+   quasar dev # or: yarn quasar dev # or: npx quasar dev` : '' }
+ `) }
+ Documentation can be found at: https://${ verPrefix }quasar.dev
 
-Quasar is relying on donations to evolve. We'd be very grateful if you can
-read our manifest on "Why donations are important": https://${ verPrefix }quasar.dev/why-donate
-Donation campaign: https://donate.quasar.dev
-Any amount is very welcome.
-If invoices are required, please first contact Razvan Stoenescu.
+ Quasar is relying on donations to evolve. We'd be very grateful if you can
+ read our manifest on "Why donations are important": https://${ verPrefix }quasar.dev/why-donate
+ Donation campaign: https://donate.quasar.dev
+ Any amount is very welcome.
+ If invoices are required, please first contact Razvan Stoenescu.
 
-Please give us a star on Github if you appreciate our work:
-  https://github.com/quasarframework/quasar
+ Please give us a star on Github if you appreciate our work:
+   https://github.com/quasarframework/quasar
 
-Enjoy! - Quasar Team
+ Enjoy! - Quasar Team
 `
 
   console.log(message)
@@ -219,6 +227,46 @@ function lintFolder (scope) {
       : [ 'run', 'lint', '--fix' ],
     { cwd: scope.projectFolder }
   )
+}
+
+function hasGit () {
+  try {
+    exec('git --version')
+    return true
+  }
+  catch (_) {}
+}
+
+function folderHasGit (cwd) {
+  try {
+    exec('git status', { stdio: 'ignore', cwd })
+    return true
+  }
+  catch (_) {}
+}
+
+function initializeGit (projectFolder) {
+  if (hasGit() !== true) {
+    logger.log('Git is not installed on the system, so skipping Git repo initialization.')
+    return
+  }
+
+  if (folderHasGit(projectFolder) === true) {
+    logger.log('A parent of the project folder is already a Git repository, so skipping Git initialization.')
+    return
+  }
+
+  try {
+    exec('git init', { cwd: projectFolder })
+    exec('git add -A', { cwd: projectFolder })
+    exec('git commit -m "Initialize the project 🚀" --no-verify', { cwd: projectFolder })
+  }
+  catch (e) {
+    logger.warn('Could not initialize Git repository. Please do this manually.')
+    return
+  }
+
+  logger.log('Initialized Git repository 🚀')
 }
 
 const quasarConfigFilenameList = [
@@ -289,41 +337,29 @@ const commonPrompts = {
       val.length > 0 || 'Invalid project description'
   },
 
-  author: {
-    type: 'text',
-    name: 'author',
-    initial: () => getGitUser(),
-    message: 'Author:'
-  },
-
   license: {
     type: 'text',
     name: 'license',
     message: 'License type',
     initial: 'MIT'
-  },
-
-  repositoryType: {
-    type: 'text',
-    name: 'repositoryType',
-    message: 'Repository type:',
-    initial: 'git'
-  },
-  repositoryURL: {
-    type: 'text',
-    name: 'repositoryURL',
-    message: 'Repository URL: (eg https://github.com/quasarframework/quasar)'
-  },
-  homepage: {
-    type: 'text',
-    name: 'homepage',
-    message: 'Homepage URL:'
-  },
-  bugs: {
-    type: 'text',
-    name: 'bugs',
-    message: 'Issue reporting URL: (eg https://github.com/quasarframework/quasar/issues)'
   }
+}
+
+export async function injectAuthor (scope) {
+  const author = getGitUser()
+
+  if (author) {
+    scope.author = author
+    return
+  }
+
+  await prompts(scope, [
+    {
+      type: 'text',
+      name: 'author',
+      message: 'Author:'
+    }
+  ])
 }
 
 export default {
@@ -341,6 +377,8 @@ export default {
   installDeps,
   lintFolder,
   ensureOutsideProject,
+  initializeGit,
 
-  commonPrompts
+  commonPrompts,
+  injectAuthor
 }

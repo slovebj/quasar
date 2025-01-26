@@ -23,7 +23,7 @@ import {
   symRoundedRefresh,
   symRoundedKeyboardArrowUp,
   symRoundedKeyboardArrowDown,
-  symRoundedLens,
+  symRoundedCircle,
   symRoundedCancel,
   symRoundedCheck,
   symRoundedSchedule,
@@ -61,10 +61,9 @@ import {
   symRoundedKeyboardArrowLeft,
   symRoundedKeyboardArrowRight,
   symRoundedLastPage,
-  symRoundedGrade,
+  symRoundedStar,
   symRoundedEdit,
   symRoundedPlayArrow,
-  symRoundedDone,
   symRoundedAddBox,
   symRoundedCloudUpload,
   symRoundedClearAll,
@@ -103,7 +102,7 @@ export default {
     right: symRoundedChevronRight,
     up: symRoundedKeyboardArrowUp,
     down: symRoundedKeyboardArrowDown,
-    navigationIcon: symRoundedLens
+    navigationIcon: symRoundedCircle
   },
   chip: {
     remove: symRoundedCancel,
@@ -166,7 +165,7 @@ export default {
     last: symRoundedLastPage
   },
   rating: {
-    icon: symRoundedGrade
+    icon: symRoundedStar
   },
   stepper: {
     done: symRoundedCheck,
@@ -191,7 +190,7 @@ export default {
     icon: symRoundedPlayArrow
   },
   uploader: {
-    done: symRoundedDone,
+    done: symRoundedCheck,
     clear: symRoundedClose,
     add: symRoundedAddBox,
     upload: symRoundedCloudUpload,

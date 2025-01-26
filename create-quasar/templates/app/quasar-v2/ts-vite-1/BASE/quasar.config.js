@@ -6,7 +6,7 @@
  */
 
 // Configuration for your app
-// https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
+// https://legacy-app.quasar.dev/quasar-cli-vite-v1/quasar-config-file
 
 <% if (preset.lint && lintConfig === 'airbnb') { %>/* eslint func-names: 0 */
 /* eslint global-require: 0 */
@@ -16,18 +16,18 @@ const { configure } = require('quasar/wrappers');
 
 module.exports = configure(function (/* ctx */) {
   return {
-    // https://v2.quasar.dev/quasar-cli-vite/prefetch-feature
+    // https://legacy-app.quasar.dev/quasar-cli-vite-v1/prefetch-feature
     // preFetch: true,
 
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
-    // https://v2.quasar.dev/quasar-cli-vite/boot-files
+    // https://legacy-app.quasar.dev/quasar-cli-vite-v1/boot-files
     boot: [
       <% if (preset.i18n) { %>'i18n',<% } %>
       <% if (preset.axios) { %>'axios',<% } %>
     ],
 
-    // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css
+    // https://legacy-app.quasar.dev/quasar-cli-vite-v1/quasar-config-file#css
     css: [
       'app.<%= css %>'
     ],
@@ -46,7 +46,7 @@ module.exports = configure(function (/* ctx */) {
       'material-icons', // optional, you are not bound to it
     ],
 
-    // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#build
+    // Full list of options: https://legacy-app.quasar.dev/quasar-cli-vite-v1/quasar-config-file#build
     build: {
       target: {
         browser: [ 'es2019', 'edge88', 'firefox78', 'chrome87', 'safari13.1' ],
@@ -98,13 +98,13 @@ module.exports = configure(function (/* ctx */) {
       // ]<% } %>
     },
 
-    // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#devServer
+    // Full list of options: https://legacy-app.quasar.dev/quasar-cli-vite-v1/quasar-config-file#devserver
     devServer: {
       // https: true
       open: true // opens browser window automatically
     },
 
-    // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#framework
+    // https://legacy-app.quasar.dev/quasar-cli-vite-v1/quasar-config-file#framework
     framework: {
       config: {},
 
@@ -126,7 +126,7 @@ module.exports = configure(function (/* ctx */) {
     // https://v2.quasar.dev/options/animations
     animations: [],
 
-    // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#sourcefiles
+    // https://legacy-app.quasar.dev/quasar-cli-vite-v1/quasar-config-file#sourcefiles
     // sourceFiles: {
     //   rootComponent: 'src/App.vue',
     //   router: 'src/router/index',
@@ -138,10 +138,9 @@ module.exports = configure(function (/* ctx */) {
     //   electronPreload: 'src-electron/electron-preload'
     // },
 
-    // https://v2.quasar.dev/quasar-cli-vite/developing-ssr/configuring-ssr
+    // https://legacy-app.quasar.dev/quasar-cli-vite-v1/developing-ssr/configuring-ssr
     ssr: {
       // ssrPwaHtmlFilename: 'offline.html', // do NOT use index.html as name!
-                                          // will mess up SSR
 
       // extendSSRWebserverConf (esbuildConf) {},
       // extendPackageJson (json) {},
@@ -159,7 +158,7 @@ module.exports = configure(function (/* ctx */) {
       ]
     },
 
-    // https://v2.quasar.dev/quasar-cli-vite/developing-pwa/configuring-pwa
+    // https://legacy-app.quasar.dev/quasar-cli-vite-v1/developing-pwa/configuring-pwa
     pwa: {
       workboxMode: 'generateSW', // or 'injectManifest'
       injectPwaMetaTags: true,
@@ -173,17 +172,17 @@ module.exports = configure(function (/* ctx */) {
       // extendPWACustomSWConf (esbuildConf) {}
     },
 
-    // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-cordova-apps/configuring-cordova
+    // Full list of options: https://legacy-app.quasar.dev/quasar-cli-vite-v1/developing-cordova-apps/configuring-cordova
     cordova: {
       // noIosLegacyBuildFlag: true, // uncomment only if you know what you are doing
     },
 
-    // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-capacitor-apps/configuring-capacitor
+    // Full list of options: https://legacy-app.quasar.dev/quasar-cli-vite-v1/developing-capacitor-apps/configuring-capacitor
     capacitor: {
       hideSplashscreen: true
     },
 
-    // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-electron-apps/configuring-electron
+    // Full list of options: https://legacy-app.quasar.dev/quasar-cli-vite-v1/developing-electron-apps/configuring-electron
     electron: {
       // extendElectronMainConf (esbuildConf)
       // extendElectronPreloadConf (esbuildConf)
@@ -212,7 +211,7 @@ module.exports = configure(function (/* ctx */) {
       }
     },
 
-    // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-browser-extensions/configuring-bex
+    // Full list of options: https://legacy-app.quasar.dev/quasar-cli-vite-v1/developing-browser-extensions/configuring-bex
     bex: {
       contentScripts: [
         'my-content-script'

@@ -23,7 +23,7 @@ import {
   symOutlinedRefresh,
   symOutlinedKeyboardArrowUp,
   symOutlinedKeyboardArrowDown,
-  symOutlinedLens,
+  symOutlinedCircle,
   symOutlinedCancel,
   symOutlinedCheck,
   symOutlinedSchedule,
@@ -61,10 +61,9 @@ import {
   symOutlinedKeyboardArrowLeft,
   symOutlinedKeyboardArrowRight,
   symOutlinedLastPage,
-  symOutlinedGrade,
+  symOutlinedStar,
   symOutlinedEdit,
   symOutlinedPlayArrow,
-  symOutlinedDone,
   symOutlinedAddBox,
   symOutlinedCloudUpload,
   symOutlinedClearAll,
@@ -103,7 +102,7 @@ export default {
     right: symOutlinedChevronRight,
     up: symOutlinedKeyboardArrowUp,
     down: symOutlinedKeyboardArrowDown,
-    navigationIcon: symOutlinedLens
+    navigationIcon: symOutlinedCircle
   },
   chip: {
     remove: symOutlinedCancel,
@@ -166,7 +165,7 @@ export default {
     last: symOutlinedLastPage
   },
   rating: {
-    icon: symOutlinedGrade
+    icon: symOutlinedStar
   },
   stepper: {
     done: symOutlinedCheck,
@@ -191,7 +190,7 @@ export default {
     icon: symOutlinedPlayArrow
   },
   uploader: {
-    done: symOutlinedDone,
+    done: symOutlinedCheck,
     clear: symOutlinedClose,
     add: symOutlinedAddBox,
     upload: symOutlinedCloudUpload,

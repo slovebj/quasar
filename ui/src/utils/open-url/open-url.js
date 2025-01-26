@@ -60,6 +60,7 @@ export default (url, reject, windowFeatures) => {
         openWindow(url, reject, windowFeatures)
       }
     })
+
     return
   }
 

@@ -30,6 +30,12 @@ function moveUseStatementsToTop (code) {
       + code.replace(sassUseRE, '')
 }
 
+function compileSass (src) {
+  return compileAsync(src, {
+    silenceDeprecations: [ 'import' ]
+  })
+}
+
 function getConcatenatedContent (src, noBanner) {
   return new Promise(resolve => {
     let code = ''
@@ -46,12 +52,12 @@ function getConcatenatedContent (src, noBanner) {
       .replace(/@import\s+'[^']+'[\s\r\n]+/g, '')
       // remove comments
       .replace(/(\/\*[\w'-.,`\s\r\n*@]*\*\/)|(\/\/[^\r\n]*)/g, '')
+
+    code = moveUseStatementsToTop(code)
       // remove unnecessary newlines
       .replace(/[\r\n]+/g, '\r\n')
 
-    resolve(
-      localBanner + moveUseStatementsToTop(code)
-    )
+    resolve(localBanner + code)
   })
 }
 
@@ -80,7 +86,7 @@ async function generateBase (source) {
   const src = resolveToRoot(source)
   const sassDistDest = resolveToRoot('dist/quasar.sass')
 
-  const result = await compileAsync(src)
+  const result = await compileSass(src)
 
   // remove @charset declaration -- breaks Vite usage
   const cssCode = result.css.toString().replace('@charset "UTF-8";', '')
@@ -97,7 +103,7 @@ async function generateBase (source) {
 async function generateAddon (source) {
   const src = resolveToRoot(source)
 
-  const result = await compileAsync(src)
+  const result = await compileSass(src)
   const cssCode = result.css.toString()
 
   return renderAsset(cssCode, '.addon')
