@@ -3,14 +3,14 @@ import { h, ref, computed, Transition, onBeforeUnmount, withDirectives, getCurre
 import QIcon from '../icon/QIcon.js'
 import QSpinner from '../spinner/QSpinner.js'
 
-import Ripple from '../../directives/Ripple.js'
+import Ripple from '../../directives/ripple/Ripple.js'
 
 import useBtn, { useBtnProps } from './use-btn.js'
 
-import { createComponent } from '../../utils/private/create.js'
-import { hMergeSlot } from '../../utils/private/render.js'
-import { stop, prevent, stopAndPrevent, listenOpts } from '../../utils/event.js'
-import { isKeyCode } from '../../utils/private/key-composition.js'
+import { createComponent } from '../../utils/private.create/create.js'
+import { hMergeSlot } from '../../utils/private.render/render.js'
+import { stop, prevent, stopAndPrevent, listenOpts } from '../../utils/event/event.js'
+import { isKeyCode } from '../../utils/private.keyboard/key-composition.js'
 
 const { passiveCapture } = listenOpts
 
@@ -115,12 +115,10 @@ export default createComponent({
 
     function onClick (e) {
       // is it already destroyed?
-      if (rootRef.value === null) { return }
+      if (rootRef.value === null) return
 
       if (e !== void 0) {
-        if (e.defaultPrevented === true) {
-          return
-        }
+        if (e.defaultPrevented === true) return
 
         const el = document.activeElement
         // focus button if it came from ENTER on form
@@ -151,7 +149,7 @@ export default createComponent({
 
     function onKeydown (e) {
       // is it already destroyed?
-      if (rootRef.value === null) { return }
+      if (rootRef.value === null) return
 
       emit('keydown', e)
 
@@ -174,11 +172,11 @@ export default createComponent({
 
     function onTouchstart (e) {
       // is it already destroyed?
-      if (rootRef.value === null) { return }
+      if (rootRef.value === null) return
 
       emit('touchstart', e)
 
-      if (e.defaultPrevented === true) { return }
+      if (e.defaultPrevented === true) return
 
       if (touchTarget !== rootRef.value) {
         touchTarget !== null && cleanup()
@@ -201,7 +199,7 @@ export default createComponent({
 
     function onMousedown (e) {
       // is it already destroyed?
-      if (rootRef.value === null) { return }
+      if (rootRef.value === null) return
 
       e.qSkipRipple = avoidMouseRipple === true
       emit('mousedown', e)
@@ -216,12 +214,14 @@ export default createComponent({
 
     function onPressEnd (e) {
       // is it already destroyed?
-      if (rootRef.value === null) { return }
+      if (rootRef.value === null) return
 
       // needed for IE (because it emits blur when focusing button from focus helper)
-      if (e !== void 0 && e.type === 'blur' && document.activeElement === rootRef.value) {
-        return
-      }
+      if (
+        e !== void 0
+        && e.type === 'blur'
+        && document.activeElement === rootRef.value
+      ) return
 
       if (e !== void 0 && e.type === 'keyup') {
         if (keyboardTarget === rootRef.value && isKeyCode(e, [ 13, 32 ]) === true) {
@@ -289,7 +289,13 @@ export default createComponent({
     })
 
     // expose public methods
-    Object.assign(proxy, { click: onClick })
+    Object.assign(proxy, {
+      click: e => {
+        if (isActionable.value === true) {
+          onClick(e)
+        }
+      }
+    })
 
     return () => {
       let inner = []
@@ -298,8 +304,7 @@ export default createComponent({
         h(QIcon, {
           name: props.icon,
           left: props.stack !== true && hasLabel.value === true,
-          role: 'img',
-          'aria-hidden': 'true'
+          role: 'img'
         })
       )
 
@@ -314,8 +319,7 @@ export default createComponent({
           h(QIcon, {
             name: props.iconRight,
             right: props.stack !== true && hasLabel.value === true,
-            role: 'img',
-            'aria-hidden': 'true'
+            role: 'img'
           })
         )
       }

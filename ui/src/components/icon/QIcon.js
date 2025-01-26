@@ -2,6 +2,10 @@ import { h, computed } from 'vue'
 
 import useSize, { useSizeProps } from '../../composables/private.use-size/use-size.js'
 
+<<<<<<< HEAD
+import { createComponent } from '../../utils/private/create.js'
+import { hSlot } from '../../utils/private/render.js'
+=======
 import { createComponent } from '../../utils/private.create/create.js'
 import { hSlot, hMergeSlot } from '../../utils/private.render/render.js'
 
@@ -43,6 +47,7 @@ const imgRE = /^img:/
 const svgUseRE = /^svguse:/
 const ionRE = /^ion-/
 const faRE = /^(fa-(classic|sharp|solid|regular|light|brands|duotone|thin)|[lf]a[srlbdk]?) /
+>>>>>>> upstream/dev
 
 export default createComponent({
   name: 'QIcon',
