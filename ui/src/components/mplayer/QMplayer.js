@@ -24,9 +24,9 @@ import QTooltip from '../tooltip/QTooltip.js'
 // import QExpansionItem from '../expansion-item/QExpansionItem.js'
 import ClosePopup from '../../directives/close-popup/ClosePopup.js'
 // import Ripple from '../../directives/Ripple.js'
-import { createComponent } from '../../utils/private/create.js'
-import useQuasar from '../../composables/use-quasar.js'
-import { hSlot } from '../../utils/private/render.js'
+import { createComponent } from '../../utils/private.create/create.js'
+import useQuasar from '../../composables/use-quasar/use-quasar.js'
+import { hSlot } from '../../utils/private.render/render.js'
 
 const padTime = (val) => {
   val = Math.floor(val)

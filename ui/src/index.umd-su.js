@@ -3,8 +3,8 @@
  */
 
 import installQuasar from './install-quasar-su.js'
-import lang from './plugins/lang/lang-su.js'
-import iconSet from './plugins/icon-set/icon-set-su.js'
+import lang from './plugins/lang/Lang.js'
+import iconSet from './plugins/icon-set/IconSet.js'
 
 import * as components from './components.js'
 import * as directives from './directives.js'
@@ -12,7 +12,10 @@ import * as plugins from './plugins.js'
 import * as utils from './utils.js'
 import * as composables from './composables.js'
 
-export default {
+if (window.Vue === void 0) {
+  console.error('[ Quasar ] Vue is required to run. Please add a script tag for it before loading Quasar.')
+}
+window.Quasar = {
   version: __QUASAR_VERSION__,
   install (app, opts) {
     installQuasar(app, {

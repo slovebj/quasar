@@ -5,12 +5,12 @@ import Screen from './plugins/screen/Screen.js'
 import Dark from './plugins/dark/Dark.js'
 import Body from './plugins/private.body/Body.js'
 import History from './plugins/private.history/History.js'
-import Lang from './plugins/lang/lang-su.js'
-import IconSet from './plugins/icon-set/icon-set-su.js'
+import Lang from './plugins/lang/Lang.js'
+import IconSet from './plugins/icon-set/IconSet.js'
 
-import { quasarKey } from './utils/private/symbols.js'
-import { globalConfig, globalConfigIsFrozen, freezeGlobalConfig } from './utils/private/global-config.js'
-import { isObject } from './utils/is.js'
+import { quasarKey } from './utils/private.symbols/symbols.js'
+import { globalConfig, globalConfigIsFrozen, freezeGlobalConfig } from './utils/private.config/instance-config.js'
+import { isObject } from './utils/is/is.js'
 
 const autoInstalledPlugins = [
   Platform,

@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   name: 'icon-font',
   type: {
     positive: 'check_circle',

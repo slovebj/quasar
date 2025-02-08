@@ -303,12 +303,7 @@ export default createComponent({
       props.icon !== void 0 && inner.push(
         h(QIcon, {
           name: props.icon,
-<<<<<<< HEAD
           left: props.stack !== true && hasLabel.value === true
-=======
-          left: props.stack !== true && hasLabel.value === true,
-          role: 'img'
->>>>>>> upstream/dev
         })
       )
 
@@ -322,12 +317,7 @@ export default createComponent({
         inner.push(
           h(QIcon, {
             name: props.iconRight,
-<<<<<<< HEAD
             right: props.stack !== true && hasLabel.value === true
-=======
-            right: props.stack !== true && hasLabel.value === true,
-            role: 'img'
->>>>>>> upstream/dev
           })
         )
       }
